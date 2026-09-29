@@ -1,0 +1,13 @@
+# Normaliza finais de linha para LF no repositório (o CI roda em Linux).
+* text=auto eol=lf
+
+# Scripts do Windows precisam de CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binários
+*.jar binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
