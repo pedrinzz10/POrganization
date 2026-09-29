@@ -1,0 +1,40 @@
+# Segredos e variáveis de ambiente (.env.example é versionado)
+.env
+.env.*
+!.env.example
+
+# Backend (Maven)
+target/
+!.mvn/wrapper/maven-wrapper.jar
+HELP.md
+
+# Frontend (Angular / Node)
+node_modules/
+dist/
+.angular/
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+npm-debug.log*
+
+# IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/extensions.json
+.settings/
+.project
+.classpath
+.factorypath
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Diversos
+*.log
+__pycache__/
