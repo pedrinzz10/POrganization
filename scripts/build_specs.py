@@ -99,7 +99,7 @@ def main():
         "total_criterios": sum(len(s["criterios_de_aceite"]) for s in specs),
         "specs": specs,
     }
-    OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"{OUT.name}: {out['total_specs']} specs, {out['total_criterios']} critérios")
 
 
