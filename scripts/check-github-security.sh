@@ -15,9 +15,12 @@ done
 
 # Regras efetivas na main (inclui rulesets ativos)
 rules="$(gh api "repos/$REPO/rules/branches/main" --jq '[.[].type] | join(",")' 2>/dev/null)"
-for rule in pull_request non_fast_forward deletion; do
+for rule in pull_request non_fast_forward deletion required_status_checks; do
   if [[ ",$rules," == *",$rule,"* ]]; then ok "main tem a regra $rule"; else fail "main sem a regra $rule"; fi
 done
+
+checks="$(gh api "repos/$REPO/rules/branches/main" --jq '[.[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context] | join(",")' 2>/dev/null)"
+if [[ ",$checks," == *",segredos,"* ]]; then ok "check 'segredos' obrigatório na main"; else fail "check 'segredos' não é obrigatório na main"; fi
 
 if [ "$failures" -gt 0 ]; then
   echo "$failures verificação(ões) falharam"

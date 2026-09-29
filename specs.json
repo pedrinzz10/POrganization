@@ -125,7 +125,7 @@
     }
   ],
   "total_specs": 58,
-  "total_criterios": 156,
+  "total_criterios": 157,
   "specs": [
     {
       "id": "B01",
@@ -142,7 +142,7 @@
         "specs/README.md"
       ],
       "dependencias": [],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -190,7 +190,7 @@
       "dependencias": [
         "B01"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -262,12 +262,14 @@
         "backend/mvnw",
         "backend/src/main/java/com/porganization/PorganizationApplication.java",
         "backend/src/main/java/com/porganization/common/HealthController.java",
-        "backend/src/main/resources/application.yml"
+        "backend/src/main/resources/application.yml",
+        "backend/src/main/java/com/porganization/security/SecurityConfig.java",
+        "backend/src/test/java/com/porganization/TestcontainersConfiguration.java"
       ],
       "dependencias": [
         "B01"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -276,6 +278,10 @@
         {
           "id": "CA2",
           "descricao": "GET /api/health responde 200 com {\"status\":\"UP\"} sem autenticação."
+        },
+        {
+          "id": "CA3",
+          "descricao": "O Actuator expõe só /actuator/health; /actuator/env e /actuator/configprops não são acessíveis sem autenticação."
         }
       ],
       "testes_dos_criterios": [
@@ -292,6 +298,13 @@
           "tipo": "integracao",
           "arquivo": "backend/src/test/java/com/porganization/common/HealthControllerTest.java",
           "cenario": "Dado nenhum token, quando GET /api/health, então status 200 e body.status == UP."
+        },
+        {
+          "id": "T3",
+          "criterio": "CA3",
+          "tipo": "integracao",
+          "arquivo": "backend/src/test/java/com/porganization/common/HealthControllerTest.java",
+          "cenario": "Dado nenhum token, quando GET /actuator/health, então 200; quando GET /actuator/env ou /actuator/configprops, então não é 200."
         }
       ]
     },
