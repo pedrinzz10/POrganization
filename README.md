@@ -28,9 +28,20 @@ backend/    API Spring Boot
 frontend/   app Angular
 specs/      esquema e fluxo das specs
 scripts/    verificações e utilitários do repositório
+.githooks/  hook pre-commit contra segredos
 specs.json  todas as specs do plano, geradas a partir do PLANO_IMPLEMENTACAO.md
 ```
 
+## Primeiros passos
+
+Depois de clonar, rode uma vez:
+
+```bash
+bash scripts/setup-dev.sh
+```
+
+Ele ativa o hook que bloqueia commits com senhas e chaves e cria o `.env` local a partir do `.env.example`. As regras sobre segredos e o que fazer se algum vazar estão em [`SECURITY.md`](SECURITY.md).
+
 ## Como o projeto é desenvolvido
 
-O trabalho é dividido em 57 specs descritas no [`PLANO_IMPLEMENTACAO.md`](PLANO_IMPLEMENTACAO.md). Cada spec tem critérios de aceite e os testes que os provam, e vira um branch e um PR. O esquema e o fluxo estão em [`specs/README.md`](specs/README.md).
+O trabalho é dividido em 58 specs descritas no [`PLANO_IMPLEMENTACAO.md`](PLANO_IMPLEMENTACAO.md). Cada spec tem critérios de aceite e os testes que os provam, e vira um branch e um PR. O esquema e o fluxo estão em [`specs/README.md`](specs/README.md).
