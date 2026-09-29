@@ -60,7 +60,7 @@ O POrganization é construído em **specs**: entregas pequenas e verificáveis, 
 
 | Etapa | Specs | Resultado ao final |
 |---|---|---|
-| 1 Base | B01 a B12 | Login, navegação, CI e deploy no Render/Vercel/Supabase |
+| 1 Base | B01 a B13 | Login, navegação, CI, deploy e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano |
 | 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões agendadas pelo FSRS |
 | 4 Finanças | F01 a F16 | Contas, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |

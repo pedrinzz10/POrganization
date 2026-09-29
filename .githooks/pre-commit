@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Spec B13: bloqueia commits com segredos. Ativado por scripts/setup-dev.sh
+# (git config core.hooksPath .githooks).
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+
+bash "$root/scripts/check-secrets.sh" --staged >/dev/null || {
+  bash "$root/scripts/check-secrets.sh" --staged
+  echo "commit bloqueado pelo pre-commit (check-secrets)" >&2
+  exit 1
+}
+
+if command -v gitleaks >/dev/null 2>&1; then
+  config=()
+  [ -f "$root/.gitleaks.toml" ] && config=(--config "$root/.gitleaks.toml")
+  gitleaks git --pre-commit --staged --redact --no-banner "${config[@]}" "$root" || {
+    echo "commit bloqueado pelo pre-commit (gitleaks)" >&2
+    exit 1
+  }
+else
+  echo "aviso: gitleaks não instalado; só o check-secrets rodou (instale com: winget install gitleaks)" >&2
+fi

@@ -91,10 +91,34 @@ Regras:
     ]
   },
   {
+    "id": "B13",
+    "etapa": "1-base",
+    "titulo": "Proteção contra vazamento de segredos",
+    "acao": "Criar camadas contra commit de segredos no repositório público: scripts/check-secrets.sh (chaves sb_secret_, JWT com role service_role, chaves privadas, URL de banco com senha, senha literal em application*.yml, arquivos proibidos como .env/.pem/.key/.p12/.jks, e variáveis sensíveis com valor no .env.example), hook pre-commit versionado em .githooks (check-secrets nos arquivos staged + gitleaks quando instalado) ativado por scripts/setup-dev.sh, .gitleaks.toml com regras do Supabase, workflow de CI 'segredos' (check-secrets + gitleaks no histórico inteiro), SECURITY.md com o procedimento de rotação, e no GitHub: secret scanning, push protection e ruleset da main (só via PR, sem force push nem exclusão).",
+    "story": "Como Pedro, quero várias barreiras impedindo que senhas e chaves cheguem ao repositório público, e um procedimento claro se algo vazar.",
+    "arquivos": ["scripts/check-secrets.sh", "scripts/test-check-secrets.sh", "scripts/setup-dev.sh", "scripts/check-github-security.sh", ".githooks/pre-commit", ".gitleaks.toml", ".github/workflows/secrets.yml", "SECURITY.md", "README.md"],
+    "dependencias": ["B01"],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      { "id": "CA1", "descricao": "check-secrets.sh falha para sb_secret_, JWT service_role, chave privada, URL de banco com senha, senha literal em application*.yml e arquivo proibido rastreado; passa para sb_publishable_, JWT anon e ${VAR}. A saída nunca imprime o segredo inteiro." },
+      { "id": "CA2", "descricao": "No .env.example, variáveis com nome sensível (PASSWORD, SECRET, TOKEN, PRIVATE, _KEY) ficam sem valor." },
+      { "id": "CA3", "descricao": "Com o hook ativo, commit com segredo staged é bloqueado e commit limpo passa." },
+      { "id": "CA4", "descricao": "O check 'segredos' roda em todo push e PR, com check-secrets, os testes dele e gitleaks no histórico inteiro." },
+      { "id": "CA5", "descricao": "O repositório tem secret scanning e push protection ativos, e a main só recebe mudanças por PR, sem force push nem exclusão." }
+    ],
+    "testes_dos_criterios": [
+      { "id": "T1", "criterio": "CA1", "tipo": "unitario", "arquivo": "scripts/test-check-secrets.sh", "cenario": "Dado fixtures geradas em tempo de execução (para o próprio repositório não conter segredos falsos), quando check-secrets roda em cada uma, então falha nas 6 proibidas, passa nas 3 permitidas e a saída não contém o valor completo." },
+      { "id": "T2", "criterio": "CA2", "tipo": "unitario", "arquivo": "scripts/test-check-secrets.sh", "cenario": "Dado .env.example com DB_PASSWORD=abc, então falha; com DB_PASSWORD= e DB_URL=jdbc:postgresql://localhost:5432/app, então passa." },
+      { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "scripts/test-check-secrets.sh", "cenario": "Dado um repositório git temporário com core.hooksPath=.githooks, quando commita um arquivo com sb_secret_, então o commit falha e não existe; com um arquivo limpo, então o commit é criado." },
+      { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": ".github/workflows/secrets.yml", "cenario": "Dado o PR desta spec, então o check 'segredos' termina com success." },
+      { "id": "T5", "criterio": "CA5", "tipo": "integracao", "arquivo": "scripts/check-github-security.sh", "cenario": "Dado gh autenticado, quando o script consulta a API do repositório, então secret scanning e push protection estão enabled e existe ruleset ativo na main com pull_request, non_fast_forward e deletion." }
+    ]
+  },
+  {
     "id": "B02",
     "etapa": "1-base",
     "titulo": "Esqueleto da API Spring Boot com health check",
-    "acao": "Gerar o projeto Spring Boot 4.x em backend/ pelo Spring Initializr (Maven wrapper, Java 21) com Web MVC, Validation, Data JPA, Flyway, PostgreSQL, Security, OAuth2 Resource Server, Actuator e Testcontainers, usando os starters modulares do Boot 4 (ex.: spring-boot-starter-flyway + flyway-database-postgresql, pois só flyway-core não é mais autoconfigurado; starters de teste separados para MockMvc, Data JPA e Security; testcontainers-postgresql); expor GET /api/health público.",
+    "acao": "Gerar o projeto Spring Boot 4.x em backend/ pelo Spring Initializr (Maven wrapper, Java 21) com Web MVC, Validation, Data JPA, Flyway, PostgreSQL, Security, OAuth2 Resource Server, Actuator e Testcontainers, usando os starters modulares do Boot 4 (ex.: spring-boot-starter-flyway + flyway-database-postgresql, pois só flyway-core não é mais autoconfigurado; starters de teste separados para MockMvc, Data JPA e Security; testcontainers-postgresql); expor GET /api/health público; no Actuator expor só health e usar management.endpoint.env.show-values=never e configprops.show-values=never para nenhum segredo aparecer em endpoint ou log.",
     "story": "Como Pedro, quero uma API que sobe localmente e responde um health check para validar o setup.",
     "arquivos": ["backend/pom.xml", "backend/mvnw", "backend/src/main/java/com/porganization/PorganizationApplication.java", "backend/src/main/java/com/porganization/common/HealthController.java", "backend/src/main/resources/application.yml"],
     "dependencias": ["B01"],
@@ -112,10 +136,10 @@ Regras:
     "id": "B03",
     "etapa": "1-base",
     "titulo": "Conexão com Supabase Postgres e Flyway",
-    "acao": "Configurar perfis dev/test/prod com datasource por variáveis de ambiente (DB_URL, DB_USER, DB_PASSWORD), Flyway habilitado, ddl-auto=validate, e a migração V1 com a tabela user_settings (user_id uuid PK, email text null, timezone text not null default 'America/Sao_Paulo', created_at). Toda tabela criada no schema public (inclusive flyway_schema_history, a partir da V1) deve ter RLS ativo sem policies (`alter table ... enable row level security`), para a Data API do Supabase (anon key exposta no frontend) não ler nem gravar nada; o backend conecta como postgres e não é afetado. Localmente e em produção usar o session pooler do Supabase (porta 5432), pois a conexão direta é só IPv6. Criar classe base de teste com Testcontainers reutilizável, usando a imagem postgres na mesma versão major do projeto Supabase (17 em projetos novos).",
+    "acao": "Configurar perfis dev/test/prod com datasource por variáveis de ambiente (DB_URL, DB_USER, DB_PASSWORD); no perfil dev ler o .env da raiz com spring.config.import=optional:file:../.env[.properties]; Flyway habilitado, ddl-auto=validate, e a migração V1 com a tabela user_settings (user_id uuid PK, email text null, timezone text not null default 'America/Sao_Paulo', created_at). Toda tabela criada no schema public (inclusive flyway_schema_history, a partir da V1) deve ter RLS ativo sem policies (`alter table ... enable row level security`), para a Data API do Supabase (anon key exposta no frontend) não ler nem gravar nada; o backend conecta como postgres e não é afetado. Localmente e em produção usar o session pooler do Supabase (porta 5432), pois a conexão direta é só IPv6. Criar classe base de teste com Testcontainers reutilizável, usando a imagem postgres na mesma versão major do projeto Supabase (17 em projetos novos).",
     "story": "Como Pedro, quero que o esquema do banco seja versionado e aplicado automaticamente no Supabase.",
     "arquivos": ["backend/src/main/resources/application.yml", "backend/src/main/resources/application-dev.yml", "backend/src/main/resources/application-prod.yml", "backend/src/main/resources/db/migration/V1__user_settings.sql", "backend/src/test/java/com/porganization/support/IntegrationTest.java", ".env.example"],
-    "dependencias": ["B02"],
+    "dependencias": ["B02", "B13"],
     "status": "pendente",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Ao subir, o Flyway aplica V1 e a tabela user_settings existe." },
@@ -125,7 +149,7 @@ Regras:
     ],
     "testes_dos_criterios": [
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/support/FlywayMigrationTest.java", "cenario": "Dado o Postgres do Testcontainers, quando o contexto sobe, então flyway_schema_history tem V1 com success=true e information_schema contém user_settings." },
-      { "id": "T2", "criterio": "CA2", "tipo": "unitario", "arquivo": "scripts/check-secrets.sh", "cenario": "Dado o repositório, quando procuro por 'supabase.co' com senha ou 'password:' com valor literal em application*.yml, então não há ocorrências." },
+      { "id": "T2", "criterio": "CA2", "tipo": "unitario", "arquivo": "scripts/check-secrets.sh", "cenario": "Dado o repositório, quando scripts/check-secrets.sh (B13) roda, então não há senha literal em application*.yml nem valor em variável sensível do .env.example." },
       { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/PorganizationApplicationTests.java", "cenario": "Dado ddl-auto=validate no perfil test, quando o contexto sobe com todas as migrações, então não há SchemaManagementException." },
       { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/support/RowLevelSecurityTest.java", "cenario": "Dado todas as migrações aplicadas, quando consulta pg_class.relrowsecurity das tabelas do schema public, então todas são true (o teste roda em toda spec e barra migração nova sem RLS)." }
     ]
@@ -178,7 +202,7 @@ Regras:
     "id": "B06",
     "etapa": "1-base",
     "titulo": "Esqueleto do Angular",
-    "acao": "Gerar o app Angular em frontend/ com `ng new` (Angular 21+: standalone, zoneless e Vitest por padrão; SCSS, roteamento), adicionar Angular Material, criar os environments com `ng generate environments` (apiUrl, supabaseUrl, supabaseAnonKey) e registrar o locale pt-BR em app.config.ts. Manter a convenção de nomes com sufixo usada nas specs: configurar os schematics em angular.json para gerar com sufixo de tipo (component, service, guard, interceptor, pipe) e renomear app.ts para app.component.ts (classe AppComponent).",
+    "acao": "Gerar o app Angular em frontend/ com `ng new` (Angular 21+: standalone, zoneless e Vitest por padrão; SCSS, roteamento), adicionar Angular Material, criar os environments com `ng generate environments` (apiUrl, supabaseUrl, supabaseKey com a publishable key sb_publishable_, que é pública por design; nunca a secret key) e registrar o locale pt-BR em app.config.ts. Manter a convenção de nomes com sufixo usada nas specs: configurar os schematics em angular.json para gerar com sufixo de tipo (component, service, guard, interceptor, pipe) e renomear app.ts para app.component.ts (classe AppComponent).",
     "story": "Como Pedro, quero um frontend Angular rodando localmente para começar as telas.",
     "arquivos": ["frontend/package.json", "frontend/angular.json", "frontend/src/main.ts", "frontend/src/app/app.config.ts", "frontend/src/app/app.routes.ts", "frontend/src/app/app.component.ts", "frontend/src/environments/environment.ts", "frontend/src/environments/environment.development.ts"],
     "dependencias": ["B01"],
@@ -280,7 +304,7 @@ Regras:
     "id": "B11",
     "etapa": "1-base",
     "titulo": "Deploy: Render, Vercel e Supabase",
-    "acao": "Criar Dockerfile multi-stage do backend e render.yaml (variáveis DB_*, SUPABASE_JWKS_URI, FRONTEND_ORIGIN, porta via $PORT); criar vercel.json com rewrite de SPA e build de produção com environment.ts de produção; no Render usar a URL do session pooler do Supabase (porta 5432), porque a conexão direta é só IPv6 e o modo transaction (6543) quebra os prepared statements do JDBC e o lock do Flyway; limitar o pool do Hikari (maximum-pool-size 5) e incluir SUPABASE_ISSUER nas variáveis.",
+    "acao": "Criar Dockerfile multi-stage do backend (usuário não root, sem .env na imagem via .dockerignore) e render.yaml (variáveis DB_*, SUPABASE_JWKS_URI, FRONTEND_ORIGIN, porta via $PORT; segredos declarados com sync: false, com valor só no painel do Render); criar vercel.json com rewrite de SPA e build de produção com environment.ts de produção; no Render usar a URL do session pooler do Supabase (porta 5432), porque a conexão direta é só IPv6 e o modo transaction (6543) quebra os prepared statements do JDBC e o lock do Flyway; limitar o pool do Hikari (maximum-pool-size 5) e incluir SUPABASE_ISSUER nas variáveis.",
     "story": "Como Pedro, quero o app publicado para usar no celular e mostrar no portfólio.",
     "arquivos": ["backend/Dockerfile", "render.yaml", "frontend/vercel.json", "frontend/src/environments/environment.ts"],
     "dependencias": ["B09", "B10"],
@@ -1230,13 +1254,13 @@ Observação importante: no plano gratuito o Render desliga a API após um tempo
 
 | Etapa | Specs | Resultado ao final |
 |---|---|---|
-| 1 Base | B01 a B12 | Login funcionando, navegação, CI e deploy no Render/Vercel/Supabase |
+| 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS |
 | 4 Finanças | F01 a F16 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 
-Total: 57 specs. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
+Total: 58 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
 
 As versões das migrações (V1 a V21) assumem a ordem das etapas. Se uma spec for feita fora de ordem, renumere as migrações pendentes antes do merge para o Flyway não encontrar versões fora de sequência.
 
@@ -1258,3 +1282,4 @@ Correções aplicadas depois de conferir o plano contra Spring Boot 4, Angular 2
 | 10 | `user_settings` não tinha a coluna de e-mail usada pelos lembretes | `email` na V1, preenchido pelo GET /api/me | B03, B04 (CA5), I02 |
 | 11 | `sync_pending` não aparecia em nenhuma migração | V20 adiciona `google_event_id` e `sync_pending` | I07 |
 | 12 | Specs com componentes Angular sem `conceito_angular` | Conceito adicionado | E11, F16, I04, I06 |
+| 13 | Repositório público sem barreiras contra commit de segredos | Spec nova com check-secrets, hook pre-commit, gitleaks no CI, push protection e ruleset da main; Actuator sem valores; publishable key no frontend; segredos do Render com `sync: false` | B13, B02, B03, B06, B11 |

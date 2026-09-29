@@ -1,0 +1,23 @@
+# Spec B13: regras do gitleaks (padrão da ferramenta + específicas do projeto).
+title = "POrganization"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "supabase-secret-key"
+description = "Chave secreta do Supabase (sb_secret_)"
+regex = '''sb_secret_[A-Za-z0-9_-]{10,}'''
+keywords = ["sb_secret_"]
+
+[[rules]]
+id = "database-url-with-password"
+description = "URL de banco com senha embutida"
+regex = '''(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?)://[^:/@\s]+:[^$<{@\s][^@\s]*@'''
+keywords = ["postgres", "mysql", "mongodb"]
+
+[[rules]]
+id = "jdbc-password"
+description = "Senha em URL JDBC"
+regex = '''(?i)jdbc:[a-z]+://\S*[?&;]password=[^$<{&\s]+'''
+keywords = ["jdbc"]
