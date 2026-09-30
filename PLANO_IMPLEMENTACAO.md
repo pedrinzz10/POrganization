@@ -395,7 +395,7 @@ Regras:
     "story": "Como Pedro, quero ver meus compromissos de um dia, semana, mês ou ano.",
     "arquivos": ["backend/src/main/java/com/porganization/commitments/CommitmentController.java", "backend/src/main/java/com/porganization/commitments/CommitmentService.java"],
     "dependencias": ["C02"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Retorna só itens com from <= date <= to, ordenados por date, depois all_day primeiro, depois start_time." },
       { "id": "CA2", "descricao": "Intervalo com to < from ou maior que 400 dias responde 400." }
