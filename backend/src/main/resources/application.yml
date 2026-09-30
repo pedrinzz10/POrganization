@@ -11,6 +11,10 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+    # O Supabase já cria objetos no schema public (ex.: a função rls_auto_enable, do "RLS automático").
+    # Sem histórico do Flyway, ele faz baseline na versão 0 e aplica todas as migrações a partir da V1.
+    baseline-on-migrate: true
+    baseline-version: 0
   # SMTP dos lembretes por e-mail (ex.: Gmail com senha de app, Brevo, Resend SMTP)
   mail:
     host: ${MAIL_HOST:}
