@@ -35,7 +35,7 @@ Cada spec é um objeto JSON com estes campos:
   "arquivos": ["caminho/relativo/ao/repo (criar ou alterar)"],
   "dependencias": ["C01"],
   "conceito_angular": "Só em specs de frontend: o conceito do Angular que a spec introduz, explicado em uma frase.",
-  "status": "em_revisao",
+  "status": "concluida",
   "criterios_de_aceite": [
     { "id": "CA1", "descricao": "Comportamento observável e verificável." }
   ],
@@ -332,7 +332,7 @@ Regras:
     "story": "Como Pedro, quero um README de portfólio que explique o projeto e deixe qualquer pessoa rodá-lo.",
     "arquivos": ["README.md", "docs/arquitetura.md"],
     "dependencias": ["B11"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Seguindo só o README, em máquina nova, backend e frontend sobem localmente." },
       { "id": "CA2", "descricao": "O README lista todas as variáveis de ambiente usadas no código." }
@@ -357,7 +357,7 @@ Regras:
     "story": "Como Pedro, quero guardar meus compromissos com o mínimo de dados obrigatórios.",
     "arquivos": ["backend/src/main/resources/db/migration/V2__commitments.sql", "backend/src/main/java/com/porganization/commitments/Commitment.java", "backend/src/main/java/com/porganization/commitments/CommitmentRepository.java"],
     "dependencias": ["B05"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Só title, date e user_id são obrigatórios; o resto é opcional." },
       { "id": "CA2", "descricao": "O repositório não retorna compromissos de outro usuário." }
@@ -395,7 +395,7 @@ Regras:
     "story": "Como Pedro, quero ver meus compromissos de um dia, semana, mês ou ano.",
     "arquivos": ["backend/src/main/java/com/porganization/commitments/CommitmentController.java", "backend/src/main/java/com/porganization/commitments/CommitmentService.java"],
     "dependencias": ["C02"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Retorna só itens com from <= date <= to, ordenados por date, depois all_day primeiro, depois start_time." },
       { "id": "CA2", "descricao": "Intervalo com to < from ou maior que 400 dias responde 400." }
@@ -413,7 +413,7 @@ Regras:
     "story": "Como Pedro, quero cadastrar uma vez algo que se repete (aula toda terça, academia seg/qua/sex) e vê-lo em todos os dias certos.",
     "arquivos": ["backend/src/main/java/com/porganization/commitments/recurrence/RecurrenceRule.java", "backend/src/main/java/com/porganization/commitments/recurrence/RecurrenceExpander.java", "backend/src/main/java/com/porganization/commitments/CommitmentService.java", "backend/src/main/java/com/porganization/commitments/dto/OccurrenceResponse.java"],
     "dependencias": ["C03"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "WEEKLY com byWeekDays [MON,WED,FRI] a partir de 2026-10-01 gera 05, 07 e 09/10 na semana seguinte." },
       { "id": "CA2", "descricao": "MONTHLY no dia 31 cai no último dia dos meses menores (30/11, 28/02)." },
@@ -433,7 +433,7 @@ Regras:
     "story": "Como Pedro, quero marcar como feito um compromisso (ou só a ocorrência de hoje de um recorrente) e ajustar uma ocorrência sem mexer na série.",
     "arquivos": ["backend/src/main/resources/db/migration/V3__commitment_exceptions.sql", "backend/src/main/java/com/porganization/commitments/CommitmentException.java", "backend/src/main/java/com/porganization/commitments/CommitmentService.java", "backend/src/main/java/com/porganization/commitments/CommitmentController.java"],
     "dependencias": ["C04"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Marcar done numa ocorrência afeta só aquela data." },
       { "id": "CA2", "descricao": "Cancelar uma ocorrência a remove da consulta por intervalo." },
@@ -454,7 +454,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/data/commitments.service.ts", "frontend/src/app/features/commitments/data/commitment.model.ts", "frontend/src/app/features/commitments/quick-add/quick-add.component.ts", "frontend/src/app/features/commitments/quick-add/quick-add.component.html"],
     "dependencias": ["C02", "B09"],
     "conceito_angular": "HttpClient devolve Observables (RxJS): a requisição só acontece quando alguém faz subscribe. output() emite um evento do componente filho para o pai avisar que algo foi criado.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Com título preenchido, Enter chama POST com title, date e startTime e limpa o título." },
       { "id": "CA2", "descricao": "Título vazio não envia nada e mostra erro no campo." },
@@ -475,7 +475,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/commitments.page.ts", "frontend/src/app/features/commitments/views/day-view.component.ts", "frontend/src/app/features/commitments/views/week-view.component.ts", "frontend/src/app/features/commitments/data/date-range.util.ts"],
     "dependencias": ["C05", "C06"],
     "conceito_angular": "input() recebe dados do componente pai; computed() deriva valores de signals (ex.: agrupar ocorrências por dia) e recalcula sozinho quando a lista muda. @for e @if são o controle de fluxo nos templates.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Hoje lista só as ocorrências do dia, com os sem hora no topo." },
       { "id": "CA2", "descricao": "Marcar o checkbox chama o PATCH certo (série ou ocorrência) e risca o item." },
@@ -496,7 +496,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/views/month-view.component.ts", "frontend/src/app/features/commitments/views/year-view.component.ts", "frontend/src/app/features/commitments/data/date-range.util.ts"],
     "dependencias": ["C07"],
     "conceito_angular": "Componentes de apresentação reutilizáveis: o mesmo mini-mês é usado 12 vezes no ano, recebendo o mês por input().",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "A grade do mês de outubro/2026 começa em 28/09 e tem 42 células." },
       { "id": "CA2", "descricao": "Dia com mais de 3 compromissos mostra 3 títulos e '+N'." },
@@ -517,7 +517,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/form/commitment-form.dialog.ts", "frontend/src/app/features/commitments/form/commitment-form.dialog.html", "frontend/src/app/features/commitments/form/recurrence-editor.component.ts"],
     "dependencias": ["C07"],
     "conceito_angular": "FormGroup aninhado e validação condicional: o subgrupo de recorrência só é obrigatório quando 'repetir' está ligado. MatDialog abre um componente em modal e devolve um resultado ao fechar.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Ligar 'repetir' semanal exige ao menos um dia da semana." },
       { "id": "CA2", "descricao": "O formulário gera o JSON de recurrenceRule esperado pela API." },
@@ -538,7 +538,7 @@ Regras:
     "arquivos": ["backend/src/main/java/com/porganization/today/TodayController.java", "backend/src/main/java/com/porganization/today/TodayService.java", "backend/src/main/java/com/porganization/today/TodayResponse.java", "frontend/src/app/features/today/today.page.ts", "frontend/src/app/features/today/sections/today-commitments.component.ts"],
     "dependencias": ["C07"],
     "conceito_angular": "Composição de página: a TodayPage só busca os dados e distribui para componentes de seção, cada um com sua responsabilidade.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "GET /api/today retorna as ocorrências de hoje considerando o fuso do usuário (23h30 em São Paulo ainda é o mesmo dia)." },
       { "id": "CA2", "descricao": "Criar pela quick add na tela Hoje adiciona o item na lista sem recarregar a página." }
@@ -563,7 +563,7 @@ Regras:
     "story": "Como Pedro, quero cadastrar matérias como 'Java Advanced' com tags como 'faculdade' ou 'línguas'.",
     "arquivos": ["backend/src/main/resources/db/migration/V4__subjects_tags.sql", "backend/src/main/java/com/porganization/studies/Subject.java", "backend/src/main/java/com/porganization/studies/Tag.java", "backend/src/main/java/com/porganization/studies/SubjectRepository.java", "backend/src/main/java/com/porganization/studies/TagRepository.java"],
     "dependencias": ["B05"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Nome de tag é único por usuário, sem diferenciar maiúsculas." },
       { "id": "CA2", "descricao": "sessions_per_week aceita 0 a 21 e lesson_minutes 5 a 240 (check constraints)." }
@@ -581,7 +581,7 @@ Regras:
     "story": "Como Pedro, quero gerenciar matérias e definir a ordem de prioridade entre elas.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/SubjectController.java", "backend/src/main/java/com/porganization/studies/SubjectService.java", "backend/src/main/java/com/porganization/studies/TagController.java", "backend/src/main/java/com/porganization/studies/dto/SubjectRequest.java"],
     "dependencias": ["E01"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Nova matéria entra no fim da ordem de prioridade." },
       { "id": "CA2", "descricao": "PUT /order grava priority_order 1..N na ordem recebida e rejeita (400) lista com id faltando, repetido ou de outro usuário." },
@@ -602,7 +602,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/studies/subjects/subjects.page.ts", "frontend/src/app/features/studies/subjects/subject-form.dialog.ts", "frontend/src/app/features/studies/data/studies.service.ts", "frontend/src/app/features/studies/data/study.model.ts"],
     "dependencias": ["E02", "B09"],
     "conceito_angular": "Angular CDK DragDrop (cdkDropList/cdkDrag) e atualização otimista: a lista muda na hora e volta ao estado anterior se a API falhar.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Arrastar uma matéria chama PUT /order com a nova ordem." },
       { "id": "CA2", "descricao": "Se o PUT falhar, a lista volta para a ordem anterior e mostra erro." },
@@ -622,7 +622,7 @@ Regras:
     "story": "Como Pedro, quero registrar o que estudei e quanto tempo levei para o app planejar minhas revisões.",
     "arquivos": ["backend/src/main/resources/db/migration/V5__lessons_sessions.sql", "backend/src/main/java/com/porganization/studies/Lesson.java", "backend/src/main/java/com/porganization/studies/StudySession.java", "backend/src/main/java/com/porganization/studies/StudySessionRepository.java"],
     "dependencias": ["E01"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Existe no máximo uma sessão RUNNING ou PAUSED por usuário (índice único parcial)." },
       { "id": "CA2", "descricao": "A duração efetiva é ended_at - started_at - paused_seconds." }
@@ -640,7 +640,7 @@ Regras:
     "story": "Como Pedro, quero que as revisões sejam agendadas por um algoritmo de repetição espaçada confiável.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/fsrs/Fsrs.java", "backend/src/main/java/com/porganization/studies/fsrs/FsrsParameters.java", "backend/src/main/java/com/porganization/studies/fsrs/FsrsCard.java", "backend/src/main/java/com/porganization/studies/fsrs/ReviewGrade.java"],
     "dependencias": [],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Os resultados batem com a implementação de referência (py-fsrs ou ts-fsrs) para a mesma sequência de notas e datas." },
       { "id": "CA2", "descricao": "Para o mesmo estado, o intervalo de FACIL > OK > DIFICIL." },
@@ -660,7 +660,7 @@ Regras:
     "story": "Como Pedro, quero iniciar, pausar e concluir um estudo com timer e não perder o tempo se fechar a aba.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/StudySessionController.java", "backend/src/main/java/com/porganization/studies/StudySessionService.java", "backend/src/main/java/com/porganization/studies/dto/FinishLessonRequest.java"],
     "dependencias": ["E04"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Pausar e retomar acumula paused_seconds corretamente." },
       { "id": "CA2", "descricao": "Iniciar com outra sessão ativa responde 409." },
@@ -680,7 +680,7 @@ Regras:
     "story": "Como Pedro, quero que cada aula gere revisões em mini aulas com metade do tempo, reagendadas conforme eu avalio a dificuldade.",
     "arquivos": ["backend/src/main/resources/db/migration/V6__review_items.sql", "backend/src/main/java/com/porganization/studies/ReviewItem.java", "backend/src/main/java/com/porganization/studies/ReviewScheduler.java", "backend/src/main/java/com/porganization/studies/StudySessionService.java"],
     "dependencias": ["E05", "E06"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Aula de 50 min gera review_item com review_minutes 25 e due amanhã." },
       { "id": "CA2", "descricao": "Finish de REVIEW sem grade responde 400; com grade, due_date e estado são atualizados pelo FSRS." },
@@ -700,7 +700,7 @@ Regras:
     "story": "Como Pedro, quero abrir o app e saber o que estudar hoje, com revisões atrasadas em primeiro lugar.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/DailyStudyPlanner.java", "backend/src/main/java/com/porganization/studies/StudyTodayController.java", "backend/src/main/java/com/porganization/studies/dto/StudyTodayResponse.java"],
     "dependencias": ["E07", "E02"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Revisões vencidas vêm antes de qualquer aula nova, ordenadas da mais atrasada para a mais recente." },
       { "id": "CA2", "descricao": "Matéria que já cumpriu as sessões da semana não aparece como aula sugerida." },
@@ -721,7 +721,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/studies/today/study-today.page.ts", "frontend/src/app/features/studies/session/study-session.component.ts", "frontend/src/app/features/studies/session/timer.ts", "frontend/src/app/features/studies/session/grade-buttons.component.ts"],
     "dependencias": ["E08", "E03"],
     "conceito_angular": "Timer com signals e effect(): um signal guarda o tempo restante, atualizado por um intervalo que é limpo no DestroyRef quando o componente sai da tela.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "O timer decrementa a cada segundo, para quando pausado e avisa (som/notificação visual) ao chegar a zero, sem encerrar sozinho." },
       { "id": "CA2", "descricao": "Revisão só pode ser concluída escolhendo uma das 3 notas, que é enviada no finish." },
@@ -742,7 +742,7 @@ Regras:
     "arquivos": ["backend/src/main/java/com/porganization/studies/StudyStatsService.java", "backend/src/main/java/com/porganization/studies/StudyStatsController.java", "frontend/src/app/features/studies/history/study-history.page.ts"],
     "dependencias": ["E09"],
     "conceito_angular": "Resource/rxResource (ou toSignal) para carregar dados assíncronos direto como signal, com estados de carregando e erro no template.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Minutos por matéria somam só sessões FINISHED no intervalo." },
       { "id": "CA2", "descricao": "A aba mostra, por matéria, 'X de Y sessões nesta semana'." }
@@ -761,7 +761,7 @@ Regras:
     "arquivos": ["backend/src/main/java/com/porganization/today/TodayService.java", "backend/src/main/java/com/porganization/today/TodayResponse.java", "frontend/src/app/features/today/sections/today-studies.component.ts"],
     "dependencias": ["E09", "C10"],
     "conceito_angular": "Pipes e computed(): os dias de atraso são derivados da due_date com computed() e o texto '1 dia' / '2 dias' é pluralizado no template com I18nPluralPipe.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "GET /api/today inclui studies.reviews e studies.lessons na ordem do planner." },
       { "id": "CA2", "descricao": "Revisões vencidas aparecem antes das aulas, com selo 'Revisão · X dias de atraso' quando atrasadas." }
@@ -786,7 +786,7 @@ Regras:
     "story": "Como Pedro, quero cadastrar minhas contas e ver o saldo de cada uma.",
     "arquivos": ["backend/src/main/resources/db/migration/V7__accounts.sql", "backend/src/main/java/com/porganization/finance/accounts/Account.java", "backend/src/main/java/com/porganization/finance/accounts/AccountController.java", "backend/src/main/java/com/porganization/finance/accounts/AccountService.java", "backend/src/main/java/com/porganization/config/JacksonConfig.java"],
     "dependencias": ["B05"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Valores trafegam como string decimal no JSON e são BigDecimal com escala 2 no Java." },
       { "id": "CA2", "descricao": "Conta com transações não pode ser excluída (409), só arquivada." }
@@ -804,7 +804,7 @@ Regras:
     "story": "Como Pedro, quero classificar gastos e rendas por categoria e tags livres.",
     "arquivos": ["backend/src/main/resources/db/migration/V8__categories_tags.sql", "backend/src/main/java/com/porganization/finance/categories/Category.java", "backend/src/main/java/com/porganization/finance/categories/CategoryService.java", "backend/src/main/java/com/porganization/finance/categories/CategoryController.java"],
     "dependencias": ["F01"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "No primeiro GET de categorias o usuário recebe o conjunto padrão (Alimentação, Transporte, Moradia, Lazer, Saúde, Educação, Salário, Outros), uma única vez." },
       { "id": "CA2", "descricao": "Categoria em uso não pode ser excluída (409)." }
@@ -822,7 +822,7 @@ Regras:
     "story": "Como Pedro, quero registrar rendas e gastos e filtrá-los por mês e categoria.",
     "arquivos": ["backend/src/main/resources/db/migration/V9__transactions.sql", "backend/src/main/java/com/porganization/finance/transactions/Transaction.java", "backend/src/main/java/com/porganization/finance/transactions/TransactionController.java", "backend/src/main/java/com/porganization/finance/transactions/TransactionService.java", "backend/src/main/java/com/porganization/finance/transactions/TransactionSpecifications.java"],
     "dependencias": ["F02"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "amount <= 0 responde 400; a categoria precisa ser do mesmo kind do tipo (gasto com categoria de gasto)." },
       { "id": "CA2", "descricao": "Saldo da conta = inicial + rendas pagas - gastos pagos." },
@@ -846,7 +846,7 @@ Regras:
     "story": "Como Pedro, quero mover dinheiro entre minhas contas sem contar como renda ou gasto.",
     "arquivos": ["backend/src/main/java/com/porganization/finance/transactions/TransferService.java", "backend/src/main/java/com/porganization/finance/transactions/TransferController.java", "backend/src/main/resources/db/migration/V10__transfer_group.sql"],
     "dependencias": ["F03"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Transferir 200.00 de A para B reduz A em 200.00 e aumenta B em 200.00; o total geral não muda." },
       { "id": "CA2", "descricao": "Transferências não entram nos totais de renda e gasto do mês." },
@@ -866,7 +866,7 @@ Regras:
     "story": "Como Pedro, quero lançar compras do cartão manualmente e que caiam na fatura certa.",
     "arquivos": ["backend/src/main/resources/db/migration/V11__credit_cards.sql", "backend/src/main/java/com/porganization/finance/cards/CreditCard.java", "backend/src/main/java/com/porganization/finance/cards/CardStatement.java", "backend/src/main/java/com/porganization/finance/cards/StatementResolver.java", "backend/src/main/java/com/porganization/finance/cards/CreditCardController.java"],
     "dependencias": ["F03"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Cartão com fechamento dia 5 e vencimento dia 12: compra em 04/10 vai para a fatura que vence 12/10; compra em 05/10 vai para a que vence 12/11." },
       { "id": "CA2", "descricao": "Fechamento em dia inexistente no mês (31) usa o último dia do mês." },
