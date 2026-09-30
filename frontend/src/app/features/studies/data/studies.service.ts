@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { FinishSessionRequest, SessionType, StudySession, StudyToday, Subject, SubjectRequest, Tag } from './study.model';
+import { FinishSessionRequest, SessionType, StudySession, StudyStats, StudyToday, Subject, SubjectRequest, Tag } from './study.model';
 
 /** API de estudos: matérias e tags. As specs seguintes acrescentam sessões e o plano do dia. */
 @Injectable({ providedIn: 'root' })
@@ -71,5 +71,10 @@ export class StudiesService {
 
   abandon(id: string): Observable<StudySession> {
     return this.http.post<StudySession>(`${this.api}/study/sessions/${id}/abandon`, {});
+  }
+
+  /** Estatísticas de from a to ("YYYY-MM-DD"). */
+  stats(from: string, to: string): Observable<StudyStats> {
+    return this.http.get<StudyStats>(`${this.api}/study/stats`, { params: { from, to } });
   }
 }
