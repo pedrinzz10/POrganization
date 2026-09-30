@@ -6,6 +6,7 @@ import com.porganization.tasks.DailyTaskDtos.DayTask;
 import com.porganization.tasks.DailyTaskDtos.OrderRequest;
 import com.porganization.tasks.DailyTaskDtos.TaskRequest;
 import com.porganization.tasks.DailyTaskDtos.TaskResponse;
+import com.porganization.tasks.DailyTaskDtos.TaskStatsResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
@@ -52,6 +53,12 @@ public class DailyTaskController {
     @GetMapping("/day")
     public List<DayTask> day(@CurrentUser UUID userId, @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         return service.day(userId, date != null ? date : service.today(userId));
+    }
+
+    /** Sequência atual e % de conclusão dos últimos 30 dias, por tarefa. */
+    @GetMapping("/stats")
+    public List<TaskStatsResponse> stats(@CurrentUser UUID userId) {
+        return service.stats(userId);
     }
 
     @PutMapping("/order")
