@@ -5,13 +5,21 @@ import { environment } from '../../../../environments/environment';
 import {
   Account,
   AccountRequest,
+  BudgetRequest,
+  BudgetStatus,
   Card,
   CardRequest,
   Category,
+  Contribution,
+  ContributionRequest,
   FinanceTag,
+  Goal,
+  GoalRequest,
   MonthSummary,
   PurchaseRequest,
   PurchaseResponse,
+  Recurring,
+  RecurringRequest,
   Statement,
   StatementSummary,
   Transaction,
@@ -126,5 +134,68 @@ export class FinanceService {
 
   payStatement(statementId: string): Observable<Statement> {
     return this.http.post<Statement>(`${this.api}/cards/statements/${statementId}/pay`, {});
+  }
+
+  // ---------- fixos ----------
+
+  listRecurring(): Observable<Recurring[]> {
+    return this.http.get<Recurring[]>(`${this.api}/recurring`);
+  }
+
+  createRecurring(request: RecurringRequest): Observable<Recurring> {
+    return this.http.post<Recurring>(`${this.api}/recurring`, request);
+  }
+
+  updateRecurring(id: string, request: RecurringRequest): Observable<Recurring> {
+    return this.http.put<Recurring>(`${this.api}/recurring/${id}`, request);
+  }
+
+  /** Os lançamentos já gerados ficam; só o modelo sai. */
+  deleteRecurring(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/recurring/${id}`);
+  }
+
+  // ---------- orçamentos ----------
+
+  budgets(month: string): Observable<BudgetStatus[]> {
+    return this.http.get<BudgetStatus[]>(`${this.api}/budgets`, { params: { month } });
+  }
+
+  createBudget(request: BudgetRequest): Observable<BudgetStatus> {
+    return this.http.post<BudgetStatus>(`${this.api}/budgets`, request);
+  }
+
+  updateBudget(id: string, amount: string): Observable<BudgetStatus> {
+    return this.http.put<BudgetStatus>(`${this.api}/budgets/${id}`, { amount });
+  }
+
+  deleteBudget(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/budgets/${id}`);
+  }
+
+  // ---------- metas ----------
+
+  listGoals(): Observable<Goal[]> {
+    return this.http.get<Goal[]>(`${this.api}/goals`);
+  }
+
+  getGoal(id: string): Observable<Goal> {
+    return this.http.get<Goal>(`${this.api}/goals/${id}`);
+  }
+
+  createGoal(request: GoalRequest): Observable<Goal> {
+    return this.http.post<Goal>(`${this.api}/goals`, request);
+  }
+
+  updateGoal(id: string, request: GoalRequest): Observable<Goal> {
+    return this.http.put<Goal>(`${this.api}/goals/${id}`, request);
+  }
+
+  deleteGoal(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/goals/${id}`);
+  }
+
+  contribute(goalId: string, request: ContributionRequest): Observable<Contribution> {
+    return this.http.post<Contribution>(`${this.api}/goals/${goalId}/contributions`, request);
   }
 }

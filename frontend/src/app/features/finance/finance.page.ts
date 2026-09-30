@@ -7,6 +7,9 @@ export const FINANCE_TABS = [
   { label: 'Extrato', path: './' },
   { label: 'Contas', path: 'contas' },
   { label: 'Cartões', path: 'cartoes' },
+  { label: 'Fixos', path: 'fixos' },
+  { label: 'Orçamentos', path: 'orcamentos' },
+  { label: 'Metas', path: 'metas' },
 ];
 
 /** Seção Finanças: título, abas de navegação e a tela da aba escolhida. */

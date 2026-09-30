@@ -23,4 +23,19 @@ export const FINANCE_ROUTES: Routes = [
     title: 'Fatura · Finanças · POrganization',
     loadComponent: () => import('./cards/statement.page').then((m) => m.StatementPage),
   },
+  {
+    path: 'fixos',
+    title: 'Fixos · Finanças · POrganization',
+    loadComponent: () => import('./recurring/recurring.page').then((m) => m.RecurringPage),
+  },
+  {
+    path: 'orcamentos',
+    title: 'Orçamentos · Finanças · POrganization',
+    loadComponent: () => import('./budgets/budgets.page').then((m) => m.BudgetsPage),
+  },
+  {
+    path: 'metas',
+    title: 'Metas · Finanças · POrganization',
+    loadComponent: () => import('./goals/goals.page').then((m) => m.GoalsPage),
+  },
 ];
