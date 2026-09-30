@@ -1902,6 +1902,68 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
 ]
 ```
 
+### Etapa 7: Design (Intelly Design System)
+
+O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN_SYSTEM.md): cores só por token, raios do design system, sem sombras, botões em pílula. O tema do Angular Material é apontado para os tokens, então componentes novos já nascem no padrão.
+
+```json
+[
+  {
+    "id": "U01",
+    "etapa": "7-design",
+    "titulo": "Tema Intelly: tokens, menu escuro e cards de métrica",
+    "acao": "Trazer o Intelly Design System para frontend/src/design-system (tokens.css, components.css, DESIGN_SYSTEM.md); apontar as variáveis --mat-sys-* do Angular Material para os tokens (cores, raios, títulos em peso 600, sem sombras) e trocar a fonte para Manrope; menu lateral escuro e arredondado como a .ds-sidenav; cards de métrica do Resumo de finanças com as superfícies lavender/ink/steel/slate e as formas decorativas; saudação pelo horário na tela Hoje. Tokens extras para o que o design system não cobre: --status-positive e --status-negative.",
+    "story": "Como Pedro, quero o app com a cara do meu design system, sem perder nada do que já funciona.",
+    "arquivos": [
+      "frontend/src/styles.scss",
+      "frontend/src/design-system/tokens.css",
+      "frontend/src/app/layout/shell/shell.component.scss",
+      "frontend/src/app/features/finance/dashboard/finance-dashboard.page.html",
+      "frontend/src/app/features/today/today.page.ts"
+    ],
+    "dependencias": [],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Botões, campos, diálogos, abas e listas usam as cores, os raios e a fonte do design system, sem sombras, sem CSS por tela."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Cada seção continua com um h1 com o nome dela e o item do menu atual destacado (contrato do B09)."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Nos cards de métrica o valor fica numa linha e nunca sobre a forma decorativa; valores negativos são indicados pelo sinal, não pela cor, sobre steel, slate e ink."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA2",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/navigation.spec.ts",
+        "cenario": "Cada item do menu leva à seção com h1 do nome e aria-current no item."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA1",
+        "tipo": "unitario",
+        "arquivo": "frontend/src/app/features/today/today.page.spec.ts",
+        "cenario": "saudacaoPara: 5h e 11h → 'Bom dia'; 12h e 17h → 'Boa tarde'; 18h e 2h → 'Boa noite'."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/finance-dashboard.spec.ts",
+        "cenario": "O Resumo mostra 'R$ 4.550,00' e desenha os gráficos sem erro no console com o tema novo."
+      }
+    ]
+  }
+]
+```
+
 ## 5. Resumo da ordem
 
 | Etapa | Specs | Resultado ao final |
@@ -1912,6 +1974,7 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
 | 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T05 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
+| 7 Design | U01 | App no Intelly Design System: tokens, menu escuro, cards de métrica |
 
 Total: 68 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
 

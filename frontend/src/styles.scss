@@ -1,39 +1,111 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// Tema do app: Intelly Design System (src/design-system/DESIGN_SYSTEM.md) sobre o Angular Material 3.
+// O Material gera suas variáveis --mat-sys-*; logo abaixo elas são apontadas para os tokens do
+// Intelly, então botões, campos, diálogos, abas e listas seguem o design system sem CSS por tela.
 @use '@angular/material' as mat;
+@use 'design-system/tokens.css';
+@use 'design-system/components.css';
 
 html {
   height: 100%;
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$violet-palette,
       ),
-      typography: Roboto,
+      typography: (
+        brand-family: var(--font-sans),
+        plain-family: var(--font-sans),
+      ),
       density: 0,
+    )
+  );
+
+  // Tokens que o design system não cobre (DESIGN_SYSTEM.md, "Não coberto"): status de dinheiro e
+  // erro. Tons escuros para passar 4,5:1 sobre lavender-50 e lavender-100; sobre steel, slate e ink
+  // o sinal (+/−) indica o valor, não a cor.
+  --status-positive: #1d6b3a;
+  --status-negative: #b3261e;
+
+  // Cor
+  --mat-sys-primary: var(--ink);
+  --mat-sys-on-primary: var(--lavender);
+  --mat-sys-primary-container: var(--lavender);
+  --mat-sys-on-primary-container: var(--ink);
+  --mat-sys-inverse-primary: var(--lavender);
+  --mat-sys-secondary: var(--slate);
+  --mat-sys-on-secondary: var(--lavender-50);
+  --mat-sys-secondary-container: var(--lavender);
+  --mat-sys-on-secondary-container: var(--ink);
+  --mat-sys-tertiary: var(--slate);
+  --mat-sys-on-tertiary: var(--lavender-50);
+  --mat-sys-tertiary-container: var(--steel);
+  --mat-sys-on-tertiary-container: var(--ink);
+  --mat-sys-background: var(--bg-page);
+  --mat-sys-on-background: var(--fg-primary);
+  --mat-sys-surface: var(--bg-page);
+  --mat-sys-surface-bright: var(--bg-page);
+  --mat-sys-surface-dim: var(--bg-card);
+  --mat-sys-surface-container-lowest: var(--bg-page);
+  --mat-sys-surface-container-low: var(--bg-card);
+  --mat-sys-surface-container: var(--bg-card);
+  // Diálogos e menus claros sobre a página; campos preenchidos em lavender-100
+  --mat-sys-surface-container-high: var(--bg-page);
+  --mat-sys-surface-container-highest: var(--bg-card);
+  --mat-sys-surface-variant: var(--bg-card);
+  --mat-sys-on-surface: var(--fg-primary);
+  --mat-sys-on-surface-variant: var(--fg-secondary);
+  --mat-sys-inverse-surface: var(--ink);
+  --mat-sys-inverse-on-surface: var(--lavender-50);
+  --mat-sys-outline: var(--border-strong);
+  --mat-sys-outline-variant: var(--border-soft);
+  --mat-sys-error: var(--status-negative);
+  --mat-sys-on-error: var(--lavender-50);
+
+  // Títulos na escala do design system (.heading-1/2/3, peso 600); o Material usa 400
+  --mat-sys-headline-large: 600 32px / 38px var(--font-sans);
+  --mat-sys-headline-medium: 600 28px / 34px var(--font-sans);
+  --mat-sys-headline-small: 600 24px / 30px var(--font-sans);
+  --mat-sys-title-large: 600 20px / 26px var(--font-sans);
+  --mat-sys-title-medium: 600 16px / 22px var(--font-sans);
+  --mat-sys-title-small: 600 14px / 20px var(--font-sans);
+
+  // Plano, sem sombras
+  --mat-sys-level0: none;
+  --mat-sys-level1: none;
+  --mat-sys-level2: none;
+  --mat-sys-level3: none;
+  --mat-sys-level4: none;
+  --mat-sys-level5: none;
+
+  // Raios do design system (pílula nos botões já é o padrão do M3)
+  --mat-sys-corner-small: var(--radius-sm);
+  --mat-sys-corner-medium: var(--radius-md);
+  --mat-sys-corner-large: var(--radius-lg);
+  --mat-sys-corner-large-end: 0 var(--radius-lg) var(--radius-lg) 0;
+  --mat-sys-corner-large-start: var(--radius-lg) 0 0 var(--radius-lg);
+  --mat-sys-corner-large-top: var(--radius-lg) var(--radius-lg) 0 0;
+  --mat-sys-corner-extra-large: var(--radius-xl);
+  --mat-sys-corner-extra-large-top: var(--radius-xl) var(--radius-xl) 0 0;
+
+  // Diálogo com o raio dos cards grandes
+  @include mat.dialog-overrides(
+    (
+      container-shape: var(--radius-xl),
     )
   );
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--bg-page);
+  color: var(--fg-primary);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
   height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+
+// Foco visível em todo controle (DESIGN_SYSTEM.md: --focus-ring, 2px, offset 2px)
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

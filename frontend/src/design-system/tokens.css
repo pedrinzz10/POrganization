@@ -1,0 +1,75 @@
+/* Intelly Design System — tokens. Gerado a partir de tokens.json */
+
+:root,
+[data-theme="light"] {
+  --lavender: #d3d5fd;
+  --steel: #929aab;
+  --slate: #474a56;
+  --ink: #0b0b0d;
+  --lavender-50: #f3f4ff;
+  --lavender-100: #e7e8fe;
+  --ink-800: #18181c;
+  --bg-page: var(--lavender-50);
+  --bg-card: var(--lavender-100);
+  --bg-sidebar: var(--ink);
+  --fg-primary: var(--ink);
+  --fg-secondary: var(--slate);
+  --fg-on-dark: var(--lavender-50);
+  --fg-on-dark-muted: var(--steel);
+  --accent: var(--lavender);
+  --fg-on-accent: var(--ink);
+  --action-bg: var(--ink);
+  --action-fg: var(--lavender);
+  --surface-lavender: var(--lavender);
+  --on-surface-lavender: var(--ink);
+  --surface-steel: var(--steel);
+  --on-surface-steel: var(--ink);
+  --surface-slate: var(--slate);
+  --on-surface-slate: var(--lavender-50);
+  --surface-ink: var(--ink);
+  --on-surface-ink: var(--lavender-50);
+  --border-soft: #929aab66;
+  --border-strong: var(--slate);
+  --focus-ring: var(--ink);
+  --block-ink: var(--ink);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+  --font-sans: "Manrope", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-page: var(--ink);
+  --bg-card: var(--ink-800);
+  --bg-sidebar: var(--ink-800);
+  --fg-primary: var(--lavender-50);
+  --fg-secondary: var(--steel);
+  --action-bg: var(--lavender);
+  --action-fg: var(--ink);
+  --surface-ink: var(--ink-800);
+  --border-soft: #929aab40;
+  --border-strong: var(--steel);
+  --focus-ring: var(--lavender);
+  --block-ink: var(--lavender-50);
+}
+
+/* Estilos de texto */
+.display { font-family: var(--font-sans); font-size: 40px; line-height: 44px; font-weight: 600; letter-spacing: -0.02em; }
+.heading-1 { font-family: var(--font-sans); font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.01em; }
+.heading-2 { font-family: var(--font-sans); font-size: 20px; line-height: 26px; font-weight: 600; }
+.heading-3 { font-family: var(--font-sans); font-size: 16px; line-height: 22px; font-weight: 600; }
+.stat { font-family: var(--font-sans); font-size: 28px; line-height: 32px; font-weight: 700; letter-spacing: -0.01em; }
+.body { font-family: var(--font-sans); font-size: 14px; line-height: 21px; font-weight: 400; }
+.body-strong { font-family: var(--font-sans); font-size: 14px; line-height: 21px; font-weight: 600; }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; }
+.micro { font-family: var(--font-sans); font-size: 10px; line-height: 14px; font-weight: 600; letter-spacing: 0.02em; }

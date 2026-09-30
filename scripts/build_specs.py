@@ -21,6 +21,7 @@ ETAPAS = {
     "4-financas": "Finanças",
     "5-integracoes": "Integrações (lembretes, e-mail e Google Calendar)",
     "6-tarefas": "Tarefas diárias",
+    "7-design": "Design (Intelly Design System)",
 }
 STATUS = ["pendente", "em_andamento", "em_revisao", "concluida", "bloqueada"]
 TIPOS = ["unitario", "integracao", "componente", "e2e"]
