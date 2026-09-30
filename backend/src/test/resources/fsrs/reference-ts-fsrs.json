@@ -1,0 +1,199 @@
+{
+  "generator": "ts-fsrs@5.4.2",
+  "parameters": {
+    "w": [
+      0.212,
+      1.2931,
+      2.3065,
+      8.2956,
+      6.4133,
+      0.8334,
+      3.0194,
+      0.001,
+      1.8722,
+      0.1666,
+      0.796,
+      1.4835,
+      0.0614,
+      0.2629,
+      1.6483,
+      0.6014,
+      1.8729,
+      0.5425,
+      0.0912,
+      0.0658,
+      0.1542
+    ],
+    "requestRetention": 0.9,
+    "maximumInterval": 365,
+    "enableShortTerm": false,
+    "enableFuzz": false
+  },
+  "sequences": [
+    {
+      "name": "spec E05: OK, OK, DIFICIL, FACIL nas datas devidas",
+      "steps": [
+        {
+          "reviewDate": "2026-10-01",
+          "grade": "Good",
+          "state": "Review",
+          "stability": 2.3065,
+          "difficulty": 2.11810397,
+          "scheduledDays": 3,
+          "due": "2026-10-04",
+          "reps": 1
+        },
+        {
+          "reviewDate": "2026-10-04",
+          "grade": "Good",
+          "state": "Review",
+          "stability": 13.82690327,
+          "difficulty": 2.11121424,
+          "scheduledDays": 14,
+          "due": "2026-10-18",
+          "reps": 2
+        },
+        {
+          "reviewDate": "2026-10-18",
+          "grade": "Hard",
+          "state": "Review",
+          "stability": 39.76516891,
+          "difficulty": 4.74828477,
+          "scheduledDays": 40,
+          "due": "2026-11-27",
+          "reps": 3
+        },
+        {
+          "reviewDate": "2026-11-27",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 176.14954286,
+          "difficulty": 2.97863464,
+          "scheduledDays": 176,
+          "due": "2027-05-22",
+          "reps": 4
+        }
+      ]
+    },
+    {
+      "name": "revisoes atrasadas",
+      "steps": [
+        {
+          "reviewDate": "2026-10-01",
+          "grade": "Good",
+          "state": "Review",
+          "stability": 2.3065,
+          "difficulty": 2.11810397,
+          "scheduledDays": 3,
+          "due": "2026-10-04",
+          "reps": 1
+        },
+        {
+          "reviewDate": "2026-10-07",
+          "grade": "Hard",
+          "state": "Review",
+          "stability": 12.88248078,
+          "difficulty": 4.75285849,
+          "scheduledDays": 13,
+          "due": "2026-10-20",
+          "reps": 2
+        },
+        {
+          "reviewDate": "2026-10-30",
+          "grade": "Good",
+          "state": "Review",
+          "stability": 54.53702356,
+          "difficulty": 4.743334,
+          "scheduledDays": 55,
+          "due": "2026-12-24",
+          "reps": 3
+        },
+        {
+          "reviewDate": "2026-12-24",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 232.46175473,
+          "difficulty": 2.97202955,
+          "scheduledDays": 232,
+          "due": "2027-08-13",
+          "reps": 4
+        },
+        {
+          "reviewDate": "2027-09-02",
+          "grade": "Good",
+          "state": "Review",
+          "stability": 661.93586043,
+          "difficulty": 2.96428589,
+          "scheduledDays": 366,
+          "due": "2028-09-02",
+          "reps": 5
+        }
+      ]
+    },
+    {
+      "name": "so faceis",
+      "steps": [
+        {
+          "reviewDate": "2026-10-01",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 8.2956,
+          "difficulty": 1,
+          "scheduledDays": 8,
+          "due": "2026-10-09",
+          "reps": 1
+        },
+        {
+          "reviewDate": "2026-10-09",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 65.62422648,
+          "difficulty": 1,
+          "scheduledDays": 66,
+          "due": "2026-12-14",
+          "reps": 2
+        },
+        {
+          "reviewDate": "2026-12-14",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 396.77501923,
+          "difficulty": 1,
+          "scheduledDays": 365,
+          "due": "2027-12-14",
+          "reps": 3
+        },
+        {
+          "reviewDate": "2027-12-14",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 1787.95005331,
+          "difficulty": 1,
+          "scheduledDays": 367,
+          "due": "2028-12-15",
+          "reps": 4
+        },
+        {
+          "reviewDate": "2028-12-15",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 3191.03154811,
+          "difficulty": 1,
+          "scheduledDays": 367,
+          "due": "2029-12-17",
+          "reps": 5
+        },
+        {
+          "reviewDate": "2029-12-17",
+          "grade": "Easy",
+          "state": "Review",
+          "stability": 4517.62749827,
+          "difficulty": 1,
+          "scheduledDays": 367,
+          "due": "2030-12-19",
+          "reps": 6
+        }
+      ]
+    }
+  ]
+}

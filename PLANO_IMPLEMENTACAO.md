@@ -640,7 +640,7 @@ Regras:
     "story": "Como Pedro, quero que as revisões sejam agendadas por um algoritmo de repetição espaçada confiável.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/fsrs/Fsrs.java", "backend/src/main/java/com/porganization/studies/fsrs/FsrsParameters.java", "backend/src/main/java/com/porganization/studies/fsrs/FsrsCard.java", "backend/src/main/java/com/porganization/studies/fsrs/ReviewGrade.java"],
     "dependencias": [],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Os resultados batem com a implementação de referência (py-fsrs ou ts-fsrs) para a mesma sequência de notas e datas." },
       { "id": "CA2", "descricao": "Para o mesmo estado, o intervalo de FACIL > OK > DIFICIL." },
