@@ -12,6 +12,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { provideLocale } from './core/locale';
+import { ThemeService } from './core/theme/theme.service';
 
 // Tudo que o app precisa é declarado aqui, num único lugar, sem NgModule
 export const appConfig: ApplicationConfig = {
@@ -28,6 +29,10 @@ export const appConfig: ApplicationConfig = {
     // <mat-icon> usa a fonte Material Symbols carregada no index.html
     provideAppInitializer(() => {
       inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-outlined');
+    }),
+    // Aplica o tema claro/escuro escolhido antes da primeira tela
+    provideAppInitializer(() => {
+      inject(ThemeService);
     }),
   ],
 };

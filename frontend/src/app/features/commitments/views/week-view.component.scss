@@ -1,7 +1,7 @@
 .week {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: var(--space-2);
 }
 
 // No celular, os dias ficam um embaixo do outro
@@ -12,44 +12,90 @@
 }
 
 .week__day {
-  min-height: 120px;
-  padding: 8px;
-  border-radius: 8px;
-  background: var(--mat-sys-surface-container-low);
-}
-
-.week__day--today {
-  outline: 2px solid var(--mat-sys-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .week__header {
-  margin: 0 0 8px;
-  font: var(--mat-sys-title-small);
-  text-transform: capitalize;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--fg-primary);
 }
 
+.week__day--today .week__header {
+  background: var(--action-bg);
+  color: var(--action-fg);
+}
+
+.week__weekday {
+  font: 600 11px/14px var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.week__date {
+  font: 600 14px/18px var(--font-sans);
+}
+
+.week__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 96px;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
+// Card de evento (.ds-event): lavender com horário, steel o dia todo
 .week__item {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   width: 100%;
-  font: var(--mat-sys-body-small);
-  padding: 2px 0;
-  color: inherit;
-  background: none;
-  border: none;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-lavender);
+  color: var(--on-surface-lavender);
   text-align: left;
   cursor: pointer;
 }
 
-.week__item.done {
-  text-decoration: line-through;
-  color: var(--mat-sys-on-surface-variant);
+.week__item--dia-todo {
+  background: var(--surface-steel);
+  color: var(--on-surface-steel);
 }
 
-.week__time {
-  font-weight: 600;
-  margin-right: 4px;
+.week__item.done {
+  background: var(--bg-page);
+  color: var(--fg-secondary);
+}
+
+.week__item.done .week__title {
+  text-decoration: line-through;
+}
+
+.week__title {
+  font: 600 13px/18px var(--font-sans);
+  overflow-wrap: anywhere;
+}
+
+.week__time,
+.week__local {
+  font: 500 11px/15px var(--font-sans);
 }
 
 .week__empty {
-  color: var(--mat-sys-on-surface-variant);
+  padding: var(--space-2);
+  color: var(--fg-secondary);
+  text-align: center;
 }

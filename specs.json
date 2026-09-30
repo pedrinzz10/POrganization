@@ -149,7 +149,7 @@
     }
   ],
   "total_specs": 70,
-  "total_criterios": 196,
+  "total_criterios": 197,
   "specs": [
     {
       "id": "B01",
@@ -3788,15 +3788,20 @@
     {
       "id": "U01",
       "etapa": "7-design",
-      "titulo": "Tema Intelly: tokens, menu escuro e cards de métrica",
-      "acao": "Trazer o Intelly Design System para frontend/src/design-system (tokens.css, components.css, DESIGN_SYSTEM.md); apontar as variáveis --mat-sys-* do Angular Material para os tokens (cores, raios, títulos em peso 600, sem sombras) e trocar a fonte para Manrope; menu lateral escuro e arredondado como a .ds-sidenav; cards de métrica do Resumo de finanças com as superfícies lavender/ink/steel/slate e as formas decorativas; saudação pelo horário na tela Hoje. Tokens extras para o que o design system não cobre: --status-positive e --status-negative.",
+      "titulo": "Visual Intelly: tema, tela Hoje, agenda semanal, gráficos e tema escuro",
+      "acao": "Trazer o Intelly Design System para frontend/src/design-system (tokens.css, components.css, DESIGN_SYSTEM.md); apontar as variáveis --mat-sys-* do Angular Material para os tokens (cores, raios, títulos em peso 600, sem sombras) e trocar a fonte para Manrope; menu lateral escuro e arredondado como a .ds-sidenav; cards de métrica do Resumo de finanças com as superfícies lavender/ink/steel/slate e as formas decorativas; saudação pelo horário na tela Hoje. Tokens extras para o que o design system não cobre: --status-positive e --status-negative. Tela Hoje no layout do painel do Intelly: cards de métrica no topo (compromissos, revisões, gasto de hoje, previsto), seções em cards e coluna da direita com mini calendário e linha do tempo do dia. Aba Semana de Compromissos com o dia em pílula (hoje em ink) e cada ocorrência num card (lavender com horário, steel o dia todo). Gráficos do Resumo com cores e fonte dos tokens, redesenhados ao trocar o tema. Tema escuro do design system com a escolha Claro/Escuro/Sistema em Configurações > Aparência, guardada no aparelho.",
       "story": "Como Pedro, quero o app com a cara do meu design system, sem perder nada do que já funciona.",
       "arquivos": [
         "frontend/src/styles.scss",
         "frontend/src/design-system/tokens.css",
         "frontend/src/app/layout/shell/shell.component.scss",
         "frontend/src/app/features/finance/dashboard/finance-dashboard.page.html",
-        "frontend/src/app/features/today/today.page.ts"
+        "frontend/src/app/features/today/today.page.ts",
+        "frontend/src/app/features/today/sections/today-agenda.component.ts",
+        "frontend/src/app/features/commitments/views/week-view.component.ts",
+        "frontend/src/app/features/finance/dashboard/charts/chart-theme.ts",
+        "frontend/src/app/core/theme/theme.service.ts",
+        "frontend/src/app/features/settings/appearance.component.ts"
       ],
       "dependencias": [],
       "status": "em_revisao",
@@ -3812,6 +3817,10 @@
         {
           "id": "CA3",
           "descricao": "Nos cards de métrica o valor fica numa linha e nunca sobre a forma decorativa; valores negativos são indicados pelo sinal, não pela cor, sobre steel, slate e ink."
+        },
+        {
+          "id": "CA4",
+          "descricao": "Escolher 'Escuro' em Configurações > Aparência troca o app na hora (tokens do tema escuro do design system, gráficos inclusive) e a escolha continua ao reabrir neste aparelho."
         }
       ],
       "testes_dos_criterios": [
@@ -3835,6 +3844,13 @@
           "tipo": "e2e",
           "arquivo": "frontend/e2e/finance-dashboard.spec.ts",
           "cenario": "O Resumo mostra 'R$ 4.550,00' e desenha os gráficos sem erro no console com o tema novo."
+        },
+        {
+          "id": "T4",
+          "criterio": "CA4",
+          "tipo": "unitario",
+          "arquivo": "frontend/src/app/core/theme/theme.service.spec.ts",
+          "cenario": "Começa claro com data-theme='light'; set('dark') grava data-theme='dark' e o localStorage; com 'dark' guardado, abre escuro."
         }
       ]
     }

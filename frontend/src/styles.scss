@@ -27,17 +27,18 @@ html {
   --status-negative: #b3261e;
 
   // Cor
-  --mat-sys-primary: var(--ink);
-  --mat-sys-on-primary: var(--lavender);
+  // Pelos tokens semânticos, que trocam no tema escuro (primária ink no claro, lavender no escuro)
+  --mat-sys-primary: var(--action-bg);
+  --mat-sys-on-primary: var(--action-fg);
   --mat-sys-primary-container: var(--lavender);
   --mat-sys-on-primary-container: var(--ink);
-  --mat-sys-inverse-primary: var(--lavender);
-  --mat-sys-secondary: var(--slate);
-  --mat-sys-on-secondary: var(--lavender-50);
+  --mat-sys-inverse-primary: var(--action-fg);
+  --mat-sys-secondary: var(--fg-secondary);
+  --mat-sys-on-secondary: var(--bg-page);
   --mat-sys-secondary-container: var(--lavender);
   --mat-sys-on-secondary-container: var(--ink);
-  --mat-sys-tertiary: var(--slate);
-  --mat-sys-on-tertiary: var(--lavender-50);
+  --mat-sys-tertiary: var(--fg-secondary);
+  --mat-sys-on-tertiary: var(--bg-page);
   --mat-sys-tertiary-container: var(--steel);
   --mat-sys-on-tertiary-container: var(--ink);
   --mat-sys-background: var(--bg-page);
@@ -54,12 +55,12 @@ html {
   --mat-sys-surface-variant: var(--bg-card);
   --mat-sys-on-surface: var(--fg-primary);
   --mat-sys-on-surface-variant: var(--fg-secondary);
-  --mat-sys-inverse-surface: var(--ink);
-  --mat-sys-inverse-on-surface: var(--lavender-50);
+  --mat-sys-inverse-surface: var(--fg-primary);
+  --mat-sys-inverse-on-surface: var(--bg-page);
   --mat-sys-outline: var(--border-strong);
   --mat-sys-outline-variant: var(--border-soft);
   --mat-sys-error: var(--status-negative);
-  --mat-sys-on-error: var(--lavender-50);
+  --mat-sys-on-error: var(--bg-page);
 
   // Títulos na escala do design system (.heading-1/2/3, peso 600); o Material usa 400
   --mat-sys-headline-large: 600 32px / 38px var(--font-sans);
@@ -95,8 +96,15 @@ html {
   );
 }
 
+// Tema escuro (ThemeService grava data-theme no <html>): os tokens do design system já trocam em
+// tokens.css; aqui só o que é deste app. Status mais claros para passar contraste sobre ink.
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --status-positive: #7bd19a;
+  --status-negative: #ffb4ab;
+}
+
 body {
-  color-scheme: light;
   background-color: var(--bg-page);
   color: var(--fg-primary);
   font: var(--mat-sys-body-medium);
