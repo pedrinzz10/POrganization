@@ -39,3 +39,6 @@ porganization:
   cors:
     # Separe várias origens por vírgula
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}
+  cron:
+    # Header X-Cron-Secret dos endpoints /internal/**; vazio = sempre 401
+    secret: ${CRON_SECRET:}

@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 public abstract class IntegrationTest {
 
     public static final String FRONTEND_ORIGIN = "http://localhost:4200";
+    public static final String CRON_SECRET = "segredo-do-cron-de-teste";
 
     @Autowired
     protected MockMvc mockMvc;
@@ -52,6 +53,7 @@ public abstract class IntegrationTest {
         registry.add("SUPABASE_JWKS_URI", TestJwks::jwksUri);
         registry.add("SUPABASE_ISSUER", () -> TestJwks.ISSUER);
         registry.add("FRONTEND_ORIGIN", () -> FRONTEND_ORIGIN);
+        registry.add("CRON_SECRET", () -> CRON_SECRET);
         // Jobs agendados não rodam nos testes; os testes chamam o job direto quando precisam
         registry.add("app.jobs.enabled", () -> "false");
     }
