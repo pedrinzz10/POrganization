@@ -165,7 +165,7 @@ Regras:
     "story": "Como Pedro, quero que só eu, logado pelo Supabase, acesse meus dados pela API.",
     "arquivos": ["backend/src/main/java/com/porganization/security/SecurityConfig.java", "backend/src/main/java/com/porganization/security/CurrentUser.java", "backend/src/main/java/com/porganization/security/CurrentUserArgumentResolver.java", "backend/src/main/java/com/porganization/security/MeController.java", "backend/src/main/resources/application.yml", ".env.example"],
     "dependencias": ["B03"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Requisição sem token ou com token inválido/expirado em /api/** responde 401." },
       { "id": "CA2", "descricao": "Com token válido, GET /api/me devolve o userId igual ao sub do token." },
@@ -189,7 +189,7 @@ Regras:
     "story": "Como Pedro, quero erros previsíveis da API para o frontend mostrar mensagens claras.",
     "arquivos": ["backend/src/main/java/com/porganization/common/GlobalExceptionHandler.java", "backend/src/main/java/com/porganization/common/NotFoundException.java"],
     "dependencias": ["B04"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Body inválido em qualquer endpoint devolve 400 com errors[{field,message}]." },
       { "id": "CA2", "descricao": "NotFoundException vira 404 com title 'Não encontrado'." },
