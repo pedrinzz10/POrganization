@@ -1,0 +1,37 @@
+.titulo {
+  font: var(--mat-sys-headline-medium);
+  margin: 8px 0 16px;
+}
+
+.painel {
+  padding: 16px 0;
+}
+
+.painel__nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.painel__titulo {
+  font: var(--mat-sys-title-medium);
+  margin: 0 0 8px;
+}
+
+// "quarta-feira, 30 de setembro" -> "Quarta-feira, 30 de setembro" (capitalize poria "De")
+.painel__titulo::first-letter {
+  text-transform: uppercase;
+}
+
+.painel__nav .painel__titulo {
+  margin: 0;
+}
+
+.painel__erro {
+  color: var(--mat-sys-error);
+}
+
+.painel__aviso {
+  color: var(--mat-sys-on-surface-variant);
+}
