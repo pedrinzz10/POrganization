@@ -563,7 +563,7 @@ Regras:
     "story": "Como Pedro, quero cadastrar matérias como 'Java Advanced' com tags como 'faculdade' ou 'línguas'.",
     "arquivos": ["backend/src/main/resources/db/migration/V4__subjects_tags.sql", "backend/src/main/java/com/porganization/studies/Subject.java", "backend/src/main/java/com/porganization/studies/Tag.java", "backend/src/main/java/com/porganization/studies/SubjectRepository.java", "backend/src/main/java/com/porganization/studies/TagRepository.java"],
     "dependencias": ["B05"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Nome de tag é único por usuário, sem diferenciar maiúsculas." },
       { "id": "CA2", "descricao": "sessions_per_week aceita 0 a 21 e lesson_minutes 5 a 240 (check constraints)." }
