@@ -1751,7 +1751,7 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
       "T03"
     ],
     "conceito_angular": "Controle de formulário composto: os dias da semana são um FormControl<WeekDay[]> editado por um grupo de toggles (mat-button-toggle-group múltiplo), com validação de 'pelo menos um dia'.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       {
         "id": "CA1",

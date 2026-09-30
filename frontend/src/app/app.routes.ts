@@ -31,6 +31,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/commitments/commitments.page').then((m) => m.CommitmentsPage),
       },
       {
+        path: 'tarefas',
+        title: 'Tarefas · POrganization',
+        loadComponent: () => import('./features/tasks/tasks.page').then((m) => m.TasksPage),
+      },
+      {
         path: 'estudos',
         title: 'Estudos · POrganization',
         loadComponent: () => import('./features/studies/studies.page').then((m) => m.StudiesPage),
