@@ -10,7 +10,7 @@ Organizador pessoal que reúne **compromissos**, **estudos** e **finanças** em 
 
 | Área | O que faz | Etapa |
 |---|---|---|
-| Base | Login com Supabase, layout responsivo, CI e deploy | 1 ✅ |
+| Base | Login com Supabase, layout responsivo, CI e deploy | 1 ✅ (falta publicar: ver [Deploy](#deploy)) |
 | Compromissos | Criação rápida (título, dia e hora), recorrência, visões de dia, semana, mês e ano | 2 |
 | Estudos | Matérias com tags e prioridade, timer, revisões em mini aulas agendadas por repetição espaçada (FSRS) | 3 |
 | Finanças | Contas, transações, cartão com fatura e parcelas, fixos, orçamentos com alerta, metas e dashboard | 4 |
@@ -63,7 +63,7 @@ bash scripts/setup-dev.sh
 cd backend
 ./mvnw spring-boot:test-run
 
-# 3. Em outro terminal: frontend em http://localhost:4200
+# 3. Em outro terminal, a partir da raiz do repositório: frontend em http://localhost:4200
 cd frontend
 npm ci
 npm start
