@@ -32,9 +32,14 @@ export const FINANCE_ROUTES: Routes = [
     loadComponent: () => import('./cards/statement.page').then((m) => m.StatementPage),
   },
   {
+    // Os antigos "fixos": link antigo continua funcionando
     path: 'fixos',
-    title: 'Fixos · Finanças · POrganization',
-    loadComponent: () => import('./recurring/recurring.page').then((m) => m.RecurringPage),
+    redirectTo: 'agendados',
+  },
+  {
+    path: 'agendados',
+    title: 'Agendados · Finanças · POrganization',
+    loadComponent: () => import('./recurring/scheduled.page').then((m) => m.ScheduledPage),
   },
   {
     path: 'orcamentos',

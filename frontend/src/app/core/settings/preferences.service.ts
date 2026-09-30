@@ -14,6 +14,8 @@ export interface Preferences {
   defaultReminderMinutes: number | null;
   /** Horário do resumo diário ("07:00"); null = sem resumo. */
   digestTime: string | null;
+  /** Horário do aviso dos agendados para confirmar; null = desligado. */
+  scheduledNoticeTime: string | null;
 }
 
 export type PreferencesRequest = Omit<Preferences, 'email'>;

@@ -1282,7 +1282,7 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
       "I04"
     ],
     "conceito_angular": "Formulário dinâmico: os campos da regra de data mudam conforme o tipo escolhido (dia do mês + ajuste, ou N-ésimo dia útil), com validadores trocados em tempo de execução e a próxima data calculada num computed().",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       {
         "id": "CA1",
@@ -1303,7 +1303,7 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
         "criterio": "CA1",
         "tipo": "componente",
         "arquivo": "frontend/src/app/features/finance/recurring/recurring-form.dialog.spec.ts",
-        "cenario": "Escolher 'N-ésimo dia útil' com N=5 mostra o campo N e esconde o dia do mês; o POST leva {rule: 'DIA_UTIL', n: 5}."
+        "cenario": "Escolher 'N-ésimo dia útil' com N=5 mostra o campo N e esconde o dia do mês; o POST leva {ruleType: 'BUSINESS_DAY', businessDay: 5}."
       },
       {
         "id": "T2",

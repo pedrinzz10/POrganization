@@ -39,14 +39,17 @@ public class SettingsController {
      * @param digestTime             horário do resumo diário; null = sem resumo
      */
     public record SettingsResponse(String email, String timezone, Set<ChannelType> channels, Integer defaultReminderMinutes,
-            @JsonFormat(pattern = "HH:mm") LocalTime digestTime) {
+            @JsonFormat(pattern = "HH:mm") LocalTime digestTime,
+            @JsonFormat(pattern = "HH:mm") LocalTime scheduledNoticeTime) {
     }
 
     public record SettingsRequest(
             @NotBlank String timezone,
             @NotEmpty Set<ChannelType> channels,
             @Min(0) @Max(40320) Integer defaultReminderMinutes,
-            @JsonFormat(pattern = "HH:mm") LocalTime digestTime) {
+            @JsonFormat(pattern = "HH:mm") LocalTime digestTime,
+            // Aviso diário dos agendados para confirmar; null = desligado
+            @JsonFormat(pattern = "HH:mm") LocalTime scheduledNoticeTime) {
     }
 
     @GetMapping
@@ -66,12 +69,14 @@ public class SettingsController {
         settings.setTimezone(request.timezone());
         settings.setNotifications(request.channels().stream().map(Enum::name).sorted().toList(),
                 request.defaultReminderMinutes(), request.digestTime());
+        settings.setScheduledNoticeTime(request.scheduledNoticeTime());
         return toResponse(settings);
     }
 
     private static SettingsResponse toResponse(UserSettings s) {
         Set<ChannelType> channels = EnumSet.noneOf(ChannelType.class);
         s.getNotifyChannels().forEach(c -> channels.add(ChannelType.valueOf(c)));
-        return new SettingsResponse(s.getEmail(), s.getTimezone(), channels, s.getDefaultReminderMinutes(), s.getDigestTime());
+        return new SettingsResponse(s.getEmail(), s.getTimezone(), channels, s.getDefaultReminderMinutes(), s.getDigestTime(),
+                s.getScheduledNoticeTime());
     }
 }

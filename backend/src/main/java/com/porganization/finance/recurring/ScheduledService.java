@@ -86,9 +86,21 @@ public class ScheduledService {
         return result;
     }
 
+    /** Para confirmar hoje e atrasadas (de qualquer mês), sem gerar nada: leitura para a tela Hoje e o aviso. */
+    @Transactional(readOnly = true)
+    public List<Occurrence> pending(UUID userId) {
+        LocalDate today = today(userId);
+        Map<UUID, RecurringTransaction> rules = rules(userId);
+        Map<UUID, String> accountNames = accountNames(userId);
+        return transactions.findByUserIdAndRecurringIdIsNotNullAndAccountIdIsNotNullAndPaidFalseAndDateLessThanEqualOrderByDateAsc(
+                        userId, today).stream()
+                .map(t -> toOccurrence(t, rules.get(t.getRecurringId()), accountNames, today))
+                .toList();
+    }
+
     @Transactional
     public Occurrence confirm(UUID userId, UUID id, ConfirmRequest request) {
-        Transaction t = pending(userId, id);
+        Transaction t = openOccurrence(userId, id);
         LocalDate today = today(userId);
         LocalDate date = request.date() != null ? request.date() : today;
         if (date.isAfter(today)) {
@@ -104,7 +116,7 @@ public class ScheduledService {
 
     @Transactional
     public RescheduleResponse reschedule(UUID userId, UUID id, LocalDate newDate) {
-        Transaction t = pending(userId, id);
+        Transaction t = openOccurrence(userId, id);
         LocalDate today = today(userId);
         if (!newDate.isAfter(today)) {
             throw new InvalidRequestException("date", "a nova data tem que ser a partir de amanhã");
@@ -125,7 +137,7 @@ public class ScheduledService {
     /** "Não vou receber/pagar este mês": o lançamento sai (de saldo, extrato e totais) e o mês fica marcado. */
     @Transactional
     public void skip(UUID userId, UUID id) {
-        Transaction t = pending(userId, id);
+        Transaction t = openOccurrence(userId, id);
         jdbc.update("""
                 update recurring_generations set skipped = true, skipped_transaction_id = ?
                 where recurring_id = ? and month = ?
@@ -134,7 +146,7 @@ public class ScheduledService {
     }
 
     /** A ocorrência ainda em aberto: já confirmada ou cancelada → 409; não é ocorrência de agendado → 404. */
-    private Transaction pending(UUID userId, UUID id) {
+    private Transaction openOccurrence(UUID userId, UUID id) {
         Optional<Transaction> found = transactions.findByIdAndUserId(id, userId)
                 .filter(t -> t.getRecurringId() != null && t.getAccountId() != null);
         if (found.isEmpty()) {

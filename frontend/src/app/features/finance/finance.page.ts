@@ -8,7 +8,7 @@ export const FINANCE_TABS = [
   { label: 'Extrato', path: 'extrato' },
   { label: 'Contas', path: 'contas' },
   { label: 'Cartões', path: 'cartoes' },
-  { label: 'Fixos', path: 'fixos' },
+  { label: 'Agendados', path: 'agendados' },
   { label: 'Orçamentos', path: 'orcamentos' },
   { label: 'Metas', path: 'metas' },
 ];

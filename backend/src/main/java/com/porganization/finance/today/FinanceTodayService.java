@@ -10,6 +10,7 @@ import com.porganization.finance.categories.Category;
 import com.porganization.finance.categories.CategoryRepository;
 import com.porganization.finance.today.FinanceToday.DueItem;
 import com.porganization.finance.today.FinanceToday.DueKind;
+import com.porganization.finance.recurring.ScheduledService;
 import com.porganization.finance.transactions.Transaction;
 import com.porganization.finance.transactions.TransactionRepository;
 import com.porganization.finance.transactions.TransactionType;
@@ -38,14 +39,16 @@ public class FinanceTodayService {
     private final TransactionRepository transactions;
     private final CategoryRepository categories;
     private final BudgetService budgets;
+    private final ScheduledService scheduled;
 
     public FinanceTodayService(CardStatementRepository statements, CreditCardRepository cards,
-            TransactionRepository transactions, CategoryRepository categories, BudgetService budgets) {
+            TransactionRepository transactions, CategoryRepository categories, BudgetService budgets, ScheduledService scheduled) {
         this.statements = statements;
         this.cards = cards;
         this.transactions = transactions;
         this.categories = categories;
         this.budgets = budgets;
+        this.scheduled = scheduled;
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +56,8 @@ public class FinanceTodayService {
         return new FinanceToday(
                 dueSoon(userId, today),
                 budgets.status(userId, YearMonth.from(today)).stream().filter(b -> b.level() != BudgetLevel.OK).toList(),
-                transactions.totalOf(userId, TransactionType.EXPENSE, today, today));
+                transactions.totalOf(userId, TransactionType.EXPENSE, today, today),
+                scheduled.pending(userId));
     }
 
     private List<DueItem> dueSoon(UUID userId, LocalDate today) {
@@ -77,6 +81,10 @@ public class FinanceTodayService {
                 .collect(Collectors.toMap(Category::getId, Function.identity()));
         for (Transaction t : transactions.findByUserIdAndTypeAndPaidFalseAndAccountIdIsNotNullAndDateBetweenOrderByDateAsc(
                 userId, TransactionType.EXPENSE, today, until)) {
+            if (t.getRecurringId() != null && !t.getDate().isAfter(today)) {
+                // Agendado de hoje já aparece em "para confirmar"
+                continue;
+            }
             String title = t.getDescription() != null ? t.getDescription()
                     : byId.containsKey(t.getCategoryId()) ? byId.get(t.getCategoryId()).getName() : "Conta a pagar";
             items.add(new DueItem(DueKind.BILL, t.getId(), title, t.getDate(), t.getAmount(), null, null));

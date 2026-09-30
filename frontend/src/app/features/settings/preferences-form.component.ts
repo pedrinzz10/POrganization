@@ -64,6 +64,12 @@ const FUSOS = [
         <mat-hint>Compromissos, revisões e contas do dia. Vazio = sem resumo</mat-hint>
       </mat-form-field>
 
+      <mat-form-field>
+        <mat-label>Aviso dos agendados às</mat-label>
+        <input matInput type="time" formControlName="scheduledNoticeTime" />
+        <mat-hint>Recebimentos e pagamentos para confirmar no dia. Vazio = sem aviso</mat-hint>
+      </mat-form-field>
+
       @if (erro(); as mensagem) {
         <p class="erro" role="alert">{{ mensagem }}</p>
       }
@@ -114,6 +120,7 @@ export class PreferencesFormComponent {
     email: [false],
     defaultReminderMinutes: [null as number | null],
     digestTime: [''],
+    scheduledNoticeTime: [''],
   });
 
   constructor() {
@@ -140,6 +147,7 @@ export class PreferencesFormComponent {
           channels,
           defaultReminderMinutes: v.defaultReminderMinutes,
           digestTime: v.digestTime || null,
+          scheduledNoticeTime: v.scheduledNoticeTime || null,
         }),
       );
       this.salvo.set(true);
@@ -160,6 +168,7 @@ export class PreferencesFormComponent {
       email: p.channels.includes('EMAIL'),
       defaultReminderMinutes: p.defaultReminderMinutes,
       digestTime: p.digestTime ?? '',
+      scheduledNoticeTime: p.scheduledNoticeTime ?? '',
     });
   }
 }

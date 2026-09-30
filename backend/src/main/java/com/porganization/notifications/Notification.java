@@ -11,6 +11,8 @@ public record Notification(UUID userId, Kind kind, String subject, List<String> 
 
     public enum Kind {
         REMINDER,
-        DAILY_DIGEST
+        DAILY_DIGEST,
+        /** Agendados para confirmar hoje (F20). */
+        SCHEDULED_NOTICE
     }
 }
