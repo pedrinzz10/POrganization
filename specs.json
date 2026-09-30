@@ -477,7 +477,7 @@
       "dependencias": [
         "B04"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -536,7 +536,7 @@
         "B01"
       ],
       "conceito_angular": "Standalone components e app.config.ts: o app é montado por providers (roteador, HttpClient, locale) declarados num único lugar, sem NgModule.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

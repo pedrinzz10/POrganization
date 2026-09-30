@@ -13,6 +13,9 @@ node_modules/
 dist/
 .angular/
 coverage/
+out-tsc/
+.sass-cache/
+__screenshots__/
 test-results/
 playwright-report/
 playwright/.cache/
@@ -23,8 +26,8 @@ npm-debug.log*
 *.iml
 *.iws
 *.ipr
-.vscode/*
-!.vscode/extensions.json
+**/.vscode/*
+!**/.vscode/extensions.json
 .settings/
 .project
 .classpath

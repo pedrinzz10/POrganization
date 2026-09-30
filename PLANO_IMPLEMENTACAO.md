@@ -189,7 +189,7 @@ Regras:
     "story": "Como Pedro, quero erros previsíveis da API para o frontend mostrar mensagens claras.",
     "arquivos": ["backend/src/main/java/com/porganization/common/GlobalExceptionHandler.java", "backend/src/main/java/com/porganization/common/NotFoundException.java"],
     "dependencias": ["B04"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Body inválido em qualquer endpoint devolve 400 com errors[{field,message}]." },
       { "id": "CA2", "descricao": "NotFoundException vira 404 com title 'Não encontrado'." },
@@ -210,7 +210,7 @@ Regras:
     "arquivos": ["frontend/package.json", "frontend/angular.json", "frontend/src/main.ts", "frontend/src/app/app.config.ts", "frontend/src/app/app.routes.ts", "frontend/src/app/app.component.ts", "frontend/src/environments/environment.ts", "frontend/src/environments/environment.development.ts"],
     "dependencias": ["B01"],
     "conceito_angular": "Standalone components e app.config.ts: o app é montado por providers (roteador, HttpClient, locale) declarados num único lugar, sem NgModule.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "`npm start` sobe o app e `npm test` e `npm run build` passam." },
       { "id": "CA2", "descricao": "O pipe currency formata 1234.5 como 'R$ 1.234,50' (locale pt-BR ativo)." }
