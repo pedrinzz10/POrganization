@@ -4,6 +4,7 @@ import com.porganization.common.ConflictException;
 import com.porganization.common.NotFoundException;
 import com.porganization.finance.accounts.AccountDtos.AccountRequest;
 import com.porganization.finance.accounts.AccountDtos.AccountResponse;
+import com.porganization.finance.transactions.TransactionRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -15,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountService {
 
     private final AccountRepository accounts;
+    private final TransactionRepository transactions;
 
-    public AccountService(AccountRepository accounts) {
+    public AccountService(AccountRepository accounts, TransactionRepository transactions) {
         this.accounts = accounts;
+        this.transactions = transactions;
     }
 
     @Transactional(readOnly = true)
@@ -73,8 +76,8 @@ public class AccountService {
         return new AccountResponse(a.getId(), a.getName(), a.getType(), a.getInitialBalance(), balanceOf(a), a.isArchived());
     }
 
-    /** Saldo atual = saldo inicial + transações efetivadas. As transações chegam na F03. */
-    BigDecimal balanceOf(Account account) {
-        return account.getInitialBalance();
+    /** Saldo atual = saldo inicial + rendas pagas - gastos pagos. */
+    public BigDecimal balanceOf(Account account) {
+        return account.getInitialBalance().add(transactions.paidMovement(account.getUserId(), account.getId()));
     }
 }
