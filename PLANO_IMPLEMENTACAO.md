@@ -660,7 +660,7 @@ Regras:
     "story": "Como Pedro, quero iniciar, pausar e concluir um estudo com timer e não perder o tempo se fechar a aba.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/StudySessionController.java", "backend/src/main/java/com/porganization/studies/StudySessionService.java", "backend/src/main/java/com/porganization/studies/dto/FinishLessonRequest.java"],
     "dependencias": ["E04"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Pausar e retomar acumula paused_seconds corretamente." },
       { "id": "CA2", "descricao": "Iniciar com outra sessão ativa responde 409." },
