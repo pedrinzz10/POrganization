@@ -332,7 +332,7 @@ Regras:
     "story": "Como Pedro, quero um README de portfólio que explique o projeto e deixe qualquer pessoa rodá-lo.",
     "arquivos": ["README.md", "docs/arquitetura.md"],
     "dependencias": ["B11"],
-    "status": "pendente",
+    "status": "em_andamento",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Seguindo só o README, em máquina nova, backend e frontend sobem localmente." },
       { "id": "CA2", "descricao": "O README lista todas as variáveis de ambiente usadas no código." }
