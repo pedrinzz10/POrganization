@@ -1,0 +1,47 @@
+<section class="timer" [class.finished]="terminouTempo()" [class.pausado]="!rodando()" aria-label="Sessão de estudo">
+  <p class="timer__materia">
+    {{ revisao() ? 'Revisão' : 'Aula' }} · <strong>{{ atual().subjectName }}</strong>
+  </p>
+  <p class="timer__tempo" role="timer" aria-live="off">{{ tempo() }}</p>
+  <mat-progress-bar mode="determinate" [value]="progresso()" />
+  @if (terminouTempo()) {
+    <p class="timer__aviso" role="status">Tempo sugerido concluído. Termine quando quiser.</p>
+  } @else if (!rodando()) {
+    <p class="timer__aviso" role="status">Pausado</p>
+  }
+
+  <div class="timer__acoes">
+    @if (rodando()) {
+      <button mat-stroked-button type="button" [disabled]="ocupado()" (click)="pausar()">Pausar</button>
+    } @else {
+      <button mat-stroked-button type="button" [disabled]="ocupado()" (click)="retomar()">Retomar</button>
+    }
+    @if (!revisao() && !concluindo()) {
+      <button mat-flat-button type="button" [disabled]="ocupado()" (click)="concluindo.set(true)">Concluir</button>
+    }
+    <button mat-button type="button" class="timer__abandonar" [disabled]="ocupado()" (click)="abandonar()">Abandonar</button>
+  </div>
+
+  @if (revisao()) {
+    <app-grade-buttons [disabled]="ocupado()" (graded)="avaliar($event)" />
+  } @else if (concluindo()) {
+    <form class="timer__aula" [formGroup]="aula" (ngSubmit)="salvarAula()">
+      <mat-form-field>
+        <mat-label>O que você estudou?</mat-label>
+        <input matInput formControlName="title" placeholder="Ex.: Streams" required />
+        @if (aula.controls.title.invalid && aula.controls.title.touched) {
+          <mat-error>Dê um título para a aula.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Notas</mat-label>
+        <textarea matInput rows="3" formControlName="notes"></textarea>
+      </mat-form-field>
+      <button mat-flat-button type="submit" [disabled]="ocupado()">Salvar aula</button>
+    </form>
+  }
+
+  @if (erro(); as mensagem) {
+    <p class="timer__erro" role="alert">{{ mensagem }}</p>
+  }
+</section>

@@ -1825,7 +1825,7 @@
         "E03"
       ],
       "conceito_angular": "Timer com signals e effect(): um signal guarda o tempo restante, atualizado por um intervalo que é limpo no DestroyRef quando o componente sai da tela.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

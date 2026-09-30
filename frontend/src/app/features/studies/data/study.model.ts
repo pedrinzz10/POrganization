@@ -39,3 +39,57 @@ export function toSubjectRequest(subject: Subject, changes: Partial<SubjectReque
     ...changes,
   };
 }
+
+export type SessionType = 'LESSON' | 'REVIEW';
+export type SessionStatus = 'RUNNING' | 'PAUSED' | 'FINISHED' | 'ABANDONED';
+export type ReviewGrade = 'DIFICIL' | 'OK' | 'FACIL';
+
+/** Sessão do timer, como a API devolve (elapsedSeconds já desconta as pausas). */
+export interface StudySession {
+  id: string;
+  subjectId: string;
+  subjectName: string;
+  lessonId: string | null;
+  type: SessionType;
+  status: SessionStatus;
+  startedAt: string;
+  endedAt: string | null;
+  pausedSeconds: number;
+  pausedAt: string | null;
+  elapsedSeconds: number;
+  plannedMinutes: number;
+}
+
+/** Corpo do finish: título e notas para aula; nota para revisão. */
+export interface FinishSessionRequest {
+  title?: string;
+  notes?: string;
+  grade?: ReviewGrade;
+}
+
+export interface ReviewSuggestion {
+  lessonId: string;
+  subjectId: string;
+  subjectName: string;
+  lessonTitle: string;
+  dueDate: string;
+  daysOverdue: number;
+  reviewMinutes: number;
+}
+
+export interface LessonSuggestion {
+  subjectId: string;
+  subjectName: string;
+  color: string | null;
+  priorityOrder: number;
+  suggestedMinutes: number;
+  doneThisWeek: number;
+  sessionsPerWeek: number;
+}
+
+/** GET /api/study/today: revisões vencidas primeiro, depois as aulas sugeridas. */
+export interface StudyToday {
+  date: string;
+  reviews: ReviewSuggestion[];
+  lessons: LessonSuggestion[];
+}
