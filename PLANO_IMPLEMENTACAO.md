@@ -122,7 +122,7 @@ Regras:
     "story": "Como Pedro, quero uma API que sobe localmente e responde um health check para validar o setup.",
     "arquivos": ["backend/pom.xml", "backend/mvnw", "backend/src/main/java/com/porganization/PorganizationApplication.java", "backend/src/main/java/com/porganization/common/HealthController.java", "backend/src/main/resources/application.yml", "backend/src/main/java/com/porganization/security/SecurityConfig.java", "backend/src/test/java/com/porganization/TestcontainersConfiguration.java"],
     "dependencias": ["B01"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "`./mvnw verify` passa em máquina limpa com Docker disponível." },
       { "id": "CA2", "descricao": "GET /api/health responde 200 com {\"status\":\"UP\"} sem autenticação." },
@@ -140,9 +140,9 @@ Regras:
     "titulo": "Conexão com Supabase Postgres e Flyway",
     "acao": "Configurar perfis dev/test/prod com datasource por variáveis de ambiente (DB_URL, DB_USER, DB_PASSWORD); no perfil dev ler o .env da raiz com spring.config.import=optional:file:../.env[.properties]; Flyway habilitado, ddl-auto=validate, e a migração V1 com a tabela user_settings (user_id uuid PK, email text null, timezone text not null default 'America/Sao_Paulo', created_at). Toda tabela criada no schema public (inclusive flyway_schema_history, a partir da V1) deve ter RLS ativo sem policies (`alter table ... enable row level security`), para a Data API do Supabase (anon key exposta no frontend) não ler nem gravar nada; o backend conecta como postgres e não é afetado. Localmente e em produção usar o session pooler do Supabase (porta 5432), pois a conexão direta é só IPv6. Criar classe base de teste com Testcontainers reutilizável, usando a imagem postgres na mesma versão major do projeto Supabase (17 em projetos novos).",
     "story": "Como Pedro, quero que o esquema do banco seja versionado e aplicado automaticamente no Supabase.",
-    "arquivos": ["backend/src/main/resources/application.yml", "backend/src/main/resources/application-dev.yml", "backend/src/main/resources/application-prod.yml", "backend/src/main/resources/db/migration/V1__user_settings.sql", "backend/src/test/java/com/porganization/support/IntegrationTest.java", ".env.example"],
+    "arquivos": ["backend/src/main/resources/application.yml", "backend/src/main/resources/application-dev.yml", "backend/src/main/resources/application-prod.yml", "backend/src/main/resources/db/migration/V1__user_settings.sql", "backend/src/test/java/com/porganization/support/IntegrationTest.java", ".env.example", "backend/src/main/resources/db/migration/afterMigrate.sql", "backend/src/main/java/com/porganization/settings/UserSettings.java", "backend/src/main/java/com/porganization/settings/UserSettingsRepository.java"],
     "dependencias": ["B02", "B13"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Ao subir, o Flyway aplica V1 e a tabela user_settings existe." },
       { "id": "CA2", "descricao": "Nenhuma credencial fica no código; .env.example lista todas as variáveis." },
@@ -153,7 +153,8 @@ Regras:
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/support/FlywayMigrationTest.java", "cenario": "Dado o Postgres do Testcontainers, quando o contexto sobe, então flyway_schema_history tem V1 com success=true e information_schema contém user_settings." },
       { "id": "T2", "criterio": "CA2", "tipo": "unitario", "arquivo": "scripts/check-secrets.sh", "cenario": "Dado o repositório, quando scripts/check-secrets.sh (B13) roda, então não há senha literal em application*.yml nem valor em variável sensível do .env.example." },
       { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/PorganizationApplicationTests.java", "cenario": "Dado ddl-auto=validate no perfil test, quando o contexto sobe com todas as migrações, então não há SchemaManagementException." },
-      { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/support/RowLevelSecurityTest.java", "cenario": "Dado todas as migrações aplicadas, quando consulta pg_class.relrowsecurity das tabelas do schema public, então todas são true (o teste roda em toda spec e barra migração nova sem RLS)." }
+      { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/support/RowLevelSecurityTest.java", "cenario": "Dado todas as migrações aplicadas, quando consulta pg_class.relrowsecurity das tabelas do schema public, então todas são true (o teste roda em toda spec e barra migração nova sem RLS)." },
+      { "id": "T5", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/support/SchemaValidationTest.java", "cenario": "Dado o banco migrado e uma entidade mapeando user_settings com uma coluna que não existe, quando o Hibernate sobe com ddl-auto=validate, então a inicialização falha com SchemaManagementException citando a coluna." }
     ]
   },
   {

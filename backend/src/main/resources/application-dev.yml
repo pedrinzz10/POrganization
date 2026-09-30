@@ -1,0 +1,12 @@
+# Perfil dev: roda localmente contra o Supabase.
+# Os valores vêm do .env na raiz do repositório (copie do .env.example).
+# Rode de dentro de backend/: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+spring:
+  config:
+    import: optional:file:../.env[.properties],optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
