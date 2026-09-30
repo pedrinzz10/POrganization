@@ -3,6 +3,8 @@ package com.porganization.finance.transactions;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import com.porganization.finance.accounts.AccountRepository;
+import com.porganization.finance.cards.CardStatement;
+import com.porganization.finance.cards.CardStatementRepository;
 import com.porganization.finance.categories.Category;
 import com.porganization.finance.categories.CategoryKind;
 import com.porganization.finance.categories.CategoryRepository;
@@ -32,13 +34,15 @@ public class TransactionService {
     private final AccountRepository accounts;
     private final CategoryRepository categories;
     private final FinanceTagRepository tags;
+    private final CardStatementRepository statements;
 
     public TransactionService(TransactionRepository transactions, AccountRepository accounts,
-            CategoryRepository categories, FinanceTagRepository tags) {
+            CategoryRepository categories, FinanceTagRepository tags, CardStatementRepository statements) {
         this.transactions = transactions;
         this.accounts = accounts;
         this.categories = categories;
         this.tags = tags;
+        this.statements = statements;
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +72,10 @@ public class TransactionService {
         if (transaction.getType() == TransactionType.TRANSFER) {
             throw new InvalidRequestException("type", "edite a transferência em /api/finance/transfers/{grupo}");
         }
+        if (transaction.getCardStatementId() != null) {
+            throw new InvalidRequestException("cardStatementId",
+                    "compra ou pagamento de fatura: exclua e lance de novo pelo cartão");
+        }
         transaction.setType(request.type());
         transaction.setAmount(request.amount());
         transaction.setDate(request.date());
@@ -75,13 +83,16 @@ public class TransactionService {
         return toResponses(userId, List.of(transaction)).getFirst();
     }
 
-    /** Excluir uma perna de transferência exclui as duas. */
+    /** Excluir uma perna de transferência exclui as duas; excluir o pagamento de uma fatura a reabre. */
     @Transactional
     public void delete(UUID userId, UUID id) {
         Transaction transaction = find(userId, id);
         if (transaction.getTransferGroupId() != null) {
             transactions.findByUserIdAndTransferGroupId(userId, transaction.getTransferGroupId()).forEach(transactions::delete);
         } else {
+            if (transaction.getAccountId() != null && transaction.getCardStatementId() != null) {
+                statements.findByIdAndUserId(transaction.getCardStatementId(), userId).ifPresent(CardStatement::reopen);
+            }
             transactions.delete(transaction);
         }
     }

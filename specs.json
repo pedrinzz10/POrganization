@@ -2285,12 +2285,12 @@
       "arquivos": [
         "backend/src/main/java/com/porganization/finance/cards/StatementService.java",
         "backend/src/main/java/com/porganization/finance/cards/StatementController.java",
-        "backend/src/main/java/com/porganization/finance/cards/dto/StatementResponse.java"
+        "backend/src/main/java/com/porganization/finance/cards/CardDtos.java"
       ],
       "dependencias": [
         "F06"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

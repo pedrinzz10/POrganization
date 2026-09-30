@@ -22,6 +22,12 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
 
     List<Transaction> findByUserIdAndPurchaseId(UUID userId, UUID purchaseId);
 
+    /** Compras de uma fatura (linhas sem conta), na ordem em que aconteceram. */
+    List<Transaction> findByUserIdAndCardStatementIdAndAccountIdIsNullOrderByDateAscCreatedAtAsc(UUID userId, UUID cardStatementId);
+
+    /** O pagamento de uma fatura: a única linha da fatura que tem conta. */
+    Optional<Transaction> findFirstByUserIdAndCardStatementIdAndAccountIdIsNotNull(UUID userId, UUID cardStatementId);
+
     /** As Specifications de TransactionSpecifications sempre começam pelo dono (ownedBy). */
     List<Transaction> findAll(Specification<Transaction> spec, Sort sort);
 
@@ -36,10 +42,14 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
             """)
     BigDecimal paidMovement(UUID userId, UUID accountId);
 
-    /** Total do tipo no período (renda ou gasto), pagos ou não; transferências nunca entram aqui. */
+    /**
+     * Total do tipo no período (renda ou gasto), pagos ou não; transferências nunca entram aqui.
+     * O pagamento de fatura (conta e fatura preenchidas) fica de fora: as compras já contaram no mês delas.
+     */
     @Query("""
             select coalesce(sum(t.amount), 0) from Transaction t
             where t.userId = :userId and t.type = :type and t.date between :from and :to
+              and (t.accountId is null or t.cardStatementId is null)
             """)
     BigDecimal totalOf(UUID userId, TransactionType type, LocalDate from, LocalDate to);
 

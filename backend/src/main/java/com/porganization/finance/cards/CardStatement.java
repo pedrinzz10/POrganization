@@ -73,6 +73,20 @@ public class CardStatement {
         this.paidAt = when;
     }
 
+    /** Pagamento desfeito (o gasto do pagamento foi excluído): volta a contar no limite. */
+    public void reopen() {
+        this.status = StoredStatus.OPEN;
+        this.paidAt = null;
+    }
+
+    /** OPEN, CLOSED (hoje já passou do fechamento) ou PAID. "Fechada" não é guardado, sai da data. */
+    public String statusOn(LocalDate today) {
+        if (status == StoredStatus.PAID) {
+            return "PAID";
+        }
+        return today.isAfter(closingDate) ? "CLOSED" : "OPEN";
+    }
+
     public UUID getId() {
         return id;
     }

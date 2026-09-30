@@ -1,5 +1,6 @@
 package com.porganization.finance.cards;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,15 @@ public interface CardStatementRepository extends Repository<CardStatement, UUID>
     Optional<CardStatement> findByUserIdAndCardIdAndReferenceMonth(UUID userId, UUID cardId, LocalDate referenceMonth);
 
     List<CardStatement> findByUserIdAndCardIdOrderByReferenceMonthAsc(UUID userId, UUID cardId);
+
+    /** Soma das compras (linhas sem conta) em faturas ainda não pagas do cartão: o que ocupa o limite. */
+    @Query("""
+            select coalesce(sum(t.amount), 0) from Transaction t, CardStatement s
+            where t.cardStatementId = s.id and s.userId = :userId and s.cardId = :cardId
+              and t.userId = :userId and t.accountId is null
+              and s.status = com.porganization.finance.cards.CardStatement.StoredStatus.OPEN
+            """)
+    BigDecimal unpaidTotal(UUID userId, UUID cardId);
 
     List<CardStatement> findByUserIdAndDueDateBetweenOrderByDueDateAsc(UUID userId, LocalDate from, LocalDate to);
 }

@@ -1,5 +1,6 @@
 package com.porganization.finance.cards;
 
+import com.porganization.common.ConflictException;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import com.porganization.finance.cards.CardDtos.PurchaseRequest;
@@ -53,6 +54,9 @@ public class CardPurchaseService {
             CardStatement statement = i == 0 ? first
                     : cards.statementForPeriod(card, StatementResolver.forClosingMonth(card.getClosingDay(), card.getDueDay(),
                             firstClosingMonth.plusMonths(i)));
+            if (statement.getStatus() == CardStatement.StoredStatus.PAID) {
+                throw new ConflictException("A fatura de %s já foi paga".formatted(statement.getReferenceMonth()));
+            }
             // Todas as parcelas têm a data da compra: orçamentos contam no mês da compra (F09)
             Transaction t = new Transaction(userId, TransactionType.EXPENSE, values.get(i), request.date());
             t.setCategoryId(category.getId());

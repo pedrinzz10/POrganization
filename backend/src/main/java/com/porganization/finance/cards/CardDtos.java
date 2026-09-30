@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -46,5 +47,19 @@ public final class CardDtos {
     /** status: OPEN, CLOSED (hoje depois do fechamento, calculado na leitura) ou PAID. */
     public record StatementSummary(UUID id, UUID cardId, YearMonth referenceMonth, LocalDate closingDate, LocalDate dueDate,
             String status, BigDecimal total) {
+    }
+
+    /** Uma compra (ou parcela) dentro da fatura. */
+    public record StatementItem(UUID id, LocalDate date, String description, BigDecimal amount, UUID categoryId,
+            UUID purchaseId, Integer installmentNumber, Integer installmentCount) {
+    }
+
+    /**
+     * Fatura de um mês com os itens. id é null quando ainda não há compra nessa fatura.
+     * availableLimit = limite − compras de todas as faturas não pagas do cartão.
+     */
+    public record StatementResponse(UUID id, UUID cardId, YearMonth referenceMonth, LocalDate closingDate, LocalDate dueDate,
+            String status, BigDecimal total, BigDecimal creditLimit, BigDecimal availableLimit, Instant paidAt,
+            UUID paymentTransactionId, List<StatementItem> items) {
     }
 }
