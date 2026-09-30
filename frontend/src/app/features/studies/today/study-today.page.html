@@ -1,0 +1,59 @@
+@if (sessao(); as atual) {
+  <app-study-session [session]="atual" (ended)="encerrou($event)" />
+} @else {
+  @if (carregando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  @if (erro(); as mensagem) {
+    <p class="erro" role="alert">{{ mensagem }}</p>
+    <button mat-stroked-button type="button" (click)="plano.reload()">Tentar de novo</button>
+  }
+
+  @if (plano.hasValue()) {
+    @if (vazio()) {
+      <p class="vazio">Nada para hoje. Cadastre matérias na aba Matérias ou aproveite o descanso!</p>
+    }
+
+    @if (plano.value().reviews.length > 0) {
+      <h2 class="bloco">Revisões</h2>
+      <ul class="itens">
+        @for (r of plano.value().reviews; track r.lessonId) {
+          <li class="item item--revisao" [class.item--atrasada]="r.daysOverdue > 0">
+            <div class="item__texto">
+              <span class="item__titulo">{{ r.lessonTitle }}</span>
+              <span class="item__detalhe">
+                {{ r.subjectName }} · {{ r.reviewMinutes }} min
+                @if (r.daysOverdue > 0) {
+                  · <span class="selo">{{ r.daysOverdue }} {{ r.daysOverdue === 1 ? 'dia' : 'dias' }} de atraso</span>
+                }
+              </span>
+            </div>
+            <button mat-flat-button type="button" [disabled]="iniciando()" (click)="revisar(r)">
+              <mat-icon aria-hidden="true">replay</mat-icon>
+              Revisar
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (plano.value().lessons.length > 0) {
+      <h2 class="bloco">Aulas sugeridas</h2>
+      <ul class="itens">
+        @for (l of plano.value().lessons; track l.subjectId) {
+          <li class="item">
+            <span class="item__cor" [style.background]="l.color ?? 'var(--mat-sys-outline-variant)'"></span>
+            <div class="item__texto">
+              <span class="item__titulo">{{ l.subjectName }}</span>
+              <span class="item__detalhe">{{ l.suggestedMinutes }} min · {{ l.doneThisWeek }} de {{ l.sessionsPerWeek }} nesta semana</span>
+            </div>
+            <button mat-stroked-button type="button" [disabled]="iniciando()" (click)="estudar(l)">
+              <mat-icon aria-hidden="true">play_arrow</mat-icon>
+              Estudar
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  }
+}

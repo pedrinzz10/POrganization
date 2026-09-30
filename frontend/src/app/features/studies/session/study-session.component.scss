@@ -1,0 +1,65 @@
+.timer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.timer.finished {
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  animation: pulsar 1.2s ease-in-out 3;
+}
+
+@keyframes pulsar {
+  50% {
+    transform: scale(1.01);
+  }
+}
+
+.timer__materia {
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.timer__tempo {
+  margin: 0;
+  font-size: 56px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.timer.pausado .timer__tempo {
+  opacity: 0.6;
+}
+
+.timer__aviso {
+  margin: 0;
+  font: var(--mat-sys-body-medium);
+}
+
+.timer__acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timer__abandonar {
+  margin-left: auto;
+}
+
+.timer__aula {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 480px;
+}
+
+.timer__erro {
+  margin: 0;
+  color: var(--mat-sys-error);
+}

@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Subject, SubjectRequest, Tag } from './study.model';
+import { FinishSessionRequest, SessionType, StudySession, StudyToday, Subject, SubjectRequest, Tag } from './study.model';
 
 /** API de estudos: matérias e tags. As specs seguintes acrescentam sessões e o plano do dia. */
 @Injectable({ providedIn: 'root' })
@@ -38,5 +38,38 @@ export class StudiesService {
 
   createTag(name: string): Observable<Tag> {
     return this.http.post<Tag>(`${this.api}/tags`, { name });
+  }
+
+  // ---------- plano do dia e timer ----------
+
+  today(): Observable<StudyToday> {
+    return this.http.get<StudyToday>(`${this.api}/study/today`);
+  }
+
+  /** Sessão rodando ou pausada, ou null (a API responde 204 quando não há). */
+  activeSession(): Observable<StudySession | null> {
+    return this.http
+      .get<StudySession>(`${this.api}/study/sessions/active`, { observe: 'response' })
+      .pipe(map((response) => (response.status === 204 ? null : response.body)));
+  }
+
+  start(subjectId: string, type: SessionType, lessonId?: string): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.api}/study/sessions`, { subjectId, type, lessonId });
+  }
+
+  pause(id: string): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.api}/study/sessions/${id}/pause`, {});
+  }
+
+  resume(id: string): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.api}/study/sessions/${id}/resume`, {});
+  }
+
+  finish(id: string, request: FinishSessionRequest): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.api}/study/sessions/${id}/finish`, request);
+  }
+
+  abandon(id: string): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.api}/study/sessions/${id}/abandon`, {});
   }
 }

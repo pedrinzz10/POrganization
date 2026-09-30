@@ -721,7 +721,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/studies/today/study-today.page.ts", "frontend/src/app/features/studies/session/study-session.component.ts", "frontend/src/app/features/studies/session/timer.ts", "frontend/src/app/features/studies/session/grade-buttons.component.ts"],
     "dependencias": ["E08", "E03"],
     "conceito_angular": "Timer com signals e effect(): um signal guarda o tempo restante, atualizado por um intervalo que é limpo no DestroyRef quando o componente sai da tela.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "O timer decrementa a cada segundo, para quando pausado e avisa (som/notificação visual) ao chegar a zero, sem encerrar sozinho." },
       { "id": "CA2", "descricao": "Revisão só pode ser concluída escolhendo uma das 3 notas, que é enviada no finish." },
