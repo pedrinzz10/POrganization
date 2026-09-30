@@ -581,7 +581,7 @@ Regras:
     "story": "Como Pedro, quero gerenciar matérias e definir a ordem de prioridade entre elas.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/SubjectController.java", "backend/src/main/java/com/porganization/studies/SubjectService.java", "backend/src/main/java/com/porganization/studies/TagController.java", "backend/src/main/java/com/porganization/studies/dto/SubjectRequest.java"],
     "dependencias": ["E01"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Nova matéria entra no fim da ordem de prioridade." },
       { "id": "CA2", "descricao": "PUT /order grava priority_order 1..N na ordem recebida e rejeita (400) lista com id faltando, repetido ou de outro usuário." },
