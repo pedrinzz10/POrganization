@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { IsoDate, Occurrence } from '../../commitments/data/commitment.model';
-import { BudgetStatus, ScheduledOccurrence } from '../../finance/data/finance.model';
+import { Balances, BudgetStatus, ScheduledOccurrence } from '../../finance/data/finance.model';
 import { StudyToday } from '../../studies/data/study.model';
 
 /** Resposta de GET /api/today. */
@@ -36,6 +36,8 @@ export interface FinanceToday {
   spentToday: string;
   /** Agendados em conta para confirmar hoje ou atrasados. */
   toConfirm: ScheduledOccurrence[];
+  /** Saldo por conta, total e previsto do fim do mês. */
+  balances: Balances | null;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,15 +1,13 @@
 package com.porganization.finance.dashboard;
 
-import com.porganization.finance.accounts.AccountDtos.AccountResponse;
-import com.porganization.finance.accounts.AccountService;
 import com.porganization.finance.budgets.BudgetDtos.BudgetLevel;
 import com.porganization.finance.budgets.BudgetService;
+import com.porganization.finance.dashboard.ForecastService.Forecast;
 import com.porganization.finance.cards.CardDtos.CardResponse;
 import com.porganization.finance.cards.CreditCardService;
 import com.porganization.finance.cards.StatementService;
 import com.porganization.finance.categories.Category;
 import com.porganization.finance.categories.CategoryRepository;
-import com.porganization.finance.dashboard.DashboardResponse.AccountBalance;
 import com.porganization.finance.dashboard.DashboardResponse.CardOverview;
 import com.porganization.finance.dashboard.DashboardResponse.CategorySpend;
 import com.porganization.finance.dashboard.DashboardResponse.MonthPoint;
@@ -36,7 +34,7 @@ public class DashboardService {
 
     private static final int SERIES_MONTHS = 6;
 
-    private final AccountService accounts;
+    private final ForecastService forecasts;
     private final TransactionService transactionService;
     private final TransactionRepository transactions;
     private final CategoryRepository categories;
@@ -45,10 +43,10 @@ public class DashboardService {
     private final BudgetService budgets;
     private final GoalService goals;
 
-    public DashboardService(AccountService accounts, TransactionService transactionService, TransactionRepository transactions,
+    public DashboardService(ForecastService forecasts, TransactionService transactionService, TransactionRepository transactions,
             CategoryRepository categories, CreditCardService cards, StatementService statements, BudgetService budgets,
             GoalService goals) {
-        this.accounts = accounts;
+        this.forecasts = forecasts;
         this.transactionService = transactionService;
         this.transactions = transactions;
         this.categories = categories;
@@ -60,15 +58,13 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardResponse of(UUID userId, YearMonth month) {
-        List<AccountResponse> activeAccounts = accounts.list(userId, false);
-        BigDecimal totalBalance = activeAccounts.stream().map(AccountResponse::balance)
-                .reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
+        Forecast forecast = forecasts.of(userId, month);
         MonthSummary summary = transactionService.summary(userId, month);
 
         return new DashboardResponse(
                 month,
-                totalBalance,
-                activeAccounts.stream().map(a -> new AccountBalance(a.id(), a.name(), a.balance())).toList(),
+                forecast.totalBalance(),
+                forecast.accounts(),
                 summary.income(),
                 summary.expense(),
                 summary.net(),
@@ -76,7 +72,10 @@ public class DashboardService {
                 cards(userId),
                 budgets.status(userId, month).stream().filter(b -> b.level() != BudgetLevel.OK).toList(),
                 goals.list(userId).stream().filter(g -> !g.archived()).toList(),
-                series(userId, month));
+                series(userId, month),
+                forecast.receivable(),
+                forecast.payable(),
+                forecast.forecast());
     }
 
     private List<CategorySpend> expenseByCategory(UUID userId, YearMonth month) {

@@ -29,6 +29,18 @@ const DIA = 86_400_000;
         <a mat-button routerLink="/financas">Ver finanças</a>
       </div>
 
+      @if (finance().balances; as b) {
+        <div class="saldos" aria-label="Saldo das contas">
+          @for (c of b.accounts; track c.id) {
+            <span class="saldo">{{ c.name }} <strong>{{ c.balance | brl }}</strong></span>
+          }
+          <span class="saldo saldo--total">Total <strong>{{ b.totalBalance | brl }}</strong></span>
+          <span class="saldo saldo--previsto" title="Saldo + a receber − a pagar até o fim do mês">
+            Previsto no fim do mês <strong>{{ b.forecast | brl }}</strong>
+          </span>
+        </div>
+      }
+
       <div class="gasto">
         <span>Gasto hoje</span>
         <strong>{{ finance().spentToday | brl }}</strong>
@@ -110,6 +122,25 @@ const DIA = 86_400_000;
     .secao__titulo {
       font: var(--mat-sys-title-large);
       margin: 8px 0;
+    }
+    .saldos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .saldo {
+      padding: 4px 10px;
+      border-radius: 14px;
+      background: var(--mat-sys-surface-container-high);
+    }
+    .saldo--total {
+      background: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
+    }
+    .saldo--previsto {
+      background: var(--mat-sys-tertiary-container);
+      color: var(--mat-sys-on-tertiary-container);
     }
     .gasto {
       display: flex;

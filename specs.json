@@ -2993,7 +2993,7 @@
         "F18",
         "F11"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

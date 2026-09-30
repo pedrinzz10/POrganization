@@ -328,6 +328,15 @@ export interface ContributionRequest {
 
 // ---------- dashboard ----------
 
+/** Saldo por conta, total e previsto do fim do mês (Resumo e tela Hoje). */
+export interface Balances {
+  accounts: { id: string; name: string; balance: Money }[];
+  totalBalance: Money;
+  receivable: Money;
+  payable: Money;
+  forecast: Money;
+}
+
 export interface CategorySpend {
   categoryId: string;
   name: string | null;
@@ -372,4 +381,9 @@ export interface Dashboard {
   goals: Goal[];
   /** 6 meses terminando no mês pedido; meses sem movimento vêm com "0.00". */
   lastSixMonths: MonthPoint[];
+  /** Agendados em conta ainda em aberto até o fim do mês. */
+  receivable: Money;
+  payable: Money;
+  /** Saldo total + a receber − a pagar. */
+  forecast: Money;
 }

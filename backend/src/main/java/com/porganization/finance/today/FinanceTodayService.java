@@ -10,6 +10,7 @@ import com.porganization.finance.categories.Category;
 import com.porganization.finance.categories.CategoryRepository;
 import com.porganization.finance.today.FinanceToday.DueItem;
 import com.porganization.finance.today.FinanceToday.DueKind;
+import com.porganization.finance.dashboard.ForecastService;
 import com.porganization.finance.recurring.ScheduledService;
 import com.porganization.finance.transactions.Transaction;
 import com.porganization.finance.transactions.TransactionRepository;
@@ -40,15 +41,18 @@ public class FinanceTodayService {
     private final CategoryRepository categories;
     private final BudgetService budgets;
     private final ScheduledService scheduled;
+    private final ForecastService forecasts;
 
     public FinanceTodayService(CardStatementRepository statements, CreditCardRepository cards,
-            TransactionRepository transactions, CategoryRepository categories, BudgetService budgets, ScheduledService scheduled) {
+            TransactionRepository transactions, CategoryRepository categories, BudgetService budgets, ScheduledService scheduled,
+            ForecastService forecasts) {
         this.statements = statements;
         this.cards = cards;
         this.transactions = transactions;
         this.categories = categories;
         this.budgets = budgets;
         this.scheduled = scheduled;
+        this.forecasts = forecasts;
     }
 
     @Transactional(readOnly = true)
@@ -57,7 +61,8 @@ public class FinanceTodayService {
                 dueSoon(userId, today),
                 budgets.status(userId, YearMonth.from(today)).stream().filter(b -> b.level() != BudgetLevel.OK).toList(),
                 transactions.totalOf(userId, TransactionType.EXPENSE, today, today),
-                scheduled.pending(userId));
+                scheduled.pending(userId),
+                forecasts.of(userId, YearMonth.from(today)));
     }
 
     private List<DueItem> dueSoon(UUID userId, LocalDate today) {

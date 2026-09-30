@@ -12,7 +12,7 @@ const API = `${environment.apiUrl}/finance`;
 const tick = () => new Promise((resolve) => setTimeout(resolve));
 
 function financas(mudancas: Partial<FinanceToday> = {}): FinanceToday {
-  return { dueSoon: [], budgetAlerts: [], spentToday: '0.00', toConfirm: [], ...mudancas };
+  return { dueSoon: [], budgetAlerts: [], spentToday: '0.00', toConfirm: [], balances: null, ...mudancas };
 }
 
 describe('TodayFinanceComponent', () => {
@@ -129,5 +129,26 @@ describe('TodayFinanceComponent', () => {
 
     expect(element.querySelector('[aria-label="Para confirmar"]')).toBeNull();
     expect(mudou).toHaveBeenCalled();
+  });
+
+  // F21 T3 (CA3)
+  it('mostra o saldo de cada conta, o total e o previsto do fim do mês', async () => {
+    await mostrar(
+      financas({
+        balances: {
+          accounts: [
+            { id: 'b', name: 'Bradesco', balance: '1500.00' },
+            { id: 'n', name: 'Nubank', balance: '300.00' },
+          ],
+          totalBalance: '1800.00', receivable: '3000.00', payable: '1200.00', forecast: '3600.00',
+        },
+      }),
+    );
+
+    const saldos = element.querySelector('[aria-label="Saldo das contas"]')!.textContent!.replace(/\s+/g, ' ');
+    expect(saldos).toContain('Bradesco R$ 1.500,00');
+    expect(saldos).toContain('Nubank R$ 300,00');
+    expect(saldos).toContain('Total R$ 1.800,00');
+    expect(saldos).toContain('Previsto no fim do mês R$ 3.600,00');
   });
 });
