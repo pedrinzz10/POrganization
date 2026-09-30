@@ -859,7 +859,7 @@
       "dependencias": [
         "B11"
       ],
-      "status": "em_andamento",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

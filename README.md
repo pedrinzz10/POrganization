@@ -51,7 +51,7 @@ specs.json   as specs do plano, geradas a partir do PLANO_IMPLEMENTACAO.md
 
 ## Rodando localmente
 
-**Pré-requisitos:** JDK 21, Node ≥ 24.15, Docker em execução e Git. No Windows, rode os comandos no Git Bash.
+**Pré-requisitos:** JDK 21 ou mais novo (o projeto compila para Java 21), Node ≥ 24.15, Docker em execução e Git. No Windows, rode os comandos no Git Bash.
 
 ```bash
 # 1. Clonar e preparar (ativa o hook de segredos e cria o .env a partir do .env.example)
