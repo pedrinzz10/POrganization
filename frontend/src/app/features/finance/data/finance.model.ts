@@ -187,3 +187,93 @@ export interface Statement {
   paymentTransactionId: string | null;
   items: StatementItem[];
 }
+
+// ---------- fixos ----------
+
+export interface Recurring {
+  id: string;
+  type: 'INCOME' | 'EXPENSE';
+  amount: Money;
+  description: string | null;
+  accountId: string | null;
+  cardId: string | null;
+  categoryId: string;
+  dayOfMonth: number;
+  startMonth: string;
+  endMonth: string | null;
+}
+
+/** accountId ou cardId, nunca os dois; cartão só para gasto. */
+export interface RecurringRequest {
+  type: 'INCOME' | 'EXPENSE';
+  amount: Money;
+  description: string | null;
+  accountId: string | null;
+  cardId: string | null;
+  categoryId: string;
+  dayOfMonth: number;
+  startMonth: string;
+  endMonth: string | null;
+}
+
+// ---------- orçamentos ----------
+
+export type BudgetLevel = 'OK' | 'ATENCAO' | 'ESTOURADO';
+
+export interface BudgetStatus {
+  id: string;
+  categoryId: string;
+  categoryName: string | null;
+  /** null = orçamento recorrente (vale todo mês). */
+  month: string | null;
+  amount: Money;
+  spent: Money;
+  remaining: Money;
+  percent: string;
+  level: BudgetLevel;
+}
+
+export interface BudgetRequest {
+  categoryId: string;
+  month: string | null;
+  amount: Money;
+}
+
+// ---------- metas ----------
+
+export interface Goal {
+  id: string;
+  name: string;
+  targetAmount: Money;
+  targetDate: string | null;
+  accountId: string | null;
+  archived: boolean;
+  saved: Money;
+  remaining: Money;
+  progress: string;
+  /** Quanto guardar por mês até o prazo; null sem prazo. */
+  monthlyNeeded: Money | null;
+  achieved: boolean;
+}
+
+export interface GoalRequest {
+  name: string;
+  targetAmount: Money;
+  targetDate: string | null;
+  accountId: string | null;
+  archived: boolean;
+}
+
+export interface Contribution {
+  id: string;
+  goalId: string;
+  amount: Money;
+  date: string;
+  note: string | null;
+}
+
+export interface ContributionRequest {
+  amount: Money;
+  date: string;
+  note: string | null;
+}

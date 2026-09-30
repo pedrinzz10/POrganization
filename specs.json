@@ -2633,14 +2633,17 @@
       "arquivos": [
         "frontend/src/app/features/finance/recurring/recurring.page.ts",
         "frontend/src/app/features/finance/budgets/budgets.page.ts",
-        "frontend/src/app/features/finance/goals/goals.page.ts"
+        "frontend/src/app/features/finance/goals/goals.page.ts",
+        "frontend/src/app/features/finance/budgets/budget-level.pipe.ts",
+        "frontend/src/app/features/finance/recurring/recurring-form.dialog.ts",
+        "frontend/src/app/features/finance/goals/goal-form.dialog.ts"
       ],
       "dependencias": [
         "F11",
         "F12"
       ],
       "conceito_angular": "Pipes personalizados: um pipe budgetLevel transforma o nível de alerta em classe CSS e texto, deixando o template limpo.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
