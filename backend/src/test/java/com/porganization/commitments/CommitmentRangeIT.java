@@ -69,4 +69,36 @@ class CommitmentRangeIT extends IntegrationTest {
     void semParametrosResponde400() throws Exception {
         mockMvc.perform(get("/api/commitments").with(usuario(userId))).andExpect(status().isBadRequest());
     }
+
+    // C04 (CA1): a consulta devolve as ocorrências da série, com o id da série e a data
+    @Test
+    void devolveAsOcorrenciasDeCompromissosRecorrentes() throws Exception {
+        UUID dono = UUID.randomUUID();
+        criar(dono, """
+                {"title":"Academia","date":"2026-10-01","startTime":"07:00",
+                 "recurrenceRule":{"freq":"WEEKLY","interval":1,"byWeekDays":["MON","WED","FRI"]}}
+                """);
+        criar(dono, "{\"title\":\"Dentista\",\"date\":\"2026-10-07\",\"startTime\":\"14:00\"}");
+
+        mockMvc.perform(get("/api/commitments").param("from", "2026-10-05").param("to", "2026-10-11")
+                        .with(usuario(dono)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].occurrenceDate")
+                        .value(contains("2026-10-05", "2026-10-07", "2026-10-07", "2026-10-09")))
+                .andExpect(jsonPath("$[*].title").value(contains("Academia", "Academia", "Dentista", "Academia")))
+                .andExpect(jsonPath("$[0].recurring").value(true))
+                .andExpect(jsonPath("$[2].recurring").value(false))
+                .andExpect(jsonPath("$[0].commitmentId").value(org.hamcrest.Matchers.matchesPattern("[0-9a-f-]{36}")));
+    }
+
+    @Test
+    void regraDeRecorrenciaInvalidaResponde400() throws Exception {
+        mockMvc.perform(post("/api/commitments").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"Série","date":"2026-10-01",
+                                 "recurrenceRule":{"freq":"DAILY","until":"2026-12-01","count":3}}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("recurrenceRule.count"));
+    }
 }

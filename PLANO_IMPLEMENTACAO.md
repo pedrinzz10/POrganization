@@ -413,7 +413,7 @@ Regras:
     "story": "Como Pedro, quero cadastrar uma vez algo que se repete (aula toda terça, academia seg/qua/sex) e vê-lo em todos os dias certos.",
     "arquivos": ["backend/src/main/java/com/porganization/commitments/recurrence/RecurrenceRule.java", "backend/src/main/java/com/porganization/commitments/recurrence/RecurrenceExpander.java", "backend/src/main/java/com/porganization/commitments/CommitmentService.java", "backend/src/main/java/com/porganization/commitments/dto/OccurrenceResponse.java"],
     "dependencias": ["C03"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "WEEKLY com byWeekDays [MON,WED,FRI] a partir de 2026-10-01 gera 05, 07 e 09/10 na semana seguinte." },
       { "id": "CA2", "descricao": "MONTHLY no dia 31 cai no último dia dos meses menores (30/11, 28/02)." },
