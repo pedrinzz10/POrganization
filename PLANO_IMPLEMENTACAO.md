@@ -1258,6 +1258,309 @@ Observação importante: no plano gratuito o Render desliga a API após um tempo
 ]
 ```
 
+### Etapa 6: Tarefas diárias
+
+Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados como feitos na tela Hoje. Decisões da sessão de 2026-09-30:
+
+- Entidade própria, separada dos compromissos: sem horário na agenda e sem ir para o Google Calendar.
+- Todos os dias por padrão, com opção de escolher dias da semana; mudar os dias vale de hoje em diante.
+- Só feito ou não feito por dia (quantidade/meta fica para depois); marcar vale para hoje e os 7 dias anteriores.
+- Tarefa criada hoje já vale hoje; dias antes da criação nunca contam.
+- Arquivar mantém o histórico; excluir apaga tudo.
+- Histórico: sequência atual e % de conclusão dos últimos 30 dias, contando só os dias devidos.
+- Tela Hoje: seção logo depois de Compromissos, em ordem manual, feitas no fim riscadas, com progresso "N/M".
+- Cada tarefa tem título, emoji opcional, dias da semana e lembrete opcional (canais padrão das Configurações, só se ainda não feita); o resumo diário conta as tarefas.
+- Uma spec, uma branch, um PR, na ordem T01 → T05.
+
+```json
+[
+  {
+    "id": "T01",
+    "etapa": "6-tarefas",
+    "titulo": "API das tarefas diárias",
+    "acao": "Criar daily_tasks (título, emoji opcional, ordem, arquivada, criada em), daily_task_schedules (dias da semana válidos a partir de uma data: mudar os dias vale de hoje em diante e o passado segue a regra da época) e daily_task_completions (tarefa, dia, único). Endpoints: CRUD em /api/tasks (padrão: todos os dias), PUT /api/tasks/order, PATCH {archived}, DELETE (apaga o histórico) e PUT/DELETE /api/tasks/{id}/completions/{data} para marcar e desmarcar; GET /api/tasks/day?date= devolve as tarefas devidas no dia com feito/não feito. Marcar só vale para hoje e os 7 dias anteriores, em dias devidos e a partir do dia de criação. 'Hoje' é o dia no fuso do usuário.",
+    "story": "Como Pedro, quero cadastrar hábitos que repetem todo dia (ou em dias escolhidos) e marcar quando fiz.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V23__daily_tasks.sql",
+      "backend/src/main/java/com/porganization/tasks/DailyTask.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskSchedule.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskService.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskController.java"
+    ],
+    "dependencias": [
+      "B04"
+    ],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Tarefa sem dias escolhidos vale todos os dias; com seg/qua/sex, GET /api/tasks/day de uma terça não a traz e de uma quarta traz."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Tarefa criada hoje já aparece hoje (se hoje for dia dela); dias anteriores à criação nunca aparecem."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Marcar e desmarcar é idempotente; marcar dia com mais de 7 dias, futuro, antes da criação ou fora dos dias da tarefa responde 400."
+      },
+      {
+        "id": "CA4",
+        "descricao": "Mudar os dias da semana vale de hoje em diante: um dia passado continua devido ou não pela regra que valia nele."
+      },
+      {
+        "id": "CA5",
+        "descricao": "Arquivada some do GET /day e mantém o histórico; excluída apaga tarefa, regras e marcações; tarefa de outro usuário responde 404."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskControllerIT.java",
+        "cenario": "Dado 'Beber água' sem dias e 'Academia' seg/qua/sex, então /day de 2026-10-06 (terça) traz só 'Beber água' e de 2026-10-07 (quarta) traz as duas."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskControllerIT.java",
+        "cenario": "Dado Clock em 07/10 e tarefa criada nesse dia, então /day de 07/10 a traz e /day de 06/10 não."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskControllerIT.java",
+        "cenario": "PUT completion de hoje duas vezes → 1 linha; DELETE duas vezes → 0; data de 8 dias atrás, amanhã, anterior à criação ou terça para tarefa seg/qua/sex → 400."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA4",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskScheduleTest.java",
+        "cenario": "Dado regra seg/qua/sex desde 01/10 e todos os dias desde 08/10, então terça 07/10 não é devida e terça 14/10 é."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA5",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskControllerIT.java",
+        "cenario": "Arquivar → some do /day e as marcações continuam no banco; DELETE → nenhuma linha da tarefa nas três tabelas; GET da tarefa com outro usuário → 404."
+      }
+    ]
+  },
+  {
+    "id": "T02",
+    "etapa": "6-tarefas",
+    "titulo": "Sequência e conclusão dos últimos 30 dias",
+    "acao": "Criar TaskStats (função pura) e GET /api/tasks/stats: por tarefa, a sequência atual (dias devidos seguidos com a tarefa feita, terminando hoje se já feita ou ontem se hoje ainda está pendente) e a % de conclusão dos dias devidos nos últimos 30 dias. Só contam dias devidos pela regra da época e a partir da criação; hoje só entra na conta se já foi feito.",
+    "story": "Como Pedro, quero ver há quantos dias mantenho cada hábito e quanto cumpri no último mês.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/tasks/TaskStats.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskController.java"
+    ],
+    "dependencias": [
+      "T01"
+    ],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Dia em que a tarefa não é devida não quebra nem soma na sequência (academia seg/qua/sex feita seg e qua: sequência 2 numa quinta)."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Hoje ainda pendente não zera a sequência; ontem devido e não feito zera."
+      },
+      {
+        "id": "CA3",
+        "descricao": "A % considera só os dias devidos desde a criação dentro dos últimos 30 dias, com hoje contando só se feito; sem nenhum dia devido, a % vem nula."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/TaskStatsTest.java",
+        "cenario": "Regra seg/qua/sex, feita em 05/10 (seg) e 07/10 (qua), hoje 08/10 (qui) → sequência 2."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/TaskStatsTest.java",
+        "cenario": "Todos os dias, feita de 01 a 07/10, hoje 08/10 pendente → 7; com 07/10 sem marcação → 0."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/TaskStatsIT.java",
+        "cenario": "Tarefa criada há 10 dias, todos os dias, feita em 5 dos 10 dias anteriores e hoje pendente → 50.00; criada hoje e pendente → null."
+      }
+    ]
+  },
+  {
+    "id": "T03",
+    "etapa": "6-tarefas",
+    "titulo": "Tela Hoje: seção de tarefas do dia",
+    "acao": "Criar TasksService no Angular e a seção 'Tarefas do dia' na TodayPage, logo depois de Compromissos: checklist das tarefas devidas hoje (emoji + título) na ordem definida, as feitas vão para o fim riscadas, progresso 'N/M feitas' com barra e 'Tudo feito hoje 🎉' quando completo; marcar/desmarcar com atualização otimista que volta se a API falhar; atalho para a tela Tarefas.",
+    "story": "Como Pedro, quero marcar meus hábitos do dia direto na tela Hoje.",
+    "arquivos": [
+      "frontend/src/app/features/tasks/data/tasks.service.ts",
+      "frontend/src/app/features/tasks/data/task.model.ts",
+      "frontend/src/app/features/today/sections/today-tasks.component.ts"
+    ],
+    "dependencias": [
+      "T01",
+      "C10"
+    ],
+    "conceito_angular": "Atualização otimista com signals: o computed() de progresso e a ordem (feitas no fim) derivam de um linkedSignal da lista, que muda na hora do clique e é restaurado se a chamada falhar.",
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Marcar uma tarefa atualiza o progresso e a move para o fim riscada sem esperar a API; se a API falhar, volta ao estado anterior com aviso."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Com todas feitas aparece 'Tudo feito hoje 🎉'; sem tarefas para hoje aparece um convite para criar a primeira."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/today/sections/today-tasks.component.spec.ts",
+        "cenario": "Dado 'Ler' e 'Água' pendentes, quando marca 'Ler', então mostra '1/2 feitas' e 'Ler' é o último item antes do PUT responder; com PUT 500, volta a '0/2' e mostra erro."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/today/sections/today-tasks.component.spec.ts",
+        "cenario": "Dado 2 tarefas feitas, então aparece 'Tudo feito hoje 🎉'; dado lista vazia, aparece o link para criar tarefa."
+      }
+    ]
+  },
+  {
+    "id": "T04",
+    "etapa": "6-tarefas",
+    "titulo": "Tela Tarefas: cadastro, ordem, arquivo e histórico",
+    "acao": "Criar a rota /tarefas no menu com a lista de tarefas ativas (arrastar para reordenar, com PUT /api/tasks/order), formulário em diálogo (título, emoji, dias da semana com 'todos os dias' marcado por padrão, horário de lembrete opcional), arquivar/desarquivar e excluir com confirmação, e por tarefa a sequência 🔥 e a % dos últimos 30 dias vindas de /api/tasks/stats; seção de arquivadas recolhida.",
+    "story": "Como Pedro, quero organizar meus hábitos e acompanhar se estou mantendo cada um.",
+    "arquivos": [
+      "frontend/src/app/features/tasks/tasks.page.ts",
+      "frontend/src/app/features/tasks/task-form.dialog.ts",
+      "frontend/src/app/app.routes.ts",
+      "frontend/src/app/layout/shell/shell.component.ts"
+    ],
+    "dependencias": [
+      "T02",
+      "T03"
+    ],
+    "conceito_angular": "Controle de formulário composto: os dias da semana são um FormControl<WeekDay[]> editado por um grupo de toggles (mat-button-toggle-group múltiplo), com validação de 'pelo menos um dia'.",
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Nova tarefa vem com todos os dias marcados; desmarcar todos bloqueia o salvar; o corpo enviado traz os dias escolhidos."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Arrastar reordena na hora e chama PUT /order com a nova ordem; se falhar, volta à ordem anterior."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Cada tarefa mostra a sequência e a % da API; excluir pede confirmação antes do DELETE."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/tasks/task-form.dialog.spec.ts",
+        "cenario": "Diálogo novo abre com os 7 dias; ao deixar só SEG/QUA/SEX, POST com weekDays ['MON','WED','FRI']; sem nenhum dia, não chama a API."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/tasks/tasks.page.spec.ts",
+        "cenario": "Arrastar a 3ª para o topo → PUT /api/tasks/order com os ids na nova ordem; com erro, a lista volta."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/tasks.spec.ts",
+        "cenario": "Pelo menu Tarefas, cria 'Ler 20 min 📚', vê '🔥 0' e, depois de marcar na tela Hoje, volta e vê '🔥 1'; excluir pede confirmação."
+      }
+    ]
+  },
+  {
+    "id": "T05",
+    "etapa": "6-tarefas",
+    "titulo": "Lembrete das tarefas e tarefas no resumo diário",
+    "acao": "Adicionar horário de lembrete opcional em daily_tasks (V24); o dispatcher do cron avisa pelos canais padrão das Configurações quando o horário cai na janela e a tarefa, devida hoje, ainda não foi feita (uma vez por tarefa e dia); o resumo diário passa a contar 'N tarefas' do dia.",
+    "story": "Como Pedro, quero ser lembrado do hábito que ainda não fiz e ver minhas tarefas no resumo da manhã.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V24__daily_task_reminders.sql",
+      "backend/src/main/java/com/porganization/tasks/TaskReminderDispatcher.java",
+      "backend/src/main/java/com/porganization/notifications/DailyDigestService.java",
+      "backend/src/main/java/com/porganization/notifications/InternalCronController.java"
+    ],
+    "dependencias": [
+      "T01",
+      "I05"
+    ],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Tarefa com lembrete às 15:00, devida hoje e não feita, é avisada por uma chamada de cron entre 15:00 e 15:10, uma vez só, pelos canais das Configurações."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Tarefa já feita, arquivada ou não devida hoje não é avisada."
+      },
+      {
+        "id": "CA3",
+        "descricao": "O resumo diário inclui 'N tarefas' devidas hoje (ex.: 'Seu dia: 2 compromissos, 3 revisões, 1 vencimento, 4 tarefas')."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/TaskReminderIT.java",
+        "cenario": "Clock 15:04 em São Paulo, 'Beber água' com lembrete 15:00 e canal PUSH → 1 envio com assunto 'Lembrete: Beber água'; cron de novo às 15:08 → continua 1."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/TaskReminderIT.java",
+        "cenario": "Mesma tarefa marcada como feita hoje, ou arquivada, ou academia seg/qua/sex numa terça → 0 envios."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/notifications/DailyDigestServiceTest.java",
+        "cenario": "TodayResponse com 2 compromissos, 3 revisões, 1 vencimento e 4 tarefas pendentes → assunto termina em '4 tarefas'."
+      }
+    ]
+  }
+]
+```
+
 ## 5. Resumo da ordem
 
 | Etapa | Specs | Resultado ao final |
@@ -1267,8 +1570,9 @@ Observação importante: no plano gratuito o Render desliga a API após um tempo
 | 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS |
 | 4 Finanças | F01 a F16 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
+| 6 Tarefas diárias | T01 a T05 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
 
-Total: 58 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
+Total: 63 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
 
 As versões das migrações (V1 a V21) assumem a ordem das etapas. Se uma spec for feita fora de ordem, renumere as migrações pendentes antes do merge para o Flyway não encontrar versões fora de sequência.
 
