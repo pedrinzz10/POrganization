@@ -3,6 +3,8 @@ package com.porganization.finance.recurring;
 import com.porganization.finance.recurring.RecurringDtos.GenerateResponse;
 import com.porganization.finance.recurring.RecurringDtos.RecurringRequest;
 import com.porganization.finance.recurring.RecurringDtos.RecurringResponse;
+import com.porganization.finance.recurring.RecurringDtos.RulePreviewRequest;
+import com.porganization.finance.recurring.RecurringDtos.RulePreviewResponse;
 import com.porganization.security.CurrentUser;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -54,6 +56,14 @@ public class RecurringController {
     public ResponseEntity<Void> delete(@CurrentUser UUID userId, @PathVariable UUID id) {
         service.delete(userId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    /** Próximas 3 datas de uma regra, para o formulário mostrar antes de salvar. */
+    @PostMapping("/preview")
+    public RulePreviewResponse preview(@CurrentUser UUID userId, @Valid @RequestBody RulePreviewRequest request) {
+        ScheduleRule rule = request.ruleType() == null ? ScheduleRule.DAY_OF_MONTH : request.ruleType();
+        return new RulePreviewResponse(service.preview(userId, rule, request.dayOfMonth(), request.businessDay(),
+                request.adjustment(), 3));
     }
 
     /** Gera o mês agora (o mesmo que acontece ao consultar o mês em /transactions ou /summary). */

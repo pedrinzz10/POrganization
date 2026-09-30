@@ -44,13 +44,15 @@ public class RecurringGenerator {
         return created;
     }
 
-    /** O dia do modelo no mês; 31 em mês curto cai no último dia. */
+    /** O dia N no mês; 31 em mês curto cai no último dia (a regra completa está em RecurringTransaction.dateIn). */
     public static LocalDate dateFor(int dayOfMonth, YearMonth month) {
         return month.atDay(Math.min(dayOfMonth, month.lengthOfMonth()));
     }
 
     private Transaction transactionFor(RecurringTransaction r, YearMonth month) {
-        Transaction t = new Transaction(r.getUserId(), r.getType(), r.getAmount(), dateFor(r.getDayOfMonth(), month));
+        LocalDate date = r.dateIn(month);
+        Transaction t = new Transaction(r.getUserId(), r.getType(), r.getAmount(), date);
+        t.setScheduledDate(date);
         t.setCategoryId(r.getCategoryId());
         t.setDescription(r.getDescription());
         t.setPaid(false);
