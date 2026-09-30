@@ -46,6 +46,20 @@ export class AuthService {
     });
   }
 
+  /**
+   * Token válido para chamar a API. O getSession() do Supabase renova o token se ele já
+   * venceu (ex.: notebook hibernado), em vez de mandar um token expirado e tomar 401.
+   */
+  async freshAccessToken(): Promise<string | null> {
+    const {
+      data: { session },
+    } = await this.supabase.auth.getSession();
+    if (session?.access_token !== this._session()?.access_token) {
+      this._session.set(session);
+    }
+    return session?.access_token ?? null;
+  }
+
   async signIn(email: string, password: string): Promise<void> {
     const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
     if (error) {

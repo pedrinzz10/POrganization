@@ -98,3 +98,15 @@ describe('AuthService', () => {
     expect(service.session()).toBeNull();
   });
 });
+
+describe('AuthService.freshAccessToken', () => {
+  it('devolve o token atual do Supabase e atualiza a sessão se ele foi renovado', async () => {
+    const { service, supabase } = setup(sessao);
+    await service.ready;
+    const renovada = { ...sessao, access_token: 'token-renovado' } as Session;
+    supabase.auth.getSession.mockResolvedValue({ data: { session: renovada }, error: null });
+
+    expect(await service.freshAccessToken()).toBe('token-renovado');
+    expect(service.accessToken()).toBe('token-renovado');
+  });
+});

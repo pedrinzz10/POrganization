@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 
 // Cada tela é carregada só quando acessada (loadComponent)
 export const routes: Routes = [
@@ -16,6 +17,7 @@ export const routes: Routes = [
   {
     path: 'hoje',
     title: 'Hoje · POrganization',
+    canActivate: [authGuard],
     loadComponent: () => import('./features/today/today.page').then((m) => m.TodayPage),
   },
 ];
