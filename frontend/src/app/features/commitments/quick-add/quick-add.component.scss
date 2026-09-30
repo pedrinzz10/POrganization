@@ -1,0 +1,22 @@
+.quick-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.quick-add__title {
+  flex: 1 1 240px;
+}
+
+.quick-add__date {
+  flex: 0 1 170px;
+}
+
+.quick-add__time {
+  flex: 0 1 120px;
+}
+
+.quick-add__save {
+  margin-top: 8px;
+}

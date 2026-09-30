@@ -454,7 +454,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/data/commitments.service.ts", "frontend/src/app/features/commitments/data/commitment.model.ts", "frontend/src/app/features/commitments/quick-add/quick-add.component.ts", "frontend/src/app/features/commitments/quick-add/quick-add.component.html"],
     "dependencias": ["C02", "B09"],
     "conceito_angular": "HttpClient devolve Observables (RxJS): a requisição só acontece quando alguém faz subscribe. output() emite um evento do componente filho para o pai avisar que algo foi criado.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Com título preenchido, Enter chama POST com title, date e startTime e limpa o título." },
       { "id": "CA2", "descricao": "Título vazio não envia nada e mostra erro no campo." },

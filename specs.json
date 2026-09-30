@@ -1149,7 +1149,7 @@
         "B09"
       ],
       "conceito_angular": "HttpClient devolve Observables (RxJS): a requisição só acontece quando alguém faz subscribe. output() emite um evento do componente filho para o pai avisar que algo foi criado.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
