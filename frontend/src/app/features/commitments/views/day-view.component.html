@@ -16,7 +16,7 @@
             {{ item.startTime }}{{ item.endTime ? ' – ' + item.endTime : '' }}
           }
         </span>
-        <span class="day-item__title">{{ item.title }}</span>
+        <button type="button" class="day-item__title" (click)="opened.emit(item)">{{ item.title }}</button>
         @if (item.recurring) {
           <mat-icon class="day-item__icon" aria-label="Recorrente">repeat</mat-icon>
         }

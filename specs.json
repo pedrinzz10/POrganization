@@ -1313,7 +1313,7 @@
         "C07"
       ],
       "conceito_angular": "FormGroup aninhado e validação condicional: o subgrupo de recorrência só é obrigatório quando 'repetir' está ligado. MatDialog abre um componente em modal e devolve um resultado ao fechar.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

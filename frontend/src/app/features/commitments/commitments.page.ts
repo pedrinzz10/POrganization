@@ -2,11 +2,14 @@ import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { problemMessage } from '../../core/http/problem';
-import { IsoDate } from './data/commitment.model';
+import { IsoDate, Occurrence } from './data/commitment.model';
 import { CommitmentsService } from './data/commitments.service';
 import {
   addDays,
@@ -21,6 +24,7 @@ import {
   YearMonth,
   yearMonthOf,
 } from './data/date-range.util';
+import { CommitmentFormData, CommitmentFormDialog, CommitmentFormResult } from './form/commitment-form.dialog';
 import { QuickAddComponent } from './quick-add/quick-add.component';
 import { DayViewComponent } from './views/day-view.component';
 import { MonthViewComponent } from './views/month-view.component';
@@ -50,6 +54,8 @@ const ABAS: Aba[] = ['dia', 'semana', 'mes', 'ano'];
 })
 export class CommitmentsPage {
   private readonly commitments = inject(CommitmentsService);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly hoje = today();
   protected readonly aba = signal<Aba>('dia');
@@ -131,5 +137,32 @@ export class CommitmentsPage {
 
   protected recarregar(): void {
     this.ocorrencias.reload();
+  }
+
+  /** Formulário completo para um compromisso novo, no dia que está aberto. */
+  protected novo(): void {
+    this.abrirFormulario({ date: this.aba() === 'dia' ? this.dia() : this.hoje });
+  }
+
+  /** Clique numa ocorrência: busca o compromisso inteiro e abre a edição. */
+  protected async editar(ocorrencia: Occurrence): Promise<void> {
+    try {
+      const commitment = await firstValueFrom(this.commitments.get(ocorrencia.commitmentId));
+      this.abrirFormulario({ commitment, occurrenceDate: ocorrencia.recurring ? ocorrencia.occurrenceDate : undefined });
+    } catch (error) {
+      this.snackBar.open(problemMessage(error, 'Não foi possível abrir o compromisso.'), 'OK', { duration: 5000 });
+    }
+  }
+
+  private abrirFormulario(data: CommitmentFormData): void {
+    this.dialog
+      .open<CommitmentFormDialog, CommitmentFormData, CommitmentFormResult>(CommitmentFormDialog, { data, autoFocus: 'first-tabbable' })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.snackBar.open(result === 'deleted' ? 'Compromisso excluído' : 'Compromisso salvo', 'OK', { duration: 3000 });
+          this.recarregar();
+        }
+      });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -24,6 +24,8 @@ export class DayViewComponent {
   private readonly snackBar = inject(MatSnackBar);
 
   readonly occurrences = input.required<Occurrence[]>();
+  /** Clique no título: o pai abre o formulário de edição. */
+  readonly opened = output<Occurrence>();
 
   /** "feito" marcado nesta tela, por cima do que veio da API, até a próxima carga. */
   private readonly doneOverrides = signal<ReadonlyMap<string, boolean>>(new Map());

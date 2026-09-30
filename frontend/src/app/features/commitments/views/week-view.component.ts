@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { IsoDate, Occurrence } from '../data/commitment.model';
 import { DateRange, daysOf, parseIsoDate, today } from '../data/date-range.util';
 import { compareOccurrences, occurrenceKey } from './occurrence-order';
@@ -14,10 +14,10 @@ import { compareOccurrences, occurrenceKey } from './occurrence-order';
         <section class="week__day" [class.week__day--today]="day.date === hoje" [attr.aria-label]="day.label">
           <h3 class="week__header">{{ day.jsDate | date: 'EEE dd/MM' }}</h3>
           @for (item of day.items; track key(item)) {
-            <div class="week__item" [class.done]="item.done">
+            <button type="button" class="week__item" [class.done]="item.done" (click)="opened.emit(item)">
               <span class="week__time">{{ item.allDay ? 'Dia todo' : item.startTime }}</span>
               {{ item.title }}
-            </div>
+            </button>
           } @empty {
             <span class="week__empty">—</span>
           }
@@ -30,6 +30,7 @@ import { compareOccurrences, occurrenceKey } from './occurrence-order';
 export class WeekViewComponent {
   readonly range = input.required<DateRange>();
   readonly occurrences = input.required<Occurrence[]>();
+  readonly opened = output<Occurrence>();
 
   protected readonly hoje = today();
   protected readonly key = occurrenceKey;

@@ -1,0 +1,31 @@
+.recorrencia {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.linha {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.intervalo {
+  width: 120px;
+}
+
+.dias {
+  flex-wrap: wrap;
+}
+
+.fim {
+  display: flex;
+  flex-direction: column;
+}
+
+.erro {
+  margin: 0;
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
+}
