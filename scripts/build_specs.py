@@ -20,6 +20,7 @@ ETAPAS = {
     "3-estudos": "Estudos",
     "4-financas": "Finanças",
     "5-integracoes": "Integrações (lembretes, e-mail e Google Calendar)",
+    "6-tarefas": "Tarefas diárias",
 }
 STATUS = ["pendente", "em_andamento", "em_revisao", "concluida", "bloqueada"]
 TIPOS = ["unitario", "integracao", "componente", "e2e"]
