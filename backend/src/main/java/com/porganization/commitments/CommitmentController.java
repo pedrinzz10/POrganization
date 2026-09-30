@@ -2,6 +2,8 @@ package com.porganization.commitments;
 
 import com.porganization.commitments.dto.CommitmentRequest;
 import com.porganization.commitments.dto.CommitmentResponse;
+import com.porganization.commitments.dto.DonePatch;
+import com.porganization.commitments.dto.OccurrencePatch;
 import com.porganization.commitments.dto.OccurrenceResponse;
 import com.porganization.security.CurrentUser;
 import jakarta.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -59,6 +62,20 @@ public class CommitmentController {
     public CommitmentResponse update(@CurrentUser UUID userId, @PathVariable UUID id,
             @Valid @RequestBody CommitmentRequest request) {
         return CommitmentResponse.from(service.update(userId, id, request));
+    }
+
+    /** Ajusta só um dia de um compromisso recorrente: done, cancelled, title, startTime. */
+    @PatchMapping("/{id}/occurrences/{date}")
+    public OccurrenceResponse patchOccurrence(@CurrentUser UUID userId, @PathVariable UUID id,
+            @PathVariable @DateTimeFormat(iso = ISO.DATE) LocalDate date, @Valid @RequestBody OccurrencePatch patch) {
+        return service.patchOccurrence(userId, id, date, patch);
+    }
+
+    /** Concluir ou desfazer um compromisso único. */
+    @PatchMapping("/{id}/done")
+    public CommitmentResponse setDone(@CurrentUser UUID userId, @PathVariable UUID id,
+            @Valid @RequestBody DonePatch patch) {
+        return CommitmentResponse.from(service.setDone(userId, id, patch.done()));
     }
 
     @DeleteMapping("/{id}")
