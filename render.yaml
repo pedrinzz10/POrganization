@@ -54,3 +54,10 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
+      # Web Push: par de chaves VAPID (npx web-push generate-vapid-keys) e contato mailto:
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false

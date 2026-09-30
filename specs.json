@@ -2861,13 +2861,16 @@
         "frontend/src/app/features/settings/settings.page.ts",
         "backend/src/main/resources/db/migration/V17__push_subscriptions.sql",
         "backend/src/main/java/com/porganization/notifications/push/PushChannel.java",
-        "backend/src/main/java/com/porganization/notifications/push/PushSubscriptionController.java"
+        "backend/src/main/java/com/porganization/notifications/push/PushSubscriptionController.java",
+        "backend/src/main/java/com/porganization/notifications/push/VapidKeys.java",
+        "frontend/src/app/app.config.ts",
+        "frontend/vercel.json"
       ],
       "dependencias": [
         "I01"
       ],
       "conceito_angular": "Service worker do Angular (SwPush): um script que roda fora da página e recebe notificações push mesmo com o app fechado.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2900,9 +2903,9 @@
         {
           "id": "T3",
           "criterio": "CA3",
-          "tipo": "e2e",
-          "arquivo": "frontend/e2e/push.spec.ts",
-          "cenario": "Dado evento notificationclick simulado no service worker com data.url '/hoje', então uma janela do app é aberta ou focada em /hoje (validar manualmente em produção também)."
+          "tipo": "integracao",
+          "arquivo": "backend/src/test/java/com/porganization/notifications/push/PushChannelIT.java",
+          "cenario": "Dado um lembrete, então o payload enviado tem notification.data.onActionClick.default = {operation: 'navigateLastFocusedOrOpen', url: '/hoje'}, que o ngsw-worker usa para abrir ou focar o app em /hoje (o clique em si só roda com service worker ativo: validar manualmente em produção)."
         }
       ]
     },
