@@ -8,6 +8,7 @@ import com.porganization.finance.today.FinanceToday.DueItem;
 import com.porganization.finance.today.FinanceToday.DueKind;
 import com.porganization.studies.DailyStudyPlanner.Plan;
 import com.porganization.studies.DailyStudyPlanner.ReviewSuggestion;
+import com.porganization.tasks.DailyTaskDtos.DayTask;
 import com.porganization.today.TodayResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -73,5 +74,31 @@ class DailyDigestServiceTest {
     void diaVazioNaoGeraResumo() {
         assertThat(DailyDigestService.compose(userId, dia(List.of(compromisso("Feito", LocalTime.NOON, true)), List.of(), List.of())))
                 .isEmpty();
+    }
+
+    private static DayTask tarefa(String titulo, boolean feita) {
+        return new DayTask(UUID.randomUUID(), titulo, null, 1, feita);
+    }
+
+    // T05 T3 (CA3)
+    @Test
+    void contaAsTarefasPorFazer() {
+        TodayResponse t = dia(
+                List.of(compromisso("Dentista", LocalTime.of(15, 0), false), compromisso("Aniversário", null, false)),
+                List.of(revisao("Aula 1"), revisao("Aula 2"), revisao("Aula 3")),
+                List.of(new DueItem(DueKind.BILL, UUID.randomUUID(), "Internet", HOJE, new BigDecimal("100.00"), null, null)));
+        List<DayTask> tarefas = List.of(tarefa("Beber água", false), tarefa("Ler", false), tarefa("Meditar", false),
+                tarefa("Academia", false), tarefa("Já feita", true));
+
+        Notification resumo = DailyDigestService.compose(userId, t, tarefas).orElseThrow();
+
+        assertThat(resumo.subject()).isEqualTo("Seu dia: 2 compromissos, 3 revisões, 1 vencimento, 4 tarefas").endsWith("4 tarefas");
+        assertThat(resumo.lines()).contains("Tarefa: Beber água").doesNotContain("Tarefa: Já feita");
+    }
+
+    @Test
+    void soTarefasJaGeraResumo() {
+        assertThat(DailyDigestService.compose(userId, dia(List.of(), List.of(), List.of()), List.of(tarefa("Ler", false))))
+                .hasValueSatisfying(r -> assertThat(r.subject()).isEqualTo("Seu dia: 0 compromissos, 0 revisões, 0 vencimentos, 1 tarefa"));
     }
 }

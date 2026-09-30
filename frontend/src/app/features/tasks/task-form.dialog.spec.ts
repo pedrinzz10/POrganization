@@ -60,6 +60,7 @@ describe('TaskFormDialog', () => {
       title: 'Academia',
       emoji: '🏋️',
       weekDays: ['MON', 'WED', 'FRI'],
+      reminderTime: null,
     });
     req.flush({});
     await salvando;
@@ -73,5 +74,16 @@ describe('TaskFormDialog', () => {
 
     httpMock.expectNone({ method: 'POST', url: API });
     expect(element.textContent).toContain('Escolha pelo menos um dia.');
+  });
+
+  // T05: lembrete opcional
+  it('envia o horário do lembrete quando preenchido', async () => {
+    fixture.componentInstance.form.patchValue({ title: 'Beber água', reminderTime: '15:00' });
+
+    const salvando = fixture.componentInstance.save();
+    const req = httpMock.expectOne({ method: 'POST', url: API });
+    expect(req.request.body.reminderTime).toBe('15:00');
+    req.flush({});
+    await salvando;
   });
 });

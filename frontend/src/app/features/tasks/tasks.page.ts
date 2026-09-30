@@ -72,7 +72,13 @@ const ORDEM: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
             }
             {{ t.title }}
           </button>
-          <span class="tarefa__dias">{{ dias(t) }}</span>
+          <span class="tarefa__dias">
+            {{ dias(t) }}
+            @if (t.reminderTime) {
+              · <mat-icon class="tarefa__sino" aria-hidden="true">notifications</mat-icon
+              >{{ t.reminderTime }}
+            }
+          </span>
           <span class="tarefa__sequencia" [attr.aria-label]="'Sequência de ' + t.title"
             >🔥 {{ estatistica(t)?.streak ?? 0 }}</span
           >
@@ -179,6 +185,12 @@ const ORDEM: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     .tarefa__taxa {
       font: var(--mat-sys-body-small);
       color: var(--mat-sys-on-surface-variant);
+    }
+    .tarefa__sino {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      vertical-align: middle;
     }
     .tarefa__sequencia {
       font-weight: 600;

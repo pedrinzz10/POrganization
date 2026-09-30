@@ -12,6 +12,7 @@ interface Tarefa {
   position: number;
   archived: boolean;
   createdOn: string;
+  reminderTime: string | null;
 }
 
 /** API de tarefas de mentira, com estado: criar, marcar, sequência e excluir. */
