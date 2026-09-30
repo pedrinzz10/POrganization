@@ -291,7 +291,7 @@ Regras:
     "story": "Como Pedro, quero que cada PR seja testado automaticamente antes do merge.",
     "arquivos": [".github/workflows/backend.yml", ".github/workflows/frontend.yml"],
     "dependencias": ["B02", "B06"],
-    "status": "em_andamento",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Um PR que altera backend/ roda o job do backend e ele fica verde." },
       { "id": "CA2", "descricao": "Um PR que altera frontend/ roda o job do frontend e ele fica verde." },
@@ -309,9 +309,10 @@ Regras:
     "titulo": "Deploy: Render, Vercel e Supabase",
     "acao": "Criar Dockerfile multi-stage do backend (usuário não root, sem .env na imagem via .dockerignore) e render.yaml (variáveis DB_*, SUPABASE_JWKS_URI, FRONTEND_ORIGIN, porta via $PORT; segredos declarados com sync: false, com valor só no painel do Render); criar vercel.json com rewrite de SPA e build de produção com environment.ts de produção; no Render usar a URL do session pooler do Supabase (porta 5432), porque a conexão direta é só IPv6 e o modo transaction (6543) quebra os prepared statements do JDBC e o lock do Flyway; limitar o pool do Hikari (maximum-pool-size 5) e incluir SUPABASE_ISSUER nas variáveis.",
     "story": "Como Pedro, quero o app publicado para usar no celular e mostrar no portfólio.",
-    "arquivos": ["backend/Dockerfile", "render.yaml", "frontend/vercel.json", "frontend/src/environments/environment.ts"],
+    "arquivos": ["backend/Dockerfile", "backend/.dockerignore", "render.yaml", "frontend/vercel.json", "frontend/src/environments/environment.ts", "frontend/playwright.prod.config.ts"],
     "dependencias": ["B09", "B10"],
-    "status": "pendente",
+    "status": "bloqueada",
+    "nota": "Arquivos de deploy e CA1 prontos. CA2 e CA3 dependem do deploy real com as contas do Pedro (Render, Vercel e Supabase); os testes estão prontos em frontend/e2e/smoke-prod.spec.ts (npm run e2e:prod).",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "`docker build` do backend gera imagem que sobe e responde /api/health." },
       { "id": "CA2", "descricao": "Recarregar a página em /financas na Vercel não dá 404 (rewrite SPA)." },

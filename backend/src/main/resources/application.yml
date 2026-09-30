@@ -1,3 +1,7 @@
+server:
+  # O Render define PORT; localmente fica 8080
+  port: ${PORT:8080}
+
 spring:
   application:
     name: porganization

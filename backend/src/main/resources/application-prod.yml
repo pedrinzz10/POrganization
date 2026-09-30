@@ -7,3 +7,8 @@ spring:
     hikari:
       # O session pooler do Supabase no plano gratuito aceita poucas conexões por projeto
       maximum-pool-size: 5
+
+server:
+  # O Render termina o HTTPS e repassa X-Forwarded-*; assim URLs geradas saem com https
+  forward-headers-strategy: framework
+  shutdown: graceful

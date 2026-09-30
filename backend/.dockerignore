@@ -1,0 +1,9 @@
+# Só pom, wrapper e src entram no build. Segredos e artefatos locais nunca vão para a imagem.
+target/
+.env
+.env.*
+*.iml
+.idea/
+.vscode/
+Dockerfile
+.dockerignore

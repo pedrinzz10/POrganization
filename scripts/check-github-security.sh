@@ -20,7 +20,9 @@ for rule in pull_request non_fast_forward deletion required_status_checks; do
 done
 
 checks="$(gh api "repos/$REPO/rules/branches/main" --jq '[.[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context] | join(",")' 2>/dev/null)"
-if [[ ",$checks," == *",segredos,"* ]]; then ok "check 'segredos' obrigatório na main"; else fail "check 'segredos' não é obrigatório na main"; fi
+for check in segredos backend frontend; do
+  if [[ ",$checks," == *",$check,"* ]]; then ok "check '$check' obrigatório na main"; else fail "check '$check' não é obrigatório na main"; fi
+done
 
 if [ "$failures" -gt 0 ]; then
   echo "$failures verificação(ões) falharam"

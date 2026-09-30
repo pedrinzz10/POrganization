@@ -55,3 +55,13 @@ jobs:
           name: surefire-reports
           path: backend/target/surefire-reports/
           retention-days: 7
+
+  # B11: a imagem que o Render usa sobe com o perfil prod e responde /api/health
+  docker:
+    needs: mudancas
+    if: needs.mudancas.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Smoke test da imagem Docker
+        run: bash scripts/smoke-docker.sh
