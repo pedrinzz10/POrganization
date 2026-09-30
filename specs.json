@@ -1039,7 +1039,7 @@
       "dependencias": [
         "C03"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

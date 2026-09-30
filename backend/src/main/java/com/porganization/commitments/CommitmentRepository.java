@@ -21,4 +21,10 @@ public interface CommitmentRepository extends Repository<Commitment, UUID> {
     Optional<Commitment> findByIdAndUserId(UUID id, UUID userId);
 
     List<Commitment> findByUserIdAndDateBetween(UUID userId, LocalDate from, LocalDate to);
+
+    /** Compromissos únicos (sem recorrência) com a data no intervalo. */
+    List<Commitment> findByUserIdAndRecurrenceRuleIsNullAndDateBetween(UUID userId, LocalDate from, LocalDate to);
+
+    /** Séries que começaram até "to"; a expansão decide quais dias caem no intervalo. */
+    List<Commitment> findByUserIdAndRecurrenceRuleIsNotNullAndDateLessThanEqual(UUID userId, LocalDate to);
 }

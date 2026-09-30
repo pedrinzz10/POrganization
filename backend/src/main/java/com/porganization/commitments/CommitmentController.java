@@ -2,6 +2,7 @@ package com.porganization.commitments;
 
 import com.porganization.commitments.dto.CommitmentRequest;
 import com.porganization.commitments.dto.CommitmentResponse;
+import com.porganization.commitments.dto.OccurrenceResponse;
 import com.porganization.security.CurrentUser;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -41,12 +42,12 @@ public class CommitmentController {
         return ResponseEntity.created(location).body(CommitmentResponse.from(created));
     }
 
-    /** Compromissos de from a to (inclusive), em ordem cronológica. */
+    /** Ocorrências de from a to (inclusive), com as séries recorrentes expandidas, em ordem cronológica. */
     @GetMapping
-    public List<CommitmentResponse> findInRange(@CurrentUser UUID userId,
+    public List<OccurrenceResponse> findInRange(@CurrentUser UUID userId,
             @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate to) {
-        return service.findInRange(userId, from, to).stream().map(CommitmentResponse::from).toList();
+        return service.findInRange(userId, from, to);
     }
 
     @GetMapping("/{id}")

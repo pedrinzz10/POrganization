@@ -1,11 +1,14 @@
 package com.porganization.commitments;
 
 import com.porganization.commitments.dto.CommitmentRequest;
+import com.porganization.commitments.dto.OccurrenceResponse;
+import com.porganization.commitments.recurrence.RecurrenceExpander;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -19,11 +22,10 @@ public class CommitmentService {
     public static final int MAX_RANGE_DAYS = 400;
 
     /** Por data; no mesmo dia, os de dia todo primeiro, depois por horário e título. */
-    static final Comparator<Commitment> CHRONOLOGICAL = Comparator.comparing(Commitment::getDate)
-            .thenComparing(c -> c.isAllDay() ? LocalTime.MIN : c.getStartTime(),
-                    Comparator.nullsFirst(Comparator.naturalOrder()))
-            .thenComparing(c -> !c.isAllDay())
-            .thenComparing(Commitment::getTitle);
+    static final Comparator<OccurrenceResponse> CHRONOLOGICAL = Comparator.comparing(OccurrenceResponse::occurrenceDate)
+            .thenComparing(o -> !o.allDay())
+            .thenComparing(OccurrenceResponse::startTime, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(OccurrenceResponse::title);
 
     private final CommitmentRepository repository;
 
@@ -45,10 +47,29 @@ public class CommitmentService {
                 .orElseThrow(() -> new NotFoundException("Compromisso não encontrado"));
     }
 
+    /**
+     * Ocorrências de from a to: os compromissos únicos do intervalo mais as séries expandidas
+     * pelo RecurrenceExpander, tudo em ordem cronológica.
+     */
     @Transactional(readOnly = true)
-    public List<Commitment> findInRange(UUID userId, LocalDate from, LocalDate to) {
+    public List<OccurrenceResponse> findInRange(UUID userId, LocalDate from, LocalDate to) {
         validateRange(from, to);
-        return repository.findByUserIdAndDateBetween(userId, from, to).stream().sorted(CHRONOLOGICAL).toList();
+        List<OccurrenceResponse> occurrences = new ArrayList<>();
+        for (Commitment single : repository.findByUserIdAndRecurrenceRuleIsNullAndDateBetween(userId, from, to)) {
+            occurrences.add(occurrence(single, single.getDate()));
+        }
+        for (Commitment series : repository.findByUserIdAndRecurrenceRuleIsNotNullAndDateLessThanEqual(userId, to)) {
+            for (LocalDate date : RecurrenceExpander.expand(series.getDate(), series.getRecurrenceRule(), from, to)) {
+                occurrences.add(occurrence(series, date));
+            }
+        }
+        occurrences.sort(CHRONOLOGICAL);
+        return occurrences;
+    }
+
+    private static OccurrenceResponse occurrence(Commitment c, LocalDate date) {
+        return new OccurrenceResponse(c.getId(), date, c.getTitle(), c.getStartTime(), c.getEndTime(), c.isAllDay(),
+                c.isDone(), c.isRecurring(), c.getDescription(), c.getLocation());
     }
 
     static void validateRange(LocalDate from, LocalDate to) {
@@ -87,6 +108,9 @@ public class CommitmentService {
         commitment.setEndTime(allDay ? null : request.endTime());
         commitment.setDescription(blankToNull(request.description()));
         commitment.setLocation(blankToNull(request.location()));
+        if (request.recurrenceRule() != null) {
+            RecurrenceExpander.validate(request.date(), request.recurrenceRule());
+        }
         commitment.setRecurrenceRule(request.recurrenceRule());
     }
 
