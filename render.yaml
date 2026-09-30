@@ -37,3 +37,6 @@ services:
       # URL do frontend na Vercel, ex.: https://porganization.vercel.app
       - key: FRONTEND_ORIGIN
         sync: false
+      # Segredo do header X-Cron-Secret que o cron externo manda para /internal/reminders/dispatch
+      - key: CRON_SECRET
+        generateValue: true

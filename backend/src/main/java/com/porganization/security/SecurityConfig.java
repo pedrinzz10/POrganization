@@ -29,6 +29,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/health", "/actuator/health", "/actuator/health/**").permitAll()
+                        // Cron externo: sem JWT, protegido pelo header X-Cron-Secret no próprio controller
+                        .requestMatchers("/internal/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
         return http.build();

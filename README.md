@@ -104,6 +104,7 @@ O backend lê variáveis de ambiente. Localmente, o perfil `dev` as carrega do `
 | `SUPABASE_JWKS_URI` | não | `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` (exige as JWT Signing Keys assimétricas ativas) |
 | `SUPABASE_ISSUER` | não | `https://<ref>.supabase.co/auth/v1` |
 | `FRONTEND_ORIGIN` | não | origem liberada no CORS; padrão `http://localhost:4200`, várias separadas por vírgula |
+| `CRON_SECRET` | **sim** | segredo do header `X-Cron-Secret` que o cron externo manda para `/internal/**` (lembretes); sem ele, esses endpoints respondem 401 |
 | `PORT` | não | porta HTTP; o Render define, localmente é `8080` |
 | `SPRING_PROFILES_ACTIVE` | não | `dev` (local com Supabase) ou `prod` (Render); sem perfil, só os testes funcionam |
 
@@ -125,8 +126,10 @@ As regras sobre segredos e o que fazer se algum vazar estão em [`SECURITY.md`](
    - Em *API Keys*, copie a publishable key.
 2. **Render (API)**
    - *New → Blueprint* → este repositório. O [`render.yaml`](render.yaml) cria o serviço `porganization-api` com Docker.
-   - Preencha `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SUPABASE_JWKS_URI`, `SUPABASE_ISSUER` e `FRONTEND_ORIGIN`.
+   - Preencha `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SUPABASE_JWKS_URI`, `SUPABASE_ISSUER` e `FRONTEND_ORIGIN`. O `CRON_SECRET` o Render gera sozinho (copie o valor para o cron abaixo).
    - No primeiro deploy, o Flyway cria as tabelas no Supabase.
+   - **Cron dos lembretes:** como a API dorme no plano gratuito, um cron externo (ex.: [cron-job.org](https://cron-job.org)) chama a cada 5 minutos
+     `POST https://porganization-api.onrender.com/internal/reminders/dispatch` com o header `X-Cron-Secret: <CRON_SECRET>`.
 3. **Vercel (frontend)**
    - *New Project* → este repositório, com **Root Directory = `frontend`**. O [`vercel.json`](frontend/vercel.json) define o build e o rewrite de SPA.
 4. **Endereços de produção:** coloque as URLs reais em `frontend/src/environments/environment.ts`, num PR.

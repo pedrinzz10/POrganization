@@ -2759,12 +2759,15 @@
         "backend/src/main/java/com/porganization/notifications/Reminder.java",
         "backend/src/main/java/com/porganization/notifications/ReminderDispatcher.java",
         "backend/src/main/java/com/porganization/notifications/InternalCronController.java",
-        "backend/src/main/java/com/porganization/notifications/NotificationChannel.java"
+        "backend/src/main/java/com/porganization/notifications/NotificationChannel.java",
+        "backend/src/main/java/com/porganization/notifications/NotificationLog.java",
+        "backend/src/main/java/com/porganization/notifications/Notification.java",
+        "backend/src/main/java/com/porganization/notifications/ChannelType.java"
       ],
       "dependencias": [
         "C05"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
