@@ -32,6 +32,10 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
     List<Transaction> findByUserIdAndTypeAndPaidFalseAndAccountIdIsNotNullAndDateBetweenOrderByDateAsc(UUID userId,
             TransactionType type, LocalDate from, LocalDate to);
 
+    /** Ocorrências de agendados em conta cuja data da regra cai no intervalo (F19). */
+    List<Transaction> findByUserIdAndRecurringIdIsNotNullAndAccountIdIsNotNullAndScheduledDateBetween(UUID userId,
+            LocalDate from, LocalDate to);
+
     /** As Specifications de TransactionSpecifications sempre começam pelo dono (ownedBy). */
     List<Transaction> findAll(Specification<Transaction> spec, Sort sort);
 
