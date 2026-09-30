@@ -637,7 +637,7 @@
         "B04"
       ],
       "conceito_angular": "Guards (CanActivateFn) decidem se uma rota abre; interceptors (HttpInterceptorFn) alteram toda requisição do HttpClient num único ponto.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

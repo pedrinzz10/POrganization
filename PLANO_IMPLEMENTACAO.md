@@ -250,7 +250,7 @@ Regras:
     "arquivos": ["frontend/src/app/core/auth/auth.guard.ts", "frontend/src/app/core/auth/auth.interceptor.ts", "frontend/src/app/app.config.ts", "frontend/src/app/app.routes.ts"],
     "dependencias": ["B07", "B04"],
     "conceito_angular": "Guards (CanActivateFn) decidem se uma rota abre; interceptors (HttpInterceptorFn) alteram toda requisição do HttpClient num único ponto.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Sem sessão, acessar /hoje redireciona para /login." },
       { "id": "CA2", "descricao": "Chamadas para apiUrl levam o header Bearer; chamadas para outros domínios não." },
