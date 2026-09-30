@@ -39,6 +39,7 @@ export const routes: Routes = [
         path: 'financas',
         title: 'Finanças · POrganization',
         loadComponent: () => import('./features/finance/finance.page').then((m) => m.FinancePage),
+        loadChildren: () => import('./features/finance/finance.routes').then((m) => m.FINANCE_ROUTES),
       },
       {
         path: 'configuracoes',
