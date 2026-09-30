@@ -433,7 +433,7 @@ Regras:
     "story": "Como Pedro, quero marcar como feito um compromisso (ou só a ocorrência de hoje de um recorrente) e ajustar uma ocorrência sem mexer na série.",
     "arquivos": ["backend/src/main/resources/db/migration/V3__commitment_exceptions.sql", "backend/src/main/java/com/porganization/commitments/CommitmentException.java", "backend/src/main/java/com/porganization/commitments/CommitmentService.java", "backend/src/main/java/com/porganization/commitments/CommitmentController.java"],
     "dependencias": ["C04"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Marcar done numa ocorrência afeta só aquela data." },
       { "id": "CA2", "descricao": "Cancelar uma ocorrência a remove da consulta por intervalo." },
