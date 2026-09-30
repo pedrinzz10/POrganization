@@ -16,6 +16,9 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
 
     void delete(Transaction transaction);
 
+    /** Ocorrências ainda em aberto de um agendado (as pagas não mudam com a edição do modelo). */
+    List<Transaction> findByRecurringIdAndPaidFalse(UUID recurringId);
+
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
 
     List<Transaction> findByUserIdAndTransferGroupId(UUID userId, UUID transferGroupId);

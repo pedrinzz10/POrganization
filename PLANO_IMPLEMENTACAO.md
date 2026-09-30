@@ -922,7 +922,7 @@ Regras:
     "id": "F08",
     "etapa": "4-financas",
     "titulo": "Gastos e rendas fixos recorrentes",
-    "acao": "Criar recurring_transactions (template com tipo, valor, conta ou cartão, categoria, day_of_month, start/end) e RecurringGenerator idempotente que cria as transações do mês (paid=false) quando o mês é consultado ou pelo job diário; editar o template afeta só meses ainda não gerados.",
+    "acao": "Criar recurring_transactions (template com tipo, valor, conta ou cartão, categoria, day_of_month, start/end) e RecurringGenerator idempotente que cria as transações do mês (paid=false) quando o mês é consultado ou pelo job diário; editar o template afeta só meses ainda não gerados (a F22 muda isso: editar leva a mudança também às ocorrências em aberto).",
     "story": "Como Pedro, quero cadastrar aluguel, assinaturas e salário uma vez e vê-los todo mês.",
     "arquivos": ["backend/src/main/resources/db/migration/V13__recurring_transactions.sql", "backend/src/main/java/com/porganization/finance/recurring/RecurringTransaction.java", "backend/src/main/java/com/porganization/finance/recurring/RecurringGenerator.java", "backend/src/main/java/com/porganization/finance/recurring/RecurringController.java"],
     "dependencias": ["F05"],
@@ -1373,6 +1373,60 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
         "tipo": "componente",
         "arquivo": "frontend/src/app/features/today/sections/today-finance.component.spec.ts",
         "cenario": "Dado Bradesco 1500,00 e Nubank 300,00, então aparecem 'R$ 1.500,00' e 'R$ 300,00' por conta, o total 'R$ 1.800,00' e o previsto."
+      }
+    ]
+  },
+  {
+    "id": "F22",
+    "etapa": "4-financas",
+    "titulo": "Editar ou excluir agendado atualiza as ocorrências em aberto",
+    "acao": "Ao editar um agendado, as ocorrências ainda em aberto (não confirmadas) recebem a regra nova (data), valor, descrição, categoria e conta/cartão; a remarcada à mão mantém a data escolhida; a que sai do período é removida e o mês volta a ser gerado se o período o incluir de novo. Ao excluir, as ocorrências em aberto saem junto; as confirmadas ficam no extrato.",
+    "story": "Como Pedro, quero corrigir o dia útil ou o início de um agendado e ver a mudança no mês, sem dinheiro em dobro ao excluir e recriar.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/finance/recurring/RecurringGenerator.java",
+      "backend/src/main/java/com/porganization/finance/recurring/RecurringService.java",
+      "frontend/src/app/features/finance/recurring/recurring-form.dialog.ts"
+    ],
+    "dependencias": [
+      "F18",
+      "F19"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Editar a regra ou o valor muda a data e o valor das ocorrências em aberto; confirmadas não mudam e remarcadas mantêm a data escolhida."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Mudar o início para um mês depois tira a ocorrência em aberto do mês que saiu; voltar o início gera o mês de novo, uma vez só."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Excluir o agendado remove as ocorrências em aberto e mantém as confirmadas; recriar não deixa o mês em dobro."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/RecurringEditIT.java",
+        "cenario": "Salário no 5º dia útil (08/09 e 07/10) editado para o 3º dia útil e R$ 1.100 → 03/09 e 05/10 com R$ 1.100; setembro já confirmado continua 08/09 com R$ 1.000 e outubro remarcado para 20/10 continua em 20/10."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/RecurringEditIT.java",
+        "cenario": "Início de 2026-09 para 2026-10 → setembro vazio; de volta para 2026-09 → uma ocorrência em 08/09."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/RecurringEditIT.java",
+        "cenario": "Setembro confirmado, excluir o agendado → extrato só com os R$ 1.000 recebidos; recriar desde outubro → uma ocorrência em outubro."
       }
     ]
   }
@@ -1855,7 +1909,7 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
 | 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS |
-| 4 Finanças | F01 a F21 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
+| 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T05 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
 

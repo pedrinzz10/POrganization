@@ -20,8 +20,8 @@ export interface RecurringFormData {
 }
 
 /**
- * Gasto ou renda fixo: valor, dia do mês e onde cai (conta, ou cartão para gasto). Editar só
- * muda os meses que ainda não foram gerados.
+ * Agendado (gasto ou renda que se repete): valor, regra da data e onde cai (conta, ou cartão para
+ * gasto). Editar muda também as ocorrências em aberto; as já confirmadas ficam como foram.
  */
 @Component({
   selector: 'app-recurring-form-dialog',
@@ -36,7 +36,7 @@ export interface RecurringFormData {
     MoneyInputDirective,
   ],
   template: `
-    <h2 mat-dialog-title>{{ editing ? 'Editar fixo' : 'Novo fixo' }}</h2>
+    <h2 mat-dialog-title>{{ editing ? 'Editar agendado' : 'Novo agendado' }}</h2>
     <mat-dialog-content>
       <form class="form" [formGroup]="form" (ngSubmit)="save()" id="recurring-form">
         <mat-button-toggle-group formControlName="type" aria-label="Tipo" hideSingleSelectionIndicator>
@@ -121,6 +121,9 @@ export interface RecurringFormData {
             <mat-hint>Vazio = sem fim</mat-hint>
           </mat-form-field>
         </div>
+        @if (editing) {
+          <p class="dica">A mudança vale também para o que ainda está em aberto; o que já foi confirmado não muda.</p>
+        }
         @if (error(); as mensagem) {
           <p class="erro" role="alert">{{ mensagem }}</p>
         }
@@ -140,6 +143,11 @@ export interface RecurringFormData {
       margin: 0 0 8px;
       font: var(--mat-sys-body-small);
       color: var(--mat-sys-primary);
+    }
+    .dica {
+      margin: 0 0 8px;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
     }
     .form {
       display: flex;
