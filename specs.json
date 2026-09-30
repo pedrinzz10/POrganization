@@ -960,7 +960,7 @@
       "dependencias": [
         "C01"
       ],
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2690,7 +2690,7 @@
         "F14"
       ],
       "conceito_angular": "Integração de biblioteca externa em componente: os dados vêm por input() e um computed() monta a configuração do gráfico.",
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2727,16 +2727,14 @@
       "arquivos": [
         "backend/src/main/java/com/porganization/today/TodayService.java",
         "backend/src/main/java/com/porganization/today/TodayResponse.java",
-        "frontend/src/app/features/today/sections/today-finance.component.ts",
-        "backend/src/main/java/com/porganization/finance/today/FinanceTodayService.java",
-        "backend/src/main/java/com/porganization/finance/today/FinanceToday.java"
+        "frontend/src/app/features/today/sections/today-finance.component.ts"
       ],
       "dependencias": [
         "F11",
         "E11"
       ],
       "conceito_angular": "Reuso entre features: a seção importa o TransactionFormComponent standalone da feature de finanças em modo compacto, configurado por input(), sem duplicar o formulário.",
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2775,7 +2773,7 @@
         "backend/src/main/java/com/porganization/finance/calendar/Holidays.java"
       ],
       "dependencias": [],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3045,15 +3043,12 @@
         "backend/src/main/java/com/porganization/notifications/Reminder.java",
         "backend/src/main/java/com/porganization/notifications/ReminderDispatcher.java",
         "backend/src/main/java/com/porganization/notifications/InternalCronController.java",
-        "backend/src/main/java/com/porganization/notifications/NotificationChannel.java",
-        "backend/src/main/java/com/porganization/notifications/NotificationLog.java",
-        "backend/src/main/java/com/porganization/notifications/Notification.java",
-        "backend/src/main/java/com/porganization/notifications/ChannelType.java"
+        "backend/src/main/java/com/porganization/notifications/NotificationChannel.java"
       ],
       "dependencias": [
         "C05"
       ],
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3107,7 +3102,7 @@
       "dependencias": [
         "I01"
       ],
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3147,16 +3142,13 @@
         "frontend/src/app/features/settings/settings.page.ts",
         "backend/src/main/resources/db/migration/V17__push_subscriptions.sql",
         "backend/src/main/java/com/porganization/notifications/push/PushChannel.java",
-        "backend/src/main/java/com/porganization/notifications/push/PushSubscriptionController.java",
-        "backend/src/main/java/com/porganization/notifications/push/VapidKeys.java",
-        "frontend/src/app/app.config.ts",
-        "frontend/vercel.json"
+        "backend/src/main/java/com/porganization/notifications/push/PushSubscriptionController.java"
       ],
       "dependencias": [
         "I01"
       ],
       "conceito_angular": "Service worker do Angular (SwPush): um script que roda fora da página e recebe notificações push mesmo com o app fechado.",
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3189,9 +3181,9 @@
         {
           "id": "T3",
           "criterio": "CA3",
-          "tipo": "integracao",
-          "arquivo": "backend/src/test/java/com/porganization/notifications/push/PushChannelIT.java",
-          "cenario": "Dado um lembrete, então o payload enviado tem notification.data.onActionClick.default = {operation: 'navigateLastFocusedOrOpen', url: '/hoje'}, que o ngsw-worker usa para abrir ou focar o app em /hoje (o clique em si só roda com service worker ativo: validar manualmente em produção)."
+          "tipo": "e2e",
+          "arquivo": "frontend/e2e/push.spec.ts",
+          "cenario": "Dado evento notificationclick simulado no service worker com data.url '/hoje', então uma janela do app é aberta ou focada em /hoje (validar manualmente em produção também)."
         }
       ]
     },
@@ -3205,11 +3197,7 @@
         "backend/src/main/resources/db/migration/V18__notification_settings.sql",
         "backend/src/main/java/com/porganization/notifications/SettingsController.java",
         "frontend/src/app/features/settings/settings.page.ts",
-        "frontend/src/app/features/commitments/form/commitment-form.dialog.ts",
-        "backend/src/main/java/com/porganization/notifications/ReminderService.java",
-        "backend/src/main/java/com/porganization/notifications/ReminderSpec.java",
-        "frontend/src/app/core/settings/preferences.service.ts",
-        "frontend/src/app/features/settings/preferences-form.component.ts"
+        "frontend/src/app/features/commitments/form/commitment-form.dialog.ts"
       ],
       "dependencias": [
         "I02",
@@ -3217,7 +3205,7 @@
         "C09"
       ],
       "conceito_angular": "FormArray e valores iniciais vindos de serviço: os lembretes do compromisso são um FormArray pré-preenchido com o padrão das configurações (exposto como signal), e o usuário pode adicionar ou remover itens.",
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3254,14 +3242,13 @@
       "arquivos": [
         "backend/src/main/java/com/porganization/notifications/DailyDigestService.java",
         "backend/src/main/resources/templates/daily-digest-email.html",
-        "backend/src/main/java/com/porganization/notifications/InternalCronController.java",
-        "backend/src/main/resources/db/migration/V19__daily_digest.sql"
+        "backend/src/main/java/com/porganization/notifications/InternalCronController.java"
       ],
       "dependencias": [
         "I04",
         "F16"
       ],
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3296,20 +3283,17 @@
       "acao": "Criar fluxo OAuth 2.0 authorization code com escopo calendar.events: GET /api/integrations/google/auth-url, callback que troca o code por tokens, guarda o refresh token criptografado (AES-GCM com chave em GOOGLE_TOKEN_KEY) em google_connections, e botão Conectar/Desconectar nas Configurações.",
       "story": "Como Pedro, quero conectar minha conta Google para meus compromissos aparecerem no Google Agenda.",
       "arquivos": [
-        "backend/src/main/resources/db/migration/V20__google_connections.sql",
+        "backend/src/main/resources/db/migration/V19__google_connections.sql",
         "backend/src/main/java/com/porganization/integrations/google/GoogleOAuthController.java",
         "backend/src/main/java/com/porganization/integrations/google/GoogleOAuthService.java",
         "backend/src/main/java/com/porganization/integrations/google/TokenCrypto.java",
-        "frontend/src/app/features/settings/google-calendar.component.ts",
-        "backend/src/main/java/com/porganization/integrations/google/GoogleConnection.java",
-        "backend/src/main/java/com/porganization/integrations/google/GoogleProperties.java",
-        "backend/src/main/java/com/porganization/integrations/google/GoogleConfig.java"
+        "frontend/src/app/features/settings/google-calendar.component.ts"
       ],
       "dependencias": [
         "I04"
       ],
       "conceito_angular": "Navegação para fora do app e retorno: o botão Conectar leva para a URL do Google, e a rota de Configurações lê o query param de retorno (?google=ok|erro) via input() com withComponentInputBinding() para mostrar o resultado.",
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3352,20 +3336,18 @@
       "id": "I07",
       "etapa": "5-integracoes",
       "titulo": "Sincronizar do app para o Google Calendar",
-      "acao": "Ao criar, editar ou excluir compromisso (incluindo recorrência convertida para RRULE e exceções), publicar evento no calendário escolhido via Google Calendar API, guardando google_event_id (migração V21 adiciona em commitments google_event_id text null e sync_pending boolean not null default false); usar evento de domínio após commit (@TransactionalEventListener) para não travar a resposta.",
+      "acao": "Ao criar, editar ou excluir compromisso (incluindo recorrência convertida para RRULE e exceções), publicar evento no calendário escolhido via Google Calendar API, guardando google_event_id (migração V20 adiciona em commitments google_event_id text null e sync_pending boolean not null default false); usar evento de domínio após commit (@TransactionalEventListener) para não travar a resposta.",
       "story": "Como Pedro, quero que o que eu criar no app apareça automaticamente no Google Agenda.",
       "arquivos": [
         "backend/src/main/java/com/porganization/integrations/google/GoogleCalendarClient.java",
         "backend/src/main/java/com/porganization/integrations/google/CommitmentSyncListener.java",
         "backend/src/main/java/com/porganization/integrations/google/RRuleMapper.java",
-        "backend/src/main/resources/db/migration/V21__google_sync_columns.sql",
-        "backend/src/main/java/com/porganization/integrations/google/GoogleSyncService.java",
-        "backend/src/main/java/com/porganization/commitments/CommitmentChangedEvent.java"
+        "backend/src/main/resources/db/migration/V20__google_sync_columns.sql"
       ],
       "dependencias": [
         "I06"
       ],
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -3412,13 +3394,13 @@
       "story": "Como Pedro, quero ver no app os eventos que criei direto no Google Agenda.",
       "arquivos": [
         "backend/src/main/java/com/porganization/integrations/google/GoogleImportService.java",
-        "backend/src/main/resources/db/migration/V22__google_sync_state.sql",
+        "backend/src/main/resources/db/migration/V21__google_sync_state.sql",
         "backend/src/main/java/com/porganization/notifications/InternalCronController.java"
       ],
       "dependencias": [
         "I07"
       ],
-      "status": "concluida",
+      "status": "pendente",
       "criterios_de_aceite": [
         {
           "id": "CA1",
