@@ -1,0 +1,52 @@
+<div class="topo">
+  <p class="dica">Arraste para definir a prioridade: a de cima é estudada primeiro.</p>
+  <button mat-flat-button type="button" (click)="abrir()">
+    <mat-icon aria-hidden="true">add</mat-icon>
+    Nova matéria
+  </button>
+</div>
+
+@if (tags.hasValue() && tags.value().length > 0) {
+  <mat-chip-listbox class="filtro" aria-label="Filtrar por tag">
+    @for (tag of tags.value(); track tag.id) {
+      <mat-chip-option [selected]="filtro() === tag.name" (click)="alternarFiltro(tag.name)">{{ tag.name }}</mat-chip-option>
+    }
+  </mat-chip-listbox>
+}
+
+@if (carregando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@if (erro(); as mensagem) {
+  <p class="erro" role="alert">{{ mensagem }}</p>
+}
+
+<ol class="lista" cdkDropList [cdkDropListDisabled]="filtro() !== null" (cdkDropListDropped)="drop($event)">
+  @for (materia of visiveis(); track materia.id; let i = $index) {
+    <li class="materia" cdkDrag [cdkDragDisabled]="filtro() !== null">
+      <mat-icon class="materia__alca" cdkDragHandle aria-hidden="true">drag_indicator</mat-icon>
+      <span class="materia__posicao">{{ i + 1 }}</span>
+      <span class="materia__cor" [style.background]="materia.color ?? 'var(--mat-sys-outline-variant)'"></span>
+      <button type="button" class="materia__nome" (click)="abrir(materia)">{{ materia.name }}</button>
+      <span class="materia__tags">
+        @for (tag of materia.tags; track tag.id) {
+          <span class="tag">{{ tag.name }}</span>
+        }
+      </span>
+      <span class="materia__sessoes">
+        <button mat-icon-button type="button" [attr.aria-label]="'Menos uma sessão de ' + materia.name" (click)="mudarSessoes(materia, -1)">
+          <mat-icon aria-hidden="true">remove</mat-icon>
+        </button>
+        <span>{{ materia.sessionsPerWeek }}x por semana</span>
+        <button mat-icon-button type="button" [attr.aria-label]="'Mais uma sessão de ' + materia.name" (click)="mudarSessoes(materia, 1)">
+          <mat-icon aria-hidden="true">add</mat-icon>
+        </button>
+      </span>
+      <span class="materia__aula">{{ materia.lessonMinutes }} min</span>
+    </li>
+  } @empty {
+    @if (!carregando() && !erro()) {
+      <li class="vazio">{{ filtro() ? 'Nenhuma matéria com essa tag.' : 'Nenhuma matéria ainda. Crie a primeira!' }}</li>
+    }
+  }
+</ol>

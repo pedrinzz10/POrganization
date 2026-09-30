@@ -1512,7 +1512,7 @@
         "B09"
       ],
       "conceito_angular": "Angular CDK DragDrop (cdkDropList/cdkDrag) e atualização otimista: a lista muda na hora e volta ao estado anterior se a API falhar.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

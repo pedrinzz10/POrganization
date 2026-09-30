@@ -1,0 +1,71 @@
+<h2 mat-dialog-title>{{ editing ? 'Editar matéria' : 'Nova matéria' }}</h2>
+
+<mat-dialog-content>
+  <form class="form" [formGroup]="form" (ngSubmit)="save()" id="subject-form">
+    <div class="linha">
+      <mat-form-field class="cor">
+        <mat-label>Cor</mat-label>
+        <input matInput type="color" formControlName="color" />
+      </mat-form-field>
+      <mat-form-field style="flex: 1">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="name" placeholder="Ex.: Java Advanced" required />
+        @if (form.controls.name.invalid) {
+          <mat-error>Informe o nome.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="linha">
+      <mat-form-field>
+        <mat-label>Sessões por semana</mat-label>
+        <input matInput type="number" min="0" max="21" formControlName="sessionsPerWeek" />
+        <mat-hint>0 a 21</mat-hint>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Minutos por aula</mat-label>
+        <input matInput type="number" min="5" max="240" formControlName="lessonMinutes" />
+        <mat-hint>5 a 240</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field>
+      <mat-label>Tags</mat-label>
+      <mat-chip-grid #grade aria-label="Tags da matéria">
+        @for (tag of selecionadas(); track tag.id) {
+          <mat-chip-row (removed)="remover(tag)">
+            {{ tag.name }}
+            <button matChipRemove [attr.aria-label]="'Remover ' + tag.name">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        }
+        <input
+          placeholder="Digite e tecle Enter para criar"
+          [formControl]="busca"
+          [matChipInputFor]="grade"
+          [matAutocomplete]="auto"
+          (keydown.enter)="criarOuEscolher($event)"
+        />
+      </mat-chip-grid>
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="escolher($event)">
+        @for (tag of sugestoes(); track tag.id) {
+          <mat-option [value]="tag">{{ tag.name }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    @if (error(); as mensagem) {
+      <p class="erro" role="alert">{{ mensagem }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  @if (editing) {
+    <button mat-button type="button" class="perigo" [disabled]="saving()" (click)="archive()">Arquivar</button>
+  }
+  <span class="espaco"></span>
+  <button mat-button type="button" mat-dialog-close>Cancelar</button>
+  <button mat-flat-button type="submit" form="subject-form" [disabled]="saving()">Salvar</button>
+</mat-dialog-actions>
