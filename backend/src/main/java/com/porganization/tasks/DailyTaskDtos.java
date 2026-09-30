@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,10 @@ public final class DailyTaskDtos {
     }
 
     public record OrderRequest(@NotEmpty List<UUID> ids) {
+    }
+
+    /** Sequência atual e % dos últimos 30 dias (null sem nenhum dia devido ainda). */
+    public record TaskStatsResponse(UUID taskId, int streak, BigDecimal completionRate) {
     }
 
     /** Uma tarefa devida no dia, com feito ou não. */

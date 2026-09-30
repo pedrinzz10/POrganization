@@ -7,10 +7,12 @@ import com.porganization.settings.UserSettingsService;
 import com.porganization.tasks.DailyTaskDtos.DayTask;
 import com.porganization.tasks.DailyTaskDtos.TaskRequest;
 import com.porganization.tasks.DailyTaskDtos.TaskResponse;
+import com.porganization.tasks.DailyTaskDtos.TaskStatsResponse;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -128,6 +130,25 @@ public class DailyTaskService {
         return active.stream()
                 .filter(t -> byTask.get(t.getId()).isDue(day))
                 .map(t -> new DayTask(t.getId(), t.getTitle(), t.getEmoji(), t.getPosition(), done.contains(t.getId())))
+                .toList();
+    }
+
+    /** Sequência e % dos últimos 30 dias de cada tarefa (ativas e arquivadas). */
+    @Transactional(readOnly = true)
+    public List<TaskStatsResponse> stats(UUID userId) {
+        List<DailyTask> all = tasks.findByUserIdOrderByPositionAscTitleAsc(userId);
+        Map<UUID, TaskSchedule> byTask = schedulesOf(all);
+        Map<UUID, Set<LocalDate>> done = new HashMap<>();
+        jdbc.query("select task_id, day from daily_task_completions where user_id = ?",
+                rs -> {
+                    done.computeIfAbsent(rs.getObject(1, UUID.class), k -> new HashSet<>()).add(rs.getObject(2, LocalDate.class));
+                }, userId);
+        LocalDate today = today(userId);
+        return all.stream()
+                .map(t -> {
+                    TaskStats s = TaskStats.of(byTask.get(t.getId()), done.getOrDefault(t.getId(), Set.of()), today);
+                    return new TaskStatsResponse(t.getId(), s.streak(), s.completionRate());
+                })
                 .toList();
     }
 

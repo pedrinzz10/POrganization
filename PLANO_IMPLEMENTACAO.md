@@ -1651,7 +1651,7 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
     "dependencias": [
       "T01"
     ],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       {
         "id": "CA1",
