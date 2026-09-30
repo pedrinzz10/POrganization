@@ -1092,6 +1092,293 @@ Regras:
 ]
 ```
 
+### Etapa 4 (ajuste): Agendados
+
+Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F08) viram agendados, com data calculada por regra de dia útil e confirmação no dia.
+
+- Regras de data: dia fixo do mês (se cair em dia não útil: manter, antecipar ou adiar), N-ésimo dia útil do mês ou último dia útil.
+- Dia útil: segunda a sexta, menos os feriados nacionais fixos e os móveis bancários (Carnaval, Sexta-feira Santa, Corpus Christi), calculados pela Páscoa.
+- Cada ocorrência em conta passa por: previsto → para confirmar (no dia) → atrasado (se ninguém agir) e termina em confirmado (valor e data real ajustáveis), remarcado (qualquer data futura) ou cancelado. A regra nunca muda por causa de uma ocorrência; dá para confirmar antes da data.
+- Só entra no saldo o que foi confirmado. Agendado no cartão continua indo direto para a fatura.
+- Tela "Agendados" no lugar de "Fixos"; "Para confirmar" na tela Hoje; aviso opcional num horário único do usuário (padrão 09:00).
+- Resumo e tela Hoje com saldo por conta, total e previsto do fim do mês.
+- Vem antes da Etapa 6; as migrações seguem a ordem real (V23 e V24 aqui, V25 e V26 nas tarefas).
+
+```json
+[
+  {
+    "id": "F17",
+    "etapa": "4-financas",
+    "titulo": "Calendário de dias úteis",
+    "acao": "Criar BusinessCalendar (função pura): dia útil é segunda a sexta menos os feriados nacionais fixos (1/1, 21/4, 1/5, 7/9, 12/10, 2/11, 15/11, 20/11, 25/12) e os móveis bancários calculados pela Páscoa (Carnaval segunda e terça, Sexta-feira Santa, Corpus Christi). Operações: isBusinessDay, nthBusinessDay(mês, n), lastBusinessDay(mês) e adjust(data, MANTER | ANTECIPAR | ADIAR).",
+    "story": "Como Pedro, quero que o sistema saiba qual é o 5º dia útil do mês, pulando fins de semana e feriados.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/finance/calendar/BusinessCalendar.java",
+      "backend/src/main/java/com/porganization/finance/calendar/Holidays.java"
+    ],
+    "dependencias": [],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "A Páscoa e os feriados móveis saem certos para qualquer ano (2026: Carnaval 16 e 17/2, Sexta-feira Santa 3/4, Corpus Christi 4/6)."
+      },
+      {
+        "id": "CA2",
+        "descricao": "O N-ésimo e o último dia útil do mês pulam fins de semana e feriados; N maior que os dias úteis do mês é erro."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Ajuste de uma data não útil: ANTECIPAR vai para o dia útil anterior, ADIAR para o seguinte, MANTER não muda; data útil nunca muda."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/finance/calendar/HolidaysTest.java",
+        "cenario": "Páscoa de 2025, 2026 e 2027 = 20/4, 5/4 e 28/3; em 2026, 16/2, 17/2, 3/4 e 4/6 são feriados e 18/2 (quarta de cinzas) não."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/finance/calendar/BusinessCalendarTest.java",
+        "cenario": "5º dia útil: out/2026 = 07/10; nov/2026 = 09/11 (pula sáb 7, dom 8 e Finados 2/11); último dia útil de fev/2026 = 27/02; 25º dia útil de fev → erro."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/finance/calendar/BusinessCalendarTest.java",
+        "cenario": "Dia 20/09/2026 (domingo): ANTECIPAR → 18/09, ADIAR → 21/09, MANTER → 20/09; 22/09 (terça) igual nos três."
+      }
+    ]
+  },
+  {
+    "id": "F18",
+    "etapa": "4-financas",
+    "titulo": "Agendados: regras de data e estado das ocorrências",
+    "acao": "Evoluir os fixos (F08) para agendados (V23): regra de data DIA_DO_MES (com ajuste MANTER/ANTECIPAR/ADIAR se cair em dia não útil), DIA_UTIL (N-ésimo, ex.: 5º) ou ULTIMO_DIA_UTIL, calculada pelo BusinessCalendar ao gerar a ocorrência do mês. Cada ocorrência em conta tem estado: PREVISTO (data futura), PARA_CONFIRMAR (hoje), ATRASADO (data passada sem ação), CONFIRMADO (pago/recebido), REMARCADO (nova data, com a original guardada) e CANCELADO. Ocorrência no cartão continua indo direto para a fatura, sem confirmação. A regra nunca muda por causa de uma ocorrência.",
+    "story": "Como Pedro, quero cadastrar 'salário de R$ X no Bradesco no 5º dia útil' e ver a data certa em cada mês.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V23__scheduled_rules.sql",
+      "backend/src/main/java/com/porganization/finance/recurring/RecurringTransaction.java",
+      "backend/src/main/java/com/porganization/finance/recurring/RecurringGenerator.java",
+      "backend/src/main/java/com/porganization/finance/recurring/OccurrenceStatus.java"
+    ],
+    "dependencias": [
+      "F17",
+      "F08"
+    ],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Agendado 'DIA_UTIL 5' gera a ocorrência de out/2026 em 07/10 e a de nov/2026 em 09/11; 'DIA_DO_MES 20 ANTECIPAR' em set/2026 cai em 18/09."
+      },
+      {
+        "id": "CA2",
+        "descricao": "O estado sai da data e do que foi feito: futura = PREVISTO, hoje = PARA_CONFIRMAR, passada sem ação = ATRASADO; confirmada, remarcada ou cancelada mantém o estado da ação."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Ocorrência que não é CONFIRMADO não entra no saldo da conta."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/ScheduledRulesIT.java",
+        "cenario": "Dado o salário DIA_UTIL 5 e o aluguel DIA_DO_MES 20 ANTECIPAR, quando gera out, nov e set/2026, então as datas são 07/10, 09/11 e 18/09."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/OccurrenceStatusTest.java",
+        "cenario": "Data 07/10 com hoje 06/10 → PREVISTO; hoje 07/10 → PARA_CONFIRMAR; hoje 08/10 → ATRASADO; com confirmação → CONFIRMADO em qualquer dia."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/ScheduledRulesIT.java",
+        "cenario": "Conta com saldo 1000,00 e salário de 3000,00 previsto para hoje → saldo continua 1000,00."
+      }
+    ]
+  },
+  {
+    "id": "F19",
+    "etapa": "4-financas",
+    "titulo": "Confirmar, remarcar e cancelar ocorrências",
+    "acao": "Criar GET /api/finance/scheduled?month= (ocorrências do mês com estado, previstas e já tratadas) e as ações POST /api/finance/scheduled/{id}/confirm {amount?, date?} (padrão: valor previsto e hoje; pode ser antes da data), /reschedule {date} (qualquer dia a partir de amanhã, com aviso se passar da próxima ocorrência da regra) e /skip (não vou receber/pagar este mês). As ações valem só para aquela ocorrência.",
+    "story": "Como Pedro, quero confirmar que o salário caiu, ou dizer 'não recebi hoje, vou receber dia X'.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/finance/recurring/ScheduledController.java",
+      "backend/src/main/java/com/porganization/finance/recurring/ScheduledService.java"
+    ],
+    "dependencias": [
+      "F18"
+    ],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Confirmar sem corpo marca a ocorrência como paga com o valor previsto e a data de hoje, e o saldo da conta sobe; com valor e data, usa os informados; a regra continua com o valor original."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Remarcar muda a data só daquela ocorrência (estado REMARCADO, data original guardada); data de hoje ou passada responde 400; depois da próxima ocorrência da regra, responde 200 com aviso."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Cancelar tira a ocorrência do mês e do previsto sem apagar o histórico; ação em ocorrência já confirmada ou cancelada responde 409."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/ScheduledIT.java",
+        "cenario": "Salário 3200,00 para 07/10: confirm com {amount 3180,00, date 06/10} → transação paga de 3180,00 em 06/10, saldo +3180,00 e a regra continua com 3200,00."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/ScheduledIT.java",
+        "cenario": "Hoje 07/10: reschedule para 10/10 → REMARCADO com data 10/10 e original 07/10; para 07/10 → 400; para 10/11 (depois da ocorrência de nov) → 200 com warning."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/ScheduledIT.java",
+        "cenario": "skip → estado CANCELADO e fora do previsto; confirm ou skip de novo → 409."
+      }
+    ]
+  },
+  {
+    "id": "F20",
+    "etapa": "4-financas",
+    "titulo": "Telas de agendados e 'para confirmar' na tela Hoje",
+    "acao": "A aba 'Fixos' vira 'Agendados': lista do mês agrupada por estado (atrasados, para hoje, próximos, já tratados) com os botões Recebi/Paguei (com valor e data editáveis), Remarcar e Não vou receber/pagar, e o cadastro com a regra de data (dia do mês com ajuste, N-ésimo dia útil, último dia útil) mostrando a próxima data calculada. Na tela Hoje, a seção Finanças ganha 'Para confirmar' (hoje e atrasados). Aviso opcional pelos canais das Configurações num horário único escolhido pelo usuário (padrão 09:00, V24), um por dia, listando o que há para confirmar.",
+    "story": "Como Pedro, quero ver no dia o que devia entrar ou sair e confirmar com um toque.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V24__scheduled_notice_time.sql",
+      "backend/src/main/java/com/porganization/finance/recurring/ScheduledNoticeService.java",
+      "frontend/src/app/features/finance/recurring/scheduled.page.ts",
+      "frontend/src/app/features/finance/recurring/recurring-form.dialog.ts",
+      "frontend/src/app/features/today/sections/today-finance.component.ts"
+    ],
+    "dependencias": [
+      "F19",
+      "F16",
+      "I04"
+    ],
+    "conceito_angular": "Formulário dinâmico: os campos da regra de data mudam conforme o tipo escolhido (dia do mês + ajuste, ou N-ésimo dia útil), com validadores trocados em tempo de execução e a próxima data calculada num computed().",
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "O cadastro com '5º dia útil' mostra a próxima data calculada; trocar o tipo de regra troca os campos e as validações."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Na tela Hoje, uma ocorrência para hoje ou atrasada aparece em 'Para confirmar'; 'Recebi' chama o confirm e ela sai da lista."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Com o aviso ligado às 09:00, o primeiro cron a partir das 09:00 manda um só aviso listando os itens para confirmar; sem itens, não manda."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/finance/recurring/recurring-form.dialog.spec.ts",
+        "cenario": "Escolher 'N-ésimo dia útil' com N=5 mostra o campo N e esconde o dia do mês; o POST leva {rule: 'DIA_UTIL', n: 5}."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/today/sections/today-finance.component.spec.ts",
+        "cenario": "Dado o salário ATRASADO, clicar 'Recebi' faz POST /confirm e a linha some de 'Para confirmar'."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/ScheduledNoticeIT.java",
+        "cenario": "Aviso às 09:00 e 2 itens para confirmar: às 08:55 → 0 envios; às 09:02 → 1 com os 2 itens; às 09:07 → continua 1; sem itens → 0."
+      }
+    ]
+  },
+  {
+    "id": "F21",
+    "etapa": "4-financas",
+    "titulo": "Saldo por conta e previsto do fim do mês",
+    "acao": "No dashboard (GET /api/finance/dashboard) e na seção Finanças do GET /api/today: saldo de cada conta ativa, total e previsto para o fim do mês = saldo + a receber − a pagar, contando as ocorrências em conta do mês ainda não confirmadas nem canceladas (previstas, para hoje, atrasadas e remarcadas para dentro do mês). Mostrar no Resumo e na tela Hoje: 'R$ X no Bradesco · R$ Y no Nubank', o total e o previsto.",
+    "story": "Como Pedro, quero ver quanto tenho em cada conta e com quanto devo fechar o mês.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/finance/dashboard/DashboardService.java",
+      "backend/src/main/java/com/porganization/finance/today/FinanceTodayService.java",
+      "frontend/src/app/features/finance/dashboard/finance-dashboard.page.html",
+      "frontend/src/app/features/today/sections/today-finance.component.ts"
+    ],
+    "dependencias": [
+      "F18",
+      "F11"
+    ],
+    "status": "pendente",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "O previsto soma o que falta receber, subtrai o que falta pagar e ignora confirmados e cancelados."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Ocorrência remarcada para o mês seguinte sai do previsto deste mês."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Resumo e tela Hoje mostram o saldo de cada conta ativa e o total com os mesmos números da tela Contas."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/dashboard/ForecastIT.java",
+        "cenario": "Saldo 1000,00, salário de 3000,00 atrasado, aluguel de 1200,00 previsto e internet de 100,00 já paga → previsto 2800,00."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/dashboard/ForecastIT.java",
+        "cenario": "Salário remarcado de 30/10 para 03/11 → previsto de outubro 1000,00 − 1200,00 = −200,00."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/today/sections/today-finance.component.spec.ts",
+        "cenario": "Dado Bradesco 1500,00 e Nubank 300,00, então aparecem 'R$ 1.500,00' e 'R$ 300,00' por conta, o total 'R$ 1.800,00' e o previsto."
+      }
+    ]
+  }
+]
+```
+
 ### Etapa 5: Integrações (lembretes, e-mail e Google Calendar)
 
 Observação importante: no plano gratuito o Render desliga a API após um tempo sem acesso, então um `@Scheduled` interno não é confiável para lembretes. As specs abaixo usam um endpoint de disparo protegido por segredo, chamado a cada 5 minutos por um cron externo (ex.: cron-job.org ou `pg_cron` + `pg_net` do Supabase). Se a API ficar num plano sempre ligado, o mesmo serviço pode ser chamado por `@Scheduled`.
@@ -1281,7 +1568,7 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
     "acao": "Criar daily_tasks (título, emoji opcional, ordem, arquivada, criada em), daily_task_schedules (dias da semana válidos a partir de uma data: mudar os dias vale de hoje em diante e o passado segue a regra da época) e daily_task_completions (tarefa, dia, único). Endpoints: CRUD em /api/tasks (padrão: todos os dias), PUT /api/tasks/order, PATCH {archived}, DELETE (apaga o histórico) e PUT/DELETE /api/tasks/{id}/completions/{data} para marcar e desmarcar; GET /api/tasks/day?date= devolve as tarefas devidas no dia com feito/não feito. Marcar só vale para hoje e os 7 dias anteriores, em dias devidos e a partir do dia de criação. 'Hoje' é o dia no fuso do usuário.",
     "story": "Como Pedro, quero cadastrar hábitos que repetem todo dia (ou em dias escolhidos) e marcar quando fiz.",
     "arquivos": [
-      "backend/src/main/resources/db/migration/V23__daily_tasks.sql",
+      "backend/src/main/resources/db/migration/V25__daily_tasks.sql",
       "backend/src/main/java/com/porganization/tasks/DailyTask.java",
       "backend/src/main/java/com/porganization/tasks/DailyTaskSchedule.java",
       "backend/src/main/java/com/porganization/tasks/DailyTaskService.java",
@@ -1507,10 +1794,10 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
     "id": "T05",
     "etapa": "6-tarefas",
     "titulo": "Lembrete das tarefas e tarefas no resumo diário",
-    "acao": "Adicionar horário de lembrete opcional em daily_tasks (V24); o dispatcher do cron avisa pelos canais padrão das Configurações quando o horário cai na janela e a tarefa, devida hoje, ainda não foi feita (uma vez por tarefa e dia); o resumo diário passa a contar 'N tarefas' do dia.",
+    "acao": "Adicionar horário de lembrete opcional em daily_tasks (V26); o dispatcher do cron avisa pelos canais padrão das Configurações quando o horário cai na janela e a tarefa, devida hoje, ainda não foi feita (uma vez por tarefa e dia); o resumo diário passa a contar 'N tarefas' do dia.",
     "story": "Como Pedro, quero ser lembrado do hábito que ainda não fiz e ver minhas tarefas no resumo da manhã.",
     "arquivos": [
-      "backend/src/main/resources/db/migration/V24__daily_task_reminders.sql",
+      "backend/src/main/resources/db/migration/V26__daily_task_reminders.sql",
       "backend/src/main/java/com/porganization/tasks/TaskReminderDispatcher.java",
       "backend/src/main/java/com/porganization/notifications/DailyDigestService.java",
       "backend/src/main/java/com/porganization/notifications/InternalCronController.java"
@@ -1568,11 +1855,11 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
 | 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS |
-| 4 Finanças | F01 a F16 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
+| 4 Finanças | F01 a F21 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T05 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
 
-Total: 63 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
+Total: 68 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
 
 As versões das migrações (V1 a V21) assumem a ordem das etapas. Se uma spec for feita fora de ordem, renumere as migrações pendentes antes do merge para o Flyway não encontrar versões fora de sequência.
 
