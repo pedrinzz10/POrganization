@@ -538,7 +538,7 @@ Regras:
     "arquivos": ["backend/src/main/java/com/porganization/today/TodayController.java", "backend/src/main/java/com/porganization/today/TodayService.java", "backend/src/main/java/com/porganization/today/TodayResponse.java", "frontend/src/app/features/today/today.page.ts", "frontend/src/app/features/today/sections/today-commitments.component.ts"],
     "dependencias": ["C07"],
     "conceito_angular": "Composição de página: a TodayPage só busca os dados e distribui para componentes de seção, cada um com sua responsabilidade.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "GET /api/today retorna as ocorrências de hoje considerando o fuso do usuário (23h30 em São Paulo ainda é o mesmo dia)." },
       { "id": "CA2", "descricao": "Criar pela quick add na tela Hoje adiciona o item na lista sem recarregar a página." }
