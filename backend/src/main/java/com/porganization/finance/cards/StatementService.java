@@ -87,7 +87,7 @@ public class StatementService {
     }
 
     /** Limite − compras de todas as faturas não pagas (inclusive parcelas futuras). */
-    BigDecimal availableLimit(UUID userId, CreditCard card) {
+    public BigDecimal availableLimit(UUID userId, CreditCard card) {
         return card.getCreditLimit().subtract(statements.unpaidTotal(userId, card.getId()));
     }
 
