@@ -93,3 +93,41 @@ export interface StudyToday {
   reviews: ReviewSuggestion[];
   lessons: LessonSuggestion[];
 }
+
+export interface SubjectStats {
+  subjectId: string;
+  name: string;
+  color: string | null;
+  minutes: number;
+  lessons: number;
+  reviews: number;
+  /** Aulas terminadas na semana corrente. */
+  sessionsThisWeek: number;
+  sessionsPerWeek: number;
+}
+
+export interface WeekMinutes {
+  /** Segunda-feira da semana. */
+  weekStart: string;
+  minutes: number;
+}
+
+export interface LessonEntry {
+  id: string;
+  subjectId: string;
+  title: string;
+  notes: string | null;
+  studiedAt: string;
+  durationMinutes: number;
+}
+
+/** GET /api/study/stats: minutos só de sessões terminadas. */
+export interface StudyStats {
+  from: string;
+  to: string;
+  totalMinutes: number;
+  reviewsDone: number;
+  subjects: SubjectStats[];
+  weeks: WeekMinutes[];
+  lessons: LessonEntry[];
+}

@@ -1,0 +1,96 @@
+.resumo {
+  margin: 0 0 16px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.bloco {
+  font: var(--mat-sys-title-medium);
+  margin: 16px 0 8px;
+}
+
+.grafico {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 180px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.semana {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+// A barra mede a altura em % desta área (sem os rótulos); senão o flex encolhe e iguala as barras
+.semana__area {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.semana__barra {
+  width: 70%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--mat-sys-primary);
+}
+
+.semana__valor,
+.semana__rotulo {
+  font: var(--mat-sys-label-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.materia__cor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.materia--meta-cumprida mat-panel-description {
+  color: var(--mat-sys-primary);
+  font-weight: 600;
+}
+
+.aulas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.aula {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.aula__titulo {
+  font: var(--mat-sys-title-small);
+}
+
+.aula__detalhe,
+.aula__notas,
+.aula--vazia {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.erro {
+  color: var(--mat-sys-error);
+}
+
+.vazio {
+  color: var(--mat-sys-on-surface-variant);
+}

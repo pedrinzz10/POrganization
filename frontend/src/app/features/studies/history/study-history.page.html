@@ -1,0 +1,58 @@
+@if (stats.isLoading() && !stats.hasValue()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@if (erro(); as mensagem) {
+  <p class="erro" role="alert">{{ mensagem }}</p>
+  <button mat-stroked-button type="button" (click)="stats.reload()">Tentar de novo</button>
+}
+
+@if (stats.hasValue()) {
+  <p class="resumo">
+    <strong>{{ formatar(stats.value().totalMinutes) }} no período</strong>
+    · {{ stats.value().reviewsDone }} {{ stats.value().reviewsDone === 1 ? 'revisão feita' : 'revisões feitas' }}
+    · {{ parse(periodo.from) | date: 'dd/MM' }} a {{ parse(periodo.to) | date: 'dd/MM' }}
+  </p>
+
+  <h2 class="bloco">Minutos por semana</h2>
+  <div class="grafico" role="img" aria-label="Minutos estudados por semana">
+    @for (semana of barras(); track semana.weekStart) {
+      <div class="semana" [attr.title]="formatar(semana.minutes)">
+        <span class="semana__valor">{{ semana.minutes > 0 ? formatar(semana.minutes) : '' }}</span>
+        <span class="semana__area"><span class="semana__barra" [style.height.%]="semana.altura"></span></span>
+        <span class="semana__rotulo">{{ parse(semana.weekStart) | date: 'dd/MM' }}</span>
+      </div>
+    }
+  </div>
+
+  <h2 class="bloco">Por matéria</h2>
+  <mat-accordion multi>
+    @for (m of stats.value().subjects; track m.subjectId) {
+      <mat-expansion-panel class="materia" [class.materia--meta-cumprida]="m.sessionsThisWeek >= m.sessionsPerWeek && m.sessionsPerWeek > 0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <span class="materia__cor" [style.background]="m.color ?? 'var(--mat-sys-outline-variant)'"></span>
+            {{ m.name }}
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ m.sessionsThisWeek }} de {{ m.sessionsPerWeek }} sessões nesta semana · {{ formatar(m.minutes) }}
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <ul class="aulas" [attr.data-materia]="m.subjectId">
+          @for (aula of aulasPorMateria().get(m.subjectId) ?? []; track aula.id) {
+            <li class="aula">
+              <span class="aula__titulo">{{ aula.title }}</span>
+              <span class="aula__detalhe">{{ aula.studiedAt | date: 'dd/MM HH:mm' }} · {{ aula.durationMinutes }} min</span>
+              @if (aula.notes) {
+                <span class="aula__notas">{{ aula.notes }}</span>
+              }
+            </li>
+          } @empty {
+            <li class="aula aula--vazia">Nenhuma aula no período.</li>
+          }
+        </ul>
+      </mat-expansion-panel>
+    } @empty {
+      <p class="vazio">Cadastre matérias e estude para ver o histórico.</p>
+    }
+  </mat-accordion>
+}

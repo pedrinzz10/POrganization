@@ -4,12 +4,12 @@ import com.porganization.commitments.dto.CommitmentRequest;
 import com.porganization.commitments.dto.OccurrencePatch;
 import com.porganization.commitments.dto.OccurrenceResponse;
 import com.porganization.commitments.recurrence.RecurrenceExpander;
+import com.porganization.common.DateRanges;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,9 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommitmentService {
-
-    /** Maior intervalo consultável de uma vez: cabe a visão de ano com folga. */
-    public static final int MAX_RANGE_DAYS = 400;
 
     /** Por data; no mesmo dia, os de dia todo primeiro, depois por horário e título. */
     static final Comparator<OccurrenceResponse> CHRONOLOGICAL = Comparator.comparing(OccurrenceResponse::occurrenceDate)
@@ -60,7 +57,7 @@ public class CommitmentService {
      */
     @Transactional(readOnly = true)
     public List<OccurrenceResponse> findInRange(UUID userId, LocalDate from, LocalDate to) {
-        validateRange(from, to);
+        DateRanges.validate(from, to);
         List<OccurrenceResponse> occurrences = new ArrayList<>();
         for (Commitment single : repository.findByUserIdAndRecurrenceRuleIsNullAndDateBetween(userId, from, to)) {
             occurrences.add(occurrence(single, single.getDate(), null));
@@ -129,15 +126,6 @@ public class CommitmentService {
         }
         commitment.setDone(done);
         return commitment;
-    }
-
-    static void validateRange(LocalDate from, LocalDate to) {
-        if (to.isBefore(from)) {
-            throw new InvalidRequestException("to", "deve ser igual ou depois de from");
-        }
-        if (ChronoUnit.DAYS.between(from, to) > MAX_RANGE_DAYS) {
-            throw new InvalidRequestException("to", "o intervalo pode ter no máximo " + MAX_RANGE_DAYS + " dias");
-        }
     }
 
     @Transactional

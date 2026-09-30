@@ -742,7 +742,7 @@ Regras:
     "arquivos": ["backend/src/main/java/com/porganization/studies/StudyStatsService.java", "backend/src/main/java/com/porganization/studies/StudyStatsController.java", "frontend/src/app/features/studies/history/study-history.page.ts"],
     "dependencias": ["E09"],
     "conceito_angular": "Resource/rxResource (ou toSignal) para carregar dados assíncronos direto como signal, com estados de carregando e erro no template.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Minutos por matéria somam só sessões FINISHED no intervalo." },
       { "id": "CA2", "descricao": "A aba mostra, por matéria, 'X de Y sessões nesta semana'." }
