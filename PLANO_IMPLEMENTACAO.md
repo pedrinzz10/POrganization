@@ -770,6 +770,61 @@ Regras:
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/today/TodayControllerIT.java", "cenario": "Dado 1 revisão vencida e 1 matéria pendente, então response.studies.reviews tem 1 e lessons tem 1." },
       { "id": "T2", "criterio": "CA2", "tipo": "componente", "arquivo": "frontend/src/app/features/today/sections/today-studies.component.spec.ts", "cenario": "Dado revisão com due há 2 dias, então o primeiro item mostra 'Revisão · 2 dias de atraso'." }
     ]
+  },
+  {
+    "id": "E12",
+    "etapa": "3-estudos",
+    "titulo": "Agenda de estudos: dia, semana e mês",
+    "acao": "GET /api/study/calendar?from&to (até 62 dias) devolve, dia a dia: até hoje as sessões concluídas (matéria, aula ou revisão, minutos); em hoje as revisões atrasadas; de hoje em diante as revisões no dia do vencimento e as aulas que faltam para a meta semanal de cada matéria, espalhadas pelos dias que faltam da semana (StudyCalendarPlanner: por prioridade, no dia menos carregado perto de um espaçamento regular, sem repetir a matéria no dia nem hoje se já teve aula). Nova aba Agenda em Estudos com Dia, Semana e Mês no visual da agenda de compromissos (aula sugerida lavender, revisão steel, atrasada ink, estudado com ✓).",
+    "story": "Como Pedro, quero ver o que vou estudar em cada dia da semana e do mês, e o que já estudei, como vejo meus compromissos.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/studies/StudyCalendarPlanner.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarService.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarController.java",
+      "frontend/src/app/features/studies/agenda/study-agenda.page.ts"
+    ],
+    "dependencias": [
+      "E08",
+      "E11"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Dias passados mostram as sessões concluídas; revisões vencidas antes de hoje aparecem em hoje como atrasadas; as futuras, no dia do vencimento."
+      },
+      {
+        "id": "CA2",
+        "descricao": "As aulas que faltam para a meta da semana aparecem espalhadas de hoje a domingo, sem repetir a matéria no mesmo dia; meta cumprida não gera aula; semanas seguintes recebem a meta inteira."
+      },
+      {
+        "id": "CA3",
+        "descricao": "A aba Agenda mostra Dia, Semana e Mês com navegação; clicar num dia do mês abre a visão Dia."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarPlannerTest.java",
+        "cenario": "Quarta, Java meta 3 com 1 feita e Inglês meta 2 → 2 aulas de cada de qua a dom, sem dia repetido; semana seguinte com meta 3 → ter, qui e sáb."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarIT.java",
+        "cenario": "Duas aulas de Java na segunda; na quinta a semana mostra as duas feitas na segunda, as revisões de 29/09 em hoje como atrasadas e duas aulas de Inglês de quinta a domingo."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/agenda/study-agenda.page.spec.ts",
+        "cenario": "Abre na semana com '✓ Java: Streams', 'Revisão: Lambdas' atrasada e 'Aula de Inglês' em hoje; Mês consulta a grade de 42 dias; clicar em hoje abre o Dia."
+      }
+    ]
   }
 ]
 ```
@@ -2033,7 +2088,7 @@ O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN
 |---|---|---|
 | 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
-| 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS |
+| 3 Estudos | E01 a E12 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
 | 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T06 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
