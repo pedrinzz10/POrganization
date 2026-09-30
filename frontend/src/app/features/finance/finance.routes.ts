@@ -1,10 +1,18 @@
 import { Routes } from '@angular/router';
+import { provideFinanceCharts } from './dashboard/charts/charts.providers';
 
 /** Telas de finanças, filhas da FinancePage (título + abas). Mês e filtros vão nos query params. */
 export const FINANCE_ROUTES: Routes = [
   {
     path: '',
     title: 'Finanças · POrganization',
+    // Só o resumo desenha gráficos: o Chart.js é registrado aqui, fora do bundle inicial
+    providers: [provideFinanceCharts()],
+    loadComponent: () => import('./dashboard/finance-dashboard.page').then((m) => m.FinanceDashboardPage),
+  },
+  {
+    path: 'extrato',
+    title: 'Extrato · Finanças · POrganization',
     loadComponent: () => import('./transactions/transactions.page').then((m) => m.TransactionsPage),
   },
   {

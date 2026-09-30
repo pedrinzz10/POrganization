@@ -277,3 +277,51 @@ export interface ContributionRequest {
   date: string;
   note: string | null;
 }
+
+// ---------- dashboard ----------
+
+export interface CategorySpend {
+  categoryId: string;
+  name: string | null;
+  color: string | null;
+  total: Money;
+}
+
+export interface OpenStatement {
+  id: string;
+  referenceMonth: string;
+  closingDate: string;
+  dueDate: string;
+  status: StatementStatus;
+  total: Money;
+}
+
+export interface CardOverview {
+  cardId: string;
+  name: string;
+  creditLimit: Money;
+  availableLimit: Money;
+  openStatements: OpenStatement[];
+}
+
+export interface MonthPoint {
+  month: string;
+  income: Money;
+  expense: Money;
+}
+
+export interface Dashboard {
+  month: string;
+  totalBalance: Money;
+  accounts: { id: string; name: string; balance: Money }[];
+  income: Money;
+  expense: Money;
+  net: Money;
+  /** Do maior para o menor. */
+  expenseByCategory: CategorySpend[];
+  cards: CardOverview[];
+  budgetAlerts: BudgetStatus[];
+  goals: Goal[];
+  /** 6 meses terminando no mês pedido; meses sem movimento vêm com "0.00". */
+  lastSixMonths: MonthPoint[];
+}

@@ -76,7 +76,7 @@ test.beforeEach(async ({ page }) => {
 // F12 T2 (CA2)
 test('filtro de categoria vai para a URL e continua depois de recarregar', async ({ page }) => {
   const { consultas } = await apiFalsa(page);
-  await page.goto('/financas?month=2026-10');
+  await page.goto('/financas/extrato?month=2026-10');
 
   await page.getByRole('combobox', { name: 'Categoria' }).last().click();
   await page.getByRole('option', { name: 'Lazer' }).click();
@@ -93,7 +93,7 @@ test('filtro de categoria vai para a URL e continua depois de recarregar', async
 // F12 T3 (CA3)
 test('lançar um gasto mostra a linha e atualiza o saldo sem recarregar', async ({ page }) => {
   await apiFalsa(page);
-  await page.goto('/financas?month=2026-10');
+  await page.goto('/financas/extrato?month=2026-10');
   const saldo = page.locator('.saldo[data-conta="Corrente"]');
   await expect(saldo).toContainText('R$ 1.000,00');
 

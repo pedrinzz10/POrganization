@@ -12,6 +12,7 @@ import {
   Category,
   Contribution,
   ContributionRequest,
+  Dashboard,
   FinanceTag,
   Goal,
   GoalRequest,
@@ -197,5 +198,11 @@ export class FinanceService {
 
   contribute(goalId: string, request: ContributionRequest): Observable<Contribution> {
     return this.http.post<Contribution>(`${this.api}/goals/${goalId}/contributions`, request);
+  }
+
+  // ---------- dashboard ----------
+
+  dashboard(month: string): Observable<Dashboard> {
+    return this.http.get<Dashboard>(`${this.api}/dashboard`, { params: { month } });
   }
 }

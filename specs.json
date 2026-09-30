@@ -2680,13 +2680,14 @@
       "arquivos": [
         "frontend/src/app/features/finance/dashboard/finance-dashboard.page.ts",
         "frontend/src/app/features/finance/dashboard/charts/category-chart.component.ts",
-        "frontend/src/app/features/finance/dashboard/charts/monthly-chart.component.ts"
+        "frontend/src/app/features/finance/dashboard/charts/monthly-chart.component.ts",
+        "frontend/src/app/features/finance/dashboard/charts/charts.providers.ts"
       ],
       "dependencias": [
         "F14"
       ],
       "conceito_angular": "Integração de biblioteca externa em componente: os dados vêm por input() e um computed() monta a configuração do gráfico.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2710,7 +2711,7 @@
           "criterio": "CA2",
           "tipo": "componente",
           "arquivo": "frontend/src/app/features/finance/dashboard/finance-dashboard.page.spec.ts",
-          "cenario": "Dado dashboard com byCategory vazio, então aparece 'Nenhum gasto neste mês' e nenhum <canvas>."
+          "cenario": "Dado dashboard com expenseByCategory vazio, então aparece 'Nenhum gasto neste mês' e nenhum <canvas>."
         }
       ]
     },
