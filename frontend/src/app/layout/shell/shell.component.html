@@ -1,0 +1,49 @@
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    #drawer
+    class="shell__sidenav"
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="!isMobile()"
+    [fixedInViewport]="isMobile()"
+  >
+    <nav aria-label="Menu principal">
+      <mat-nav-list>
+        @for (item of items; track item.path) {
+          <a
+            mat-list-item
+            class="nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="nav-item--ativo"
+            ariaCurrentWhenActive="page"
+            #link="routerLinkActive"
+            [activated]="link.isActive"
+            (click)="onNavigate()"
+          >
+            <mat-icon matListItemIcon aria-hidden="true">{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        }
+      </mat-nav-list>
+    </nav>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell__content">
+    <mat-toolbar class="shell__toolbar">
+      @if (isMobile()) {
+        <button mat-icon-button type="button" aria-label="Abrir menu" (click)="drawer.toggle()">
+          <mat-icon aria-hidden="true">menu</mat-icon>
+        </button>
+      }
+      <span class="shell__brand">POrganization</span>
+      <span class="shell__spacer"></span>
+      <span class="shell__user">{{ auth.user()?.email }}</span>
+      <button mat-icon-button type="button" aria-label="Sair" (click)="auth.signOut()">
+        <mat-icon aria-hidden="true">logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <main class="shell__main">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

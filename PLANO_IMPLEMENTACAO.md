@@ -210,7 +210,7 @@ Regras:
     "arquivos": ["frontend/package.json", "frontend/angular.json", "frontend/src/main.ts", "frontend/src/app/app.config.ts", "frontend/src/app/app.routes.ts", "frontend/src/app/app.component.ts", "frontend/src/environments/environment.ts", "frontend/src/environments/environment.development.ts"],
     "dependencias": ["B01"],
     "conceito_angular": "Standalone components e app.config.ts: o app é montado por providers (roteador, HttpClient, locale) declarados num único lugar, sem NgModule.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "`npm start` sobe o app e `npm test` e `npm run build` passam." },
       { "id": "CA2", "descricao": "O pipe currency formata 1234.5 como 'R$ 1.234,50' (locale pt-BR ativo)." }
@@ -229,7 +229,7 @@ Regras:
     "arquivos": ["frontend/src/app/core/auth/supabase.client.ts", "frontend/src/app/core/auth/auth.service.ts", "frontend/src/app/features/auth/login/login.component.ts", "frontend/src/app/features/auth/login/login.component.html", "frontend/src/app/features/auth/signup/signup.component.ts"],
     "dependencias": ["B06"],
     "conceito_angular": "Serviços com injeção de dependência (inject()) e signals: o AuthService é um singleton que guarda o estado do login e qualquer componente reage quando ele muda. Reactive Forms validam os campos.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Botão Entrar fica desabilitado enquanto e-mail for inválido ou senha tiver menos de 6 caracteres." },
       { "id": "CA2", "descricao": "Login com sucesso navega para /hoje; erro do Supabase aparece como mensagem na tela." },
@@ -250,7 +250,7 @@ Regras:
     "arquivos": ["frontend/src/app/core/auth/auth.guard.ts", "frontend/src/app/core/auth/auth.interceptor.ts", "frontend/src/app/app.config.ts", "frontend/src/app/app.routes.ts"],
     "dependencias": ["B07", "B04"],
     "conceito_angular": "Guards (CanActivateFn) decidem se uma rota abre; interceptors (HttpInterceptorFn) alteram toda requisição do HttpClient num único ponto.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Sem sessão, acessar /hoje redireciona para /login." },
       { "id": "CA2", "descricao": "Chamadas para apiUrl levam o header Bearer; chamadas para outros domínios não." },
@@ -271,7 +271,7 @@ Regras:
     "arquivos": ["frontend/src/app/layout/shell/shell.component.ts", "frontend/src/app/layout/shell/shell.component.html", "frontend/src/app/app.routes.ts", "frontend/src/app/features/today/today.page.ts", "frontend/src/app/features/commitments/commitments.page.ts", "frontend/src/app/features/studies/studies.page.ts", "frontend/src/app/features/finance/finance.page.ts", "frontend/src/app/features/settings/settings.page.ts"],
     "dependencias": ["B08"],
     "conceito_angular": "Roteamento com rotas filhas e lazy loading: cada seção é carregada só quando acessada; routerLink e routerLinkActive destacam o item atual.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Os 5 itens do menu navegam para suas rotas e o item ativo fica destacado." },
       { "id": "CA2", "descricao": "Em largura < 768px o menu vira gaveta aberta por botão." },

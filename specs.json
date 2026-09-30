@@ -536,7 +536,7 @@
         "B01"
       ],
       "conceito_angular": "Standalone components e app.config.ts: o app é montado por providers (roteador, HttpClient, locale) declarados num único lugar, sem NgModule.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -581,7 +581,7 @@
         "B06"
       ],
       "conceito_angular": "Serviços com injeção de dependência (inject()) e signals: o AuthService é um singleton que guarda o estado do login e qualquer componente reage quando ele muda. Reactive Forms validam os campos.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -637,7 +637,7 @@
         "B04"
       ],
       "conceito_angular": "Guards (CanActivateFn) decidem se uma rota abre; interceptors (HttpInterceptorFn) alteram toda requisição do HttpClient num único ponto.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -696,7 +696,7 @@
         "B08"
       ],
       "conceito_angular": "Roteamento com rotas filhas e lazy loading: cada seção é carregada só quando acessada; routerLink e routerLinkActive destacam o item atual.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
