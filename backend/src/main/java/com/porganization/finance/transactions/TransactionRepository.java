@@ -18,13 +18,17 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
 
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
 
+    List<Transaction> findByUserIdAndTransferGroupId(UUID userId, UUID transferGroupId);
+
     /** As Specifications de TransactionSpecifications sempre começam pelo dono (ownedBy). */
     List<Transaction> findAll(Specification<Transaction> spec, Sort sort);
 
-    /** Movimento pago de uma conta: rendas somam, gastos subtraem. */
+    /** Movimento pago de uma conta: rendas e transferências recebidas somam, gastos e enviadas subtraem. */
     @Query("""
             select coalesce(sum(case when t.type = com.porganization.finance.transactions.TransactionType.INCOME then t.amount
                                      when t.type = com.porganization.finance.transactions.TransactionType.EXPENSE then -t.amount
+                                     when t.transferDirection = com.porganization.finance.transactions.TransferDirection.IN then t.amount
+                                     when t.transferDirection = com.porganization.finance.transactions.TransferDirection.OUT then -t.amount
                                      else 0 end), 0)
             from Transaction t where t.userId = :userId and t.accountId = :accountId and t.paid = true
             """)

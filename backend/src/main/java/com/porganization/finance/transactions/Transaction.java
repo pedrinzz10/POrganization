@@ -68,6 +68,13 @@ public class Transaction {
     @Column(name = "installment_count")
     private Integer installmentCount;
 
+    @Column(name = "transfer_group_id")
+    private UUID transferGroupId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transfer_direction")
+    private TransferDirection transferDirection;
+
     @ManyToMany
     @JoinTable(name = "transaction_tags", joinColumns = @JoinColumn(name = "transaction_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
@@ -182,6 +189,22 @@ public class Transaction {
     public void setInstallment(Integer number, Integer count) {
         this.installmentNumber = number;
         this.installmentCount = count;
+    }
+
+    public UUID getTransferGroupId() {
+        return transferGroupId;
+    }
+
+    public TransferDirection getTransferDirection() {
+        return transferDirection;
+    }
+
+    /** Transforma esta transação numa perna de transferência. */
+    public void setTransferLeg(UUID groupId, TransferDirection direction) {
+        this.type = TransactionType.TRANSFER;
+        this.transferGroupId = groupId;
+        this.transferDirection = direction;
+        this.categoryId = null;
     }
 
     public Set<FinanceTag> getTags() {

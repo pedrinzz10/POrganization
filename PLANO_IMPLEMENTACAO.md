@@ -846,7 +846,7 @@ Regras:
     "story": "Como Pedro, quero mover dinheiro entre minhas contas sem contar como renda ou gasto.",
     "arquivos": ["backend/src/main/java/com/porganization/finance/transactions/TransferService.java", "backend/src/main/java/com/porganization/finance/transactions/TransferController.java", "backend/src/main/resources/db/migration/V10__transfer_group.sql"],
     "dependencias": ["F03"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Transferir 200.00 de A para B reduz A em 200.00 e aumenta B em 200.00; o total geral não muda." },
       { "id": "CA2", "descricao": "Transferências não entram nos totais de renda e gasto do mês." },

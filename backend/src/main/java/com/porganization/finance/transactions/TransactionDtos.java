@@ -44,7 +44,21 @@ public final class TransactionDtos {
             UUID cardStatementId,
             UUID purchaseId,
             Integer installmentNumber,
-            Integer installmentCount) {
+            Integer installmentCount,
+            UUID transferGroupId,
+            TransferDirection transferDirection) {
+    }
+
+    public record TransferRequest(
+            @NotNull UUID fromAccountId,
+            @NotNull UUID toAccountId,
+            @NotNull @DecimalMin(value = "0.01", message = "deve ser maior que zero") @Digits(integer = 12, fraction = 2) BigDecimal amount,
+            @NotNull LocalDate date,
+            @Size(max = 200) String description) {
+    }
+
+    public record TransferResponse(UUID groupId, UUID fromAccountId, UUID toAccountId, BigDecimal amount, LocalDate date,
+            String description) {
     }
 
     /** Renda e gasto do mês (transferências não entram). */
