@@ -7,13 +7,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
+import com.porganization.studies.Subject;
+import com.porganization.studies.SubjectRepository;
 import com.porganization.support.IntegrationTest;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 class TodayControllerIT extends IntegrationTest {
+
+    @Autowired
+    private SubjectRepository subjects;
 
     private final UUID userId = UUID.randomUUID();
 
@@ -70,5 +77,34 @@ class TodayControllerIT extends IntegrationTest {
     @Test
     void semTokenResponde401() throws Exception {
         mockMvc.perform(get("/api/today")).andExpect(status().isUnauthorized());
+    }
+
+    // E11 T1 (CA1)
+    @Test
+    void incluiOPlanoDeEstudosNaOrdemDoPlanner() throws Exception {
+        Subject java = subjects.saveAndFlush(new Subject(userId, "Java", 1));
+        java.setSessionsPerWeek(1);
+        subjects.saveAndFlush(java);
+        subjects.saveAndFlush(new Subject(userId, "Inglês", 2));
+
+        // aula de Java na segunda 28/09 (cumpre a meta de 1) -> revisão vence 29/09
+        clock.setInstant(Instant.parse("2026-09-28T12:00:00Z"));
+        String body = mockMvc.perform(post("/api/study/sessions").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"subjectId\":\"" + java.getId() + "\",\"type\":\"LESSON\"}"))
+                .andReturn().getResponse().getContentAsString();
+        String sessao = JsonPath.read(body, "$.id");
+        clock.setInstant(Instant.parse("2026-09-28T12:50:00Z"));
+        mockMvc.perform(post("/api/study/sessions/" + sessao + "/finish").with(usuario(userId))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"title\":\"Streams\"}"))
+                .andExpect(status().isOk());
+
+        // quinta 01/10: 1 revisão vencida (2 dias de atraso) e 1 matéria pendente (Inglês)
+        clock.setInstant(Instant.parse("2026-10-01T12:00:00Z"));
+        mockMvc.perform(get("/api/today").with(usuario(userId)))
+                .andExpect(jsonPath("$.studies.reviews", hasSize(1)))
+                .andExpect(jsonPath("$.studies.reviews[0].lessonTitle").value("Streams"))
+                .andExpect(jsonPath("$.studies.reviews[0].daysOverdue").value(2))
+                .andExpect(jsonPath("$.studies.lessons", hasSize(1)))
+                .andExpect(jsonPath("$.studies.lessons[0].subjectName").value("Inglês"));
     }
 }

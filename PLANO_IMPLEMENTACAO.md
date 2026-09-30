@@ -761,7 +761,7 @@ Regras:
     "arquivos": ["backend/src/main/java/com/porganization/today/TodayService.java", "backend/src/main/java/com/porganization/today/TodayResponse.java", "frontend/src/app/features/today/sections/today-studies.component.ts"],
     "dependencias": ["E09", "C10"],
     "conceito_angular": "Pipes e computed(): os dias de atraso são derivados da due_date com computed() e o texto '1 dia' / '2 dias' é pluralizado no template com I18nPluralPipe.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "GET /api/today inclui studies.reviews e studies.lessons na ordem do planner." },
       { "id": "CA2", "descricao": "Revisões vencidas aparecem antes das aulas, com selo 'Revisão · X dias de atraso' quando atrasadas." }

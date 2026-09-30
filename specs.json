@@ -1923,7 +1923,7 @@
         "C10"
       ],
       "conceito_angular": "Pipes e computed(): os dias de atraso são derivados da due_date com computed() e o texto '1 dia' / '2 dias' é pluralizado no template com I18nPluralPipe.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

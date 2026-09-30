@@ -7,14 +7,15 @@ import { problemMessage } from '../../core/http/problem';
 import { parseIsoDate } from '../commitments/data/date-range.util';
 import { TodayService } from './data/today.service';
 import { TodayCommitmentsComponent } from './sections/today-commitments.component';
+import { TodayStudiesComponent } from './sections/today-studies.component';
 
 /**
  * Tela Hoje: busca tudo numa chamada (GET /api/today) e distribui para as seções. Cada seção
- * cuida só da sua parte; estudos e finanças chegam nas etapas 3 e 4.
+ * cuida só da sua parte; finanças chega na etapa 4.
  */
 @Component({
   selector: 'app-today-page',
-  imports: [DatePipe, MatProgressBarModule, MatButtonModule, TodayCommitmentsComponent],
+  imports: [DatePipe, MatProgressBarModule, MatButtonModule, TodayCommitmentsComponent, TodayStudiesComponent],
   template: `
     <h1 class="titulo">Hoje</h1>
     @if (hoje(); as data) {
@@ -29,7 +30,12 @@ import { TodayCommitmentsComponent } from './sections/today-commitments.componen
       <button mat-stroked-button type="button" (click)="tela.reload()">Tentar de novo</button>
     }
     @if (tela.hasValue()) {
-      <app-today-commitments [occurrences]="tela.value().commitments" (changed)="tela.reload()" />
+      <div class="secoes">
+        <app-today-commitments [occurrences]="tela.value().commitments" (changed)="tela.reload()" />
+        @if (tela.value().studies; as estudos) {
+          <app-today-studies [today]="tela.value().date" [plan]="estudos" />
+        }
+      </div>
     }
   `,
   styles: `
@@ -46,6 +52,10 @@ import { TodayCommitmentsComponent } from './sections/today-commitments.componen
     }
     .erro {
       color: var(--mat-sys-error);
+    }
+    .secoes {
+      display: grid;
+      gap: 24px;
     }
   `,
 })
