@@ -19,6 +19,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Hoje', path: '/hoje', icon: 'wb_sunny' },
   { label: 'Compromissos', path: '/compromissos', icon: 'event' },
+  { label: 'Tarefas', path: '/tarefas', icon: 'task_alt' },
   { label: 'Estudos', path: '/estudos', icon: 'school' },
   { label: 'Finanças', path: '/financas', icon: 'account_balance_wallet' },
   { label: 'Configurações', path: '/configuracoes', icon: 'settings' },
