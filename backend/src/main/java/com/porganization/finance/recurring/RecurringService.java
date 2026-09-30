@@ -31,15 +31,17 @@ public class RecurringService {
     private final CreditCardService cards;
     private final CategoryRepository categories;
     private final UserSettingsService userSettings;
+    private final RecurringGenerator generator;
     private final Clock clock;
 
     public RecurringService(RecurringTransactionRepository recurring, AccountRepository accounts, CreditCardService cards,
-            CategoryRepository categories, UserSettingsService userSettings, Clock clock) {
+            CategoryRepository categories, UserSettingsService userSettings, RecurringGenerator generator, Clock clock) {
         this.recurring = recurring;
         this.accounts = accounts;
         this.cards = cards;
         this.categories = categories;
         this.userSettings = userSettings;
+        this.generator = generator;
         this.clock = clock;
     }
 
@@ -56,17 +58,26 @@ public class RecurringService {
         return toResponse(recurring.save(r), today(userId));
     }
 
+    /** Edita o modelo e leva a mudança para as ocorrências ainda em aberto (as pagas não mudam). */
     @Transactional
     public RecurringResponse update(UUID userId, UUID id, RecurringRequest request) {
         RecurringTransaction r = find(userId, id);
+        // O mês de cada ocorrência sai da regra antiga, antes de aplicar a nova
+        List<RecurringGenerator.OpenOccurrence> open = generator.openOccurrences(r);
         apply(userId, r, request);
+        generator.resync(r, open);
         return toResponse(r, today(userId));
     }
 
-    /** Exclui o modelo; os lançamentos já gerados ficam (perdem só o vínculo). */
+    /**
+     * Exclui o modelo e as ocorrências em aberto (senão ficariam órfãs no extrato e, recriando o
+     * agendado, o mês apareceria duas vezes). As pagas ficam, só perdem o vínculo.
+     */
     @Transactional
     public void delete(UUID userId, UUID id) {
-        recurring.delete(find(userId, id));
+        RecurringTransaction r = find(userId, id);
+        generator.deleteOpen(r);
+        recurring.delete(r);
     }
 
     private RecurringTransaction find(UUID userId, UUID id) {

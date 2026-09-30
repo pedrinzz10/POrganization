@@ -8,6 +8,7 @@ import com.porganization.finance.transactions.Transaction;
 import com.porganization.finance.transactions.TransactionRepository;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,70 @@ public class RecurringGenerator {
             }
         }
         return created;
+    }
+
+    /** Uma ocorrência em aberto e o mês a que ela pertence (pela regra que a gerou). */
+    public record OpenOccurrence(Transaction transaction, YearMonth month) {
+    }
+
+    /**
+     * As ocorrências em aberto do modelo, com o mês de cada uma. Chame antes de mudar a regra: com
+     * "antecipa", a de outubro pode cair em 30/09, então o mês sai da regra antiga, não da data.
+     */
+    public List<OpenOccurrence> openOccurrences(RecurringTransaction r) {
+        return transactions.findByRecurringIdAndPaidFalse(r.getId()).stream()
+                .map(t -> new OpenOccurrence(t, monthOf(r, t.getScheduledDate() != null ? t.getScheduledDate() : t.getDate())))
+                .toList();
+    }
+
+    /**
+     * Depois de editar o modelo, leva a mudança para as ocorrências em aberto: valor, descrição,
+     * categoria, conta/cartão e a data pela regra nova (a remarcada à mão mantém a data escolhida).
+     * A que ficou fora do período sai, e o mês pode ser gerado de novo se o período voltar a incluí-lo.
+     * As pagas não mudam: são o que de fato aconteceu.
+     */
+    @Transactional
+    public void resync(RecurringTransaction r, List<OpenOccurrence> open) {
+        for (OpenOccurrence o : open) {
+            Transaction t = o.transaction();
+            if (!r.activeIn(o.month())) {
+                transactions.delete(t);
+                recurring.unmarkGenerated(r.getId(), o.month().atDay(1));
+                continue;
+            }
+            boolean rescheduled = t.getScheduledDate() != null && !t.getScheduledDate().equals(t.getDate());
+            LocalDate date = r.dateIn(o.month());
+            t.setScheduledDate(date);
+            if (!rescheduled) {
+                t.setDate(date);
+            }
+            t.setType(r.getType());
+            t.setAmount(r.getAmount());
+            t.setDescription(r.getDescription());
+            t.setCategoryId(r.getCategoryId());
+            if (r.getCardId() != null) {
+                t.setAccountId(null);
+                t.setCardStatementId(openStatementFor(cards.find(r.getUserId(), r.getCardId()), t.getDate()).getId());
+            } else {
+                t.setCardStatementId(null);
+                t.setAccountId(r.getAccountId());
+            }
+        }
+    }
+
+    /** Ao excluir o modelo, as ocorrências em aberto vão junto; as pagas ficam no extrato. */
+    @Transactional
+    public void deleteOpen(RecurringTransaction r) {
+        transactions.findByRecurringIdAndPaidFalse(r.getId()).forEach(transactions::delete);
+    }
+
+    /** O mês cuja data pela regra é essa: o da própria data ou o seguinte (antecipada). */
+    private static YearMonth monthOf(RecurringTransaction r, LocalDate date) {
+        YearMonth same = YearMonth.from(date);
+        if (r.dateIn(same).equals(date)) {
+            return same;
+        }
+        return r.dateIn(same.plusMonths(1)).equals(date) ? same.plusMonths(1) : same;
     }
 
     /** O dia N no mês; 31 em mês curto cai no último dia (a regra completa está em RecurringTransaction.dateIn). */

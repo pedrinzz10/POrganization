@@ -88,8 +88,9 @@ class RecurringGeneratorIT extends FinanceFixture {
                 .andExpect(jsonPath("$[0].total").value("39.90"));
     }
 
+    /** F22: o mês já gerado e ainda em aberto acompanha a edição (o pago não muda, ver RecurringEditIT). */
     @Test
-    void editarOModeloSoAfetaMesesAindaNaoGerados() throws Exception {
+    void editarOModeloAtualizaOMesEmAberto() throws Exception {
         String modelo = aluguel("1500.00", "2026-01", null);
         gerar("2026-10", 1);
 
@@ -102,7 +103,7 @@ class RecurringGeneratorIT extends FinanceFixture {
         gerar("2026-11", 1);
 
         mockMvc.perform(get("/api/finance/transactions").param("month", "2026-10").with(usuario(userId)))
-                .andExpect(jsonPath("$[*].amount").value(contains("1500.00")));
+                .andExpect(jsonPath("$[*].amount").value(contains("1600.00")));
         mockMvc.perform(get("/api/finance/transactions").param("month", "2026-11").with(usuario(userId)))
                 .andExpect(jsonPath("$[*].amount").value(contains("1600.00")));
     }
@@ -128,16 +129,16 @@ class RecurringGeneratorIT extends FinanceFixture {
         gerar("2026-06", 0);
     }
 
+    /** F22: o lançamento em aberto sai junto com o modelo (o confirmado fica, ver RecurringEditIT). */
     @Test
-    void excluirOModeloMantemOsLancamentosGerados() throws Exception {
+    void excluirOModeloTiraOsLancamentosEmAberto() throws Exception {
         String modelo = aluguel("1500.00", "2026-01", null);
         gerar("2026-10", 1);
 
         mockMvc.perform(delete("/api/finance/recurring/" + modelo).with(usuario(userId))).andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/finance/transactions").param("month", "2026-10").with(usuario(userId)))
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].recurringId").doesNotExist());
+                .andExpect(jsonPath("$", hasSize(0)));
         mockMvc.perform(get("/api/finance/recurring").with(usuario(userId))).andExpect(jsonPath("$", hasSize(0)));
     }
 

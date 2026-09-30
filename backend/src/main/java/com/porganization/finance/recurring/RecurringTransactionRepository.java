@@ -42,4 +42,10 @@ public interface RecurringTransactionRepository extends Repository<RecurringTran
             on conflict do nothing
             """, nativeQuery = true)
     int markGenerated(UUID recurringId, LocalDate month);
+
+    /** Desfaz a marca do mês (a ocorrência saiu do período): se o período voltar a incluí-lo, gera de novo. */
+    @Modifying(flushAutomatically = true)
+    @Query(value = "delete from recurring_generations where recurring_id = :recurringId and month = :month and not skipped",
+            nativeQuery = true)
+    int unmarkGenerated(UUID recurringId, LocalDate month);
 }
