@@ -1,5 +1,6 @@
 package com.porganization.notifications;
 
+import com.porganization.integrations.google.GoogleSyncService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -25,16 +26,18 @@ public class InternalCronController {
 
     private final ReminderDispatcher reminders;
     private final DailyDigestService digests;
+    private final GoogleSyncService googleSync;
     private final byte[] secret;
 
-    public InternalCronController(ReminderDispatcher reminders, DailyDigestService digests,
+    public InternalCronController(ReminderDispatcher reminders, DailyDigestService digests, GoogleSyncService googleSync,
             @Value("${porganization.cron.secret:}") String secret) {
         this.reminders = reminders;
         this.digests = digests;
+        this.googleSync = googleSync;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
     }
 
-    /** Lembretes devidos e resumos diários que já deram a hora. */
+    /** Lembretes devidos, resumos diários que já deram a hora e o que ficou pendente com o Google. */
     @PostMapping("/reminders/dispatch")
     public ResponseEntity<Map<String, Integer>> dispatch(@RequestHeader(value = SECRET_HEADER, required = false) String header) {
         if (!authorized(header)) {
@@ -42,7 +45,9 @@ public class InternalCronController {
         }
         ReminderDispatcher.Result result = reminders.dispatch();
         int digestsSent = digests.run();
-        return ResponseEntity.ok(Map.of("sent", result.sent(), "failed", result.failed(), "digests", digestsSent));
+        int googleSynced = googleSync.retryPending();
+        return ResponseEntity.ok(Map.of("sent", result.sent(), "failed", result.failed(), "digests", digestsSent,
+                "googleSynced", googleSynced));
     }
 
     /** Comparação em tempo constante, para não vazar o segredo pelo tempo de resposta. */

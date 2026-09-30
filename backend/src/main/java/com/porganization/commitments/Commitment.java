@@ -56,6 +56,14 @@ public class Commitment {
     @Column(name = "recurrence_rule")
     private RecurrenceRule recurrenceRule;
 
+    /** Evento correspondente no Google Calendar (I07); null se não publicado. */
+    @Column(name = "google_event_id")
+    private String googleEventId;
+
+    /** A última mudança ainda não chegou ao Google; o cron tenta de novo. */
+    @Column(name = "sync_pending", nullable = false)
+    private boolean syncPending;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -163,5 +171,22 @@ public class Commitment {
 
     public OffsetDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getGoogleEventId() {
+        return googleEventId;
+    }
+
+    public boolean isSyncPending() {
+        return syncPending;
+    }
+
+    public void synced(String googleEventId) {
+        this.googleEventId = googleEventId;
+        this.syncPending = false;
+    }
+
+    public void setSyncPending(boolean syncPending) {
+        this.syncPending = syncPending;
     }
 }

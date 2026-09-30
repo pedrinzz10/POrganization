@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,12 +34,14 @@ public class CommitmentService {
     private final CommitmentRepository repository;
     private final OccurrenceOverrideRepository overrides;
     private final ReminderService reminders;
+    private final ApplicationEventPublisher events;
 
     public CommitmentService(CommitmentRepository repository, OccurrenceOverrideRepository overrides,
-            ReminderService reminders) {
+            ReminderService reminders, ApplicationEventPublisher events) {
         this.repository = repository;
         this.overrides = overrides;
         this.reminders = reminders;
+        this.events = events;
     }
 
     @Transactional
@@ -47,6 +50,7 @@ public class CommitmentService {
         apply(commitment, request);
         Commitment saved = repository.save(commitment);
         reminders.onCreate(userId, saved.getId(), request.reminders());
+        changed(saved);
         return saved;
     }
 
@@ -119,7 +123,12 @@ public class CommitmentService {
         if (patch.startTime() != null) {
             adjustment.setOverrideTime(patch.startTime());
         }
-        return occurrence(series, date, overrides.save(adjustment));
+        OccurrenceOverride saved = overrides.save(adjustment);
+        if (patch.cancelled() != null) {
+            // Dia cancelado vira exceção (EXDATE) da série no Google
+            changed(series);
+        }
+        return occurrence(series, date, saved);
     }
 
     /** Concluir/desfazer um compromisso único. Para recorrentes, cada dia é concluído à parte. */
@@ -141,12 +150,22 @@ public class CommitmentService {
         commitment.setDate(request.date());
         apply(commitment, request);
         reminders.onUpdate(userId, id, request.reminders());
+        changed(commitment);
         return commitment;
     }
 
     @Transactional
     public void delete(UUID userId, UUID id) {
-        repository.delete(get(userId, id));
+        Commitment commitment = get(userId, id);
+        repository.delete(commitment);
+        events.publishEvent(new CommitmentChangedEvent(userId, id, CommitmentChangedEvent.Change.DELETED,
+                commitment.getGoogleEventId()));
+    }
+
+    /** Avisa quem escuta (sincronização com o Google) depois do commit. */
+    private void changed(Commitment commitment) {
+        events.publishEvent(new CommitmentChangedEvent(commitment.getUserId(), commitment.getId(),
+                CommitmentChangedEvent.Change.SAVED, commitment.getGoogleEventId()));
     }
 
     private static OccurrenceResponse occurrence(Commitment c, LocalDate date, OccurrenceOverride adjustment) {

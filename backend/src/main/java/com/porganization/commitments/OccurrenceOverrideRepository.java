@@ -16,4 +16,7 @@ public interface OccurrenceOverrideRepository extends Repository<OccurrenceOverr
 
     List<OccurrenceOverride> findByUserIdAndCommitmentIdInAndOccurrenceDateBetween(UUID userId,
             Collection<UUID> commitmentIds, LocalDate from, LocalDate to);
+
+    /** Dias cancelados de uma série (viram EXDATE no Google). */
+    List<OccurrenceOverride> findByUserIdAndCommitmentIdAndCancelledTrueOrderByOccurrenceDateAsc(UUID userId, UUID commitmentId);
 }

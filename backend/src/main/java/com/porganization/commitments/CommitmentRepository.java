@@ -27,4 +27,7 @@ public interface CommitmentRepository extends Repository<Commitment, UUID> {
 
     /** Séries que começaram até "to"; a expansão decide quais dias caem no intervalo. */
     List<Commitment> findByUserIdAndRecurrenceRuleIsNotNullAndDateLessThanEqual(UUID userId, LocalDate to);
+
+    /** Mudanças que não chegaram ao Google (de todos os usuários): usado só pelo cron da sincronização. */
+    List<Commitment> findBySyncPendingTrue();
 }
