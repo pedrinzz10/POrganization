@@ -1706,7 +1706,7 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
       "C10"
     ],
     "conceito_angular": "Atualização otimista com signals: o computed() de progresso e a ordem (feitas no fim) derivam de um linkedSignal da lista, que muda na hora do clique e é restaurado se a chamada falhar.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       {
         "id": "CA1",

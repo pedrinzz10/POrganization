@@ -9,14 +9,15 @@ import { TodayService } from './data/today.service';
 import { TodayCommitmentsComponent } from './sections/today-commitments.component';
 import { TodayFinanceComponent } from './sections/today-finance.component';
 import { TodayStudiesComponent } from './sections/today-studies.component';
+import { TodayTasksComponent } from './sections/today-tasks.component';
 
 /**
  * Tela Hoje: busca tudo numa chamada (GET /api/today) e distribui para as seções
- * (compromissos, estudos e finanças). Cada seção cuida só da sua parte.
+ * (compromissos, tarefas do dia, estudos e finanças). Cada seção cuida só da sua parte.
  */
 @Component({
   selector: 'app-today-page',
-  imports: [DatePipe, MatProgressBarModule, MatButtonModule, TodayCommitmentsComponent, TodayFinanceComponent, TodayStudiesComponent],
+  imports: [DatePipe, MatProgressBarModule, MatButtonModule, TodayCommitmentsComponent, TodayFinanceComponent, TodayStudiesComponent, TodayTasksComponent],
   template: `
     <h1 class="titulo">Hoje</h1>
     @if (hoje(); as data) {
@@ -33,6 +34,7 @@ import { TodayStudiesComponent } from './sections/today-studies.component';
     @if (tela.hasValue()) {
       <div class="secoes">
         <app-today-commitments [occurrences]="tela.value().commitments" (changed)="tela.reload()" />
+        <app-today-tasks [today]="tela.value().date" />
         @if (tela.value().studies; as estudos) {
           <app-today-studies [today]="tela.value().date" [plan]="estudos" />
         }
