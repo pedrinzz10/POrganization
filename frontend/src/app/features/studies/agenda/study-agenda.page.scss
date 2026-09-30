@@ -1,0 +1,294 @@
+// Agenda de estudos no visual da agenda de compromissos (Intelly): dia em pílula, itens em cards.
+// Aula sugerida em lavender, revisão em steel, revisão atrasada em ink, estudado apagado com ✓.
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nav__titulo {
+  margin: 0;
+  text-align: center;
+  font: var(--mat-sys-title-medium);
+}
+
+.mes__mais,
+.legenda {
+  font: 600 10px/14px var(--font-sans);
+  color: var(--fg-secondary);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.legenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.amostra {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.amostra--aula,
+.item--aula {
+  background: var(--surface-lavender);
+  color: var(--on-surface-lavender);
+}
+
+.amostra--revisao,
+.item--revisao {
+  background: var(--surface-steel);
+  color: var(--on-surface-steel);
+}
+
+.amostra--atrasada,
+.item--atrasada {
+  background: var(--surface-ink);
+  color: var(--on-surface-ink);
+}
+
+.amostra--feito {
+  border: 1.5px solid var(--border-strong);
+}
+
+.item--feito {
+  background: var(--bg-page);
+  color: var(--fg-secondary);
+  box-shadow: inset 0 0 0 1.5px var(--border-soft);
+}
+
+.erro {
+  color: var(--mat-sys-error);
+}
+
+// ---------- Dia ----------
+.resumo {
+  margin: 0 0 var(--space-3);
+  font: 600 13px/18px var(--font-sans);
+  color: var(--fg-secondary);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.card__bolinha {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.card__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.card__titulo {
+  font: 600 14px/20px var(--font-sans);
+  overflow-wrap: anywhere;
+}
+
+.card__detalhe {
+  font: 500 12px/16px var(--font-sans);
+}
+
+.card__min {
+  flex: none;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-page);
+  color: var(--fg-primary);
+  font: 600 11px/24px var(--font-sans);
+}
+
+.vazio {
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  text-align: center;
+  color: var(--fg-secondary);
+}
+
+// ---------- Semana ----------
+.semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+@media (max-width: 767.98px) {
+  .semana {
+    grid-template-columns: 1fr;
+  }
+}
+
+.semana__dia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.semana__cabecalho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  cursor: pointer;
+}
+
+.semana__dia--hoje .semana__cabecalho {
+  background: var(--action-bg);
+  color: var(--action-fg);
+}
+
+.semana__dow {
+  font: 600 11px/14px var(--font-sans);
+  text-transform: uppercase;
+}
+
+.semana__data {
+  font: 600 14px/18px var(--font-sans);
+}
+
+.semana__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 96px;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
+.card--compacto {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+}
+
+.card--compacto .card__titulo {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.semana__vazio {
+  padding: var(--space-2);
+  text-align: center;
+  color: var(--fg-secondary);
+}
+
+// ---------- Mês ----------
+.mes {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.mes__dow {
+  padding: var(--space-1) 0;
+  text-align: center;
+  font: 600 11px/14px var(--font-sans);
+  color: var(--fg-secondary);
+}
+
+.mes__dia {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 92px;
+  min-width: 0;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mes__dia--fora {
+  opacity: 0.5;
+}
+
+.mes__numero {
+  align-self: flex-start;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  font: 600 12px/24px var(--font-sans);
+  text-align: center;
+}
+
+.mes__dia--hoje .mes__numero {
+  background: var(--action-bg);
+  color: var(--action-fg);
+}
+
+.mes__item {
+  padding: 1px 6px;
+  border-radius: 6px;
+  font: 600 10px/15px var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 599px) {
+  .mes__dia {
+    min-height: 56px;
+  }
+  .mes__item {
+    font-size: 0;
+    height: 6px;
+    padding: 0;
+  }
+}

@@ -131,3 +131,25 @@ export interface StudyStats {
   weeks: WeekMinutes[];
   lessons: LessonEntry[];
 }
+
+/** Um item da agenda de estudos (GET /api/study/calendar). */
+export type StudyCalendarKind = 'DONE' | 'REVIEW' | 'LESSON';
+
+export interface StudyCalendarItem {
+  /** DONE: sessão concluída; REVIEW: revisão agendada; LESSON: aula sugerida para a meta da semana. */
+  kind: StudyCalendarKind;
+  subjectId: string;
+  subjectName: string;
+  color: string | null;
+  /** Título da aula (DONE e REVIEW); null na aula sugerida. */
+  title: string | null;
+  minutes: number;
+  sessionType: SessionType;
+  /** Revisão vencida antes de hoje (aparece em hoje). */
+  overdue: boolean;
+}
+
+export interface StudyCalendarDay {
+  date: string;
+  items: StudyCalendarItem[];
+}
