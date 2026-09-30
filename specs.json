@@ -2527,14 +2527,17 @@
         "frontend/src/app/features/finance/accounts/accounts.page.ts",
         "frontend/src/app/features/finance/transactions/transactions.page.ts",
         "frontend/src/app/features/finance/transactions/transaction-form.component.ts",
-        "frontend/src/app/shared/money-input/money-input.component.ts"
+        "frontend/src/app/shared/money-input/money-input.directive.ts",
+        "frontend/src/app/features/finance/finance.routes.ts",
+        "frontend/src/app/features/finance/accounts/account-form.dialog.ts",
+        "frontend/src/app/shared/money-input/brl.pipe.ts"
       ],
       "dependencias": [
         "F04",
         "B09"
       ],
-      "conceito_angular": "ControlValueAccessor: o MoneyInput é um componente próprio que funciona como campo de formulário (formControlName), exibindo 'R$ 1.234,56' e entregando '1234.56' ao form. Filtros ficam em query params da rota para o link ser compartilhável.",
-      "status": "pendente",
+      "conceito_angular": "ControlValueAccessor: o MoneyInput é uma diretiva própria (input[appMoneyInput]) que funciona como campo de formulário (formControlName), exibindo 'R$ 1.234,56' e entregando '1234.56' ao form. Filtros ficam em query params da rota para o link ser compartilhável.",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2554,7 +2557,7 @@
           "id": "T1",
           "criterio": "CA1",
           "tipo": "componente",
-          "arquivo": "frontend/src/app/shared/money-input/money-input.component.spec.ts",
+          "arquivo": "frontend/src/app/shared/money-input/money-input.directive.spec.ts",
           "cenario": "Dado host com FormControl, quando digita '123456', então o input mostra 'R$ 1.234,56' e control.value == '1234.56'."
         },
         {

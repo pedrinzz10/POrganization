@@ -1,0 +1,155 @@
+.mes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mes__rotulo {
+  font: var(--mat-sys-title-large);
+  margin: 0;
+  min-width: 180px;
+  text-align: center;
+}
+
+.mes__rotulo::first-letter {
+  text-transform: uppercase;
+}
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.resumo__item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.resumo__rotulo {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.resumo__valor {
+  font: var(--mat-sys-title-medium);
+}
+
+.entra {
+  color: var(--app-positivo, #2e7d32);
+}
+
+.sai {
+  color: var(--mat-sys-error);
+}
+
+.saldos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.saldo {
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.saldo__valor {
+  font-weight: 600;
+}
+
+.lancar {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.filtros mat-form-field {
+  width: 170px;
+}
+
+.dica {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.erro {
+  color: var(--mat-sys-error);
+}
+
+.extrato {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.linha__data {
+  width: 44px;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.linha__texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.linha__titulo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linha__detalhe {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.linha__valor {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.selo {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font: var(--mat-sys-label-small);
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+}
+
+.vazio {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
