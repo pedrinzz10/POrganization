@@ -2,6 +2,7 @@ package com.porganization.settings;
 
 import java.time.DateTimeException;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,5 +36,11 @@ public class UserSettingsService {
         } catch (DateTimeException e) {
             return ZoneId.of(UserSettings.DEFAULT_TIMEZONE);
         }
+    }
+
+    /** E-mail do usuário (vem do token no GET /api/me); vazio se ele ainda não abriu o app. */
+    @Transactional(readOnly = true)
+    public Optional<String> emailOf(UUID userId) {
+        return repository.findById(userId).map(UserSettings::getEmail).filter(e -> !e.isBlank());
     }
 }

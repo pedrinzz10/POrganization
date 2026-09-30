@@ -11,6 +11,21 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  # SMTP dos lembretes por e-mail (ex.: Gmail com senha de app, Brevo, Resend SMTP)
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+  thymeleaf:
+    # Só templates de e-mail; a API não renderiza páginas
+    check-template-location: false
   security:
     oauth2:
       resourceserver:
@@ -27,6 +42,10 @@ management:
     web:
       exposure:
         include: health
+  health:
+    # SMTP fora do ar não pode derrubar o health check do Render
+    mail:
+      enabled: false
   endpoint:
     health:
       show-details: never
@@ -42,3 +61,8 @@ porganization:
   cron:
     # Header X-Cron-Secret dos endpoints /internal/**; vazio = sempre 401
     secret: ${CRON_SECRET:}
+  mail:
+    # Remetente dos e-mails, ex.: "POrganization <avisos@seu-dominio.com>"
+    from: ${MAIL_FROM:}
+  # Endereço do app (links dos e-mails e das notificações)
+  app-url: ${APP_URL:http://localhost:4200}
