@@ -7,6 +7,16 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # JWT Signing Keys do Supabase: https://<ref>.supabase.co/auth/v1/.well-known/jwks.json
+          jwk-set-uri: ${SUPABASE_JWKS_URI}
+          # https://<ref>.supabase.co/auth/v1
+          issuer-uri: ${SUPABASE_ISSUER}
+          audiences: authenticated
+          jws-algorithms: ES256, RS256
 
 management:
   endpoints:
@@ -20,3 +30,8 @@ management:
       show-values: never
     configprops:
       show-values: never
+
+porganization:
+  cors:
+    # Separe várias origens por vírgula
+    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}

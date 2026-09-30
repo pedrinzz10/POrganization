@@ -329,7 +329,7 @@
         "B02",
         "B13"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -403,7 +403,7 @@
       "dependencias": [
         "B03"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
