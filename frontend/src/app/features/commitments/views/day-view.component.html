@@ -1,0 +1,29 @@
+@if (items().length === 0) {
+  <p class="day-empty">Nenhum compromisso neste dia.</p>
+} @else {
+  <ul class="day-list">
+    @for (item of items(); track key(item)) {
+      <li class="day-item" [class.done]="item.done">
+        <mat-checkbox
+          [checked]="item.done"
+          (change)="toggle(item, $event.checked)"
+          [aria-label]="(item.done ? 'Desmarcar ' : 'Concluir ') + item.title"
+        />
+        <span class="day-item__time">
+          @if (item.allDay) {
+            Dia todo
+          } @else {
+            {{ item.startTime }}{{ item.endTime ? ' – ' + item.endTime : '' }}
+          }
+        </span>
+        <span class="day-item__title">{{ item.title }}</span>
+        @if (item.recurring) {
+          <mat-icon class="day-item__icon" aria-label="Recorrente">repeat</mat-icon>
+        }
+        @if (item.location) {
+          <span class="day-item__location">{{ item.location }}</span>
+        }
+      </li>
+    }
+  </ul>
+}

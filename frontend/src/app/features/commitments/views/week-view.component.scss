@@ -1,0 +1,48 @@
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+// No celular, os dias ficam um embaixo do outro
+@media (max-width: 767.98px) {
+  .week {
+    grid-template-columns: 1fr;
+  }
+}
+
+.week__day {
+  min-height: 120px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.week__day--today {
+  outline: 2px solid var(--mat-sys-primary);
+}
+
+.week__header {
+  margin: 0 0 8px;
+  font: var(--mat-sys-title-small);
+  text-transform: capitalize;
+}
+
+.week__item {
+  font: var(--mat-sys-body-small);
+  padding: 2px 0;
+}
+
+.week__item.done {
+  text-decoration: line-through;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.week__time {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.week__empty {
+  color: var(--mat-sys-on-surface-variant);
+}

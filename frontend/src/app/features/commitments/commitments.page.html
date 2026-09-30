@@ -1,0 +1,56 @@
+<h1 class="titulo">Compromissos</h1>
+
+<app-quick-add (created)="recarregar()" />
+
+<mat-tab-group mat-stretch-tabs="false" (selectedIndexChange)="selecionarAba($event)" animationDuration="0ms">
+  <mat-tab label="Hoje">
+    <section class="painel">
+      <h2 class="painel__titulo">{{ hojeData | date: "EEEE, d 'de' MMMM" }}</h2>
+      @if (aba() === 'hoje') {
+        @if (ocorrencias.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        }
+        @if (erro(); as mensagem) {
+          <p class="painel__erro" role="alert">{{ mensagem }}</p>
+        } @else if (ocorrencias.hasValue()) {
+          <app-day-view [occurrences]="ocorrencias.value()" />
+        }
+      }
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Semana">
+    <section class="painel">
+      <div class="painel__nav">
+        <button mat-icon-button type="button" aria-label="Semana anterior" (click)="semanaAnterior()">
+          <mat-icon aria-hidden="true">chevron_left</mat-icon>
+        </button>
+        <h2 class="painel__titulo">
+          {{ semana().from | date: 'dd/MM' }} – {{ semana().to | date: 'dd/MM/yyyy' }}
+        </h2>
+        <button mat-icon-button type="button" aria-label="Próxima semana" (click)="proximaSemana()">
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </button>
+        <button mat-button type="button" (click)="semanaAtual()">Esta semana</button>
+      </div>
+      @if (aba() === 'semana') {
+        @if (ocorrencias.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        }
+        @if (erro(); as mensagem) {
+          <p class="painel__erro" role="alert">{{ mensagem }}</p>
+        } @else if (ocorrencias.hasValue()) {
+          <app-week-view [range]="semana()" [occurrences]="ocorrencias.value()" />
+        }
+      }
+    </section>
+  </mat-tab>
+
+  <mat-tab label="Mês">
+    <p class="painel painel__aviso">A visão do mês chega na próxima spec (C08).</p>
+  </mat-tab>
+
+  <mat-tab label="Ano">
+    <p class="painel painel__aviso">A visão do ano chega na próxima spec (C08).</p>
+  </mat-tab>
+</mat-tab-group>

@@ -475,7 +475,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/commitments.page.ts", "frontend/src/app/features/commitments/views/day-view.component.ts", "frontend/src/app/features/commitments/views/week-view.component.ts", "frontend/src/app/features/commitments/data/date-range.util.ts"],
     "dependencias": ["C05", "C06"],
     "conceito_angular": "input() recebe dados do componente pai; computed() deriva valores de signals (ex.: agrupar ocorrências por dia) e recalcula sozinho quando a lista muda. @for e @if são o controle de fluxo nos templates.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Hoje lista só as ocorrências do dia, com os sem hora no topo." },
       { "id": "CA2", "descricao": "Marcar o checkbox chama o PATCH certo (série ou ocorrência) e risca o item." },
