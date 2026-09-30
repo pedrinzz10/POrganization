@@ -1,0 +1,57 @@
+name: backend
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Descobre se o push/PR mexeu no backend. O job "backend" roda em todo PR, mas é pulado
+  # quando nada mudou; job pulado conta como aprovado, então ele pode ser obrigatório na main.
+  mudancas:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.diff.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/ci-changed.sh "$BASE" '^(backend/|\.github/workflows/backend\.yml$)' backend
+
+  backend:
+    needs: mudancas
+    if: needs.mudancas.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Testcontainers usa o Docker que já vem no runner ubuntu-latest
+      - name: ./mvnw verify
+        run: ./mvnw -B -ntp verify
+
+      - name: Relatórios dos testes
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: backend/target/surefire-reports/
+          retention-days: 7

@@ -271,7 +271,7 @@ Regras:
     "arquivos": ["frontend/src/app/layout/shell/shell.component.ts", "frontend/src/app/layout/shell/shell.component.html", "frontend/src/app/app.routes.ts", "frontend/src/app/features/today/today.page.ts", "frontend/src/app/features/commitments/commitments.page.ts", "frontend/src/app/features/studies/studies.page.ts", "frontend/src/app/features/finance/finance.page.ts", "frontend/src/app/features/settings/settings.page.ts"],
     "dependencias": ["B08"],
     "conceito_angular": "Roteamento com rotas filhas e lazy loading: cada seção é carregada só quando acessada; routerLink e routerLinkActive destacam o item atual.",
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Os 5 itens do menu navegam para suas rotas e o item ativo fica destacado." },
       { "id": "CA2", "descricao": "Em largura < 768px o menu vira gaveta aberta por botão." },
@@ -291,7 +291,7 @@ Regras:
     "story": "Como Pedro, quero que cada PR seja testado automaticamente antes do merge.",
     "arquivos": [".github/workflows/backend.yml", ".github/workflows/frontend.yml"],
     "dependencias": ["B02", "B06"],
-    "status": "pendente",
+    "status": "em_andamento",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Um PR que altera backend/ roda o job do backend e ele fica verde." },
       { "id": "CA2", "descricao": "Um PR que altera frontend/ roda o job do frontend e ele fica verde." },
