@@ -700,7 +700,7 @@ Regras:
     "story": "Como Pedro, quero abrir o app e saber o que estudar hoje, com revisões atrasadas em primeiro lugar.",
     "arquivos": ["backend/src/main/java/com/porganization/studies/DailyStudyPlanner.java", "backend/src/main/java/com/porganization/studies/StudyTodayController.java", "backend/src/main/java/com/porganization/studies/dto/StudyTodayResponse.java"],
     "dependencias": ["E07", "E02"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Revisões vencidas vêm antes de qualquer aula nova, ordenadas da mais atrasada para a mais recente." },
       { "id": "CA2", "descricao": "Matéria que já cumpriu as sessões da semana não aparece como aula sugerida." },

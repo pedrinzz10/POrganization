@@ -12,6 +12,6 @@ public interface ReviewItemRepository extends Repository<ReviewItem, UUID> {
 
     Optional<ReviewItem> findByUserIdAndLessonId(UUID userId, UUID lessonId);
 
-    /** Revisões vencidas até "date", da mais atrasada para a mais recente. */
-    List<ReviewItem> findByUserIdAndDueDateLessThanEqualOrderByDueDateAsc(UUID userId, LocalDate date);
+    /** Revisões vencidas até "date", da mais atrasada para a mais recente (empate: a mais antiga primeiro). */
+    List<ReviewItem> findByUserIdAndDueDateLessThanEqualOrderByDueDateAscCreatedAtAsc(UUID userId, LocalDate date);
 }

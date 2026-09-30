@@ -132,6 +132,10 @@ public class ReviewItem {
         return reviewMinutes;
     }
 
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public ReviewGrade getLastGrade() {
         return lastGrade;
     }
