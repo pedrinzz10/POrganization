@@ -5,6 +5,7 @@ import com.porganization.commitments.dto.CommitmentResponse;
 import com.porganization.commitments.dto.DonePatch;
 import com.porganization.commitments.dto.OccurrencePatch;
 import com.porganization.commitments.dto.OccurrenceResponse;
+import com.porganization.notifications.ReminderService;
 import com.porganization.security.CurrentUser;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -31,9 +32,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class CommitmentController {
 
     private final CommitmentService service;
+    private final ReminderService reminders;
 
-    public CommitmentController(CommitmentService service) {
+    public CommitmentController(CommitmentService service, ReminderService reminders) {
         this.service = service;
+        this.reminders = reminders;
     }
 
     @PostMapping
@@ -42,7 +45,7 @@ public class CommitmentController {
         Commitment created = service.create(userId, request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(created.getId()).toUri();
-        return ResponseEntity.created(location).body(CommitmentResponse.from(created));
+        return ResponseEntity.created(location).body(response(userId, created));
     }
 
     /** Ocorrências de from a to (inclusive), com as séries recorrentes expandidas, em ordem cronológica. */
@@ -55,13 +58,13 @@ public class CommitmentController {
 
     @GetMapping("/{id}")
     public CommitmentResponse get(@CurrentUser UUID userId, @PathVariable UUID id) {
-        return CommitmentResponse.from(service.get(userId, id));
+        return response(userId, service.get(userId, id));
     }
 
     @PutMapping("/{id}")
     public CommitmentResponse update(@CurrentUser UUID userId, @PathVariable UUID id,
             @Valid @RequestBody CommitmentRequest request) {
-        return CommitmentResponse.from(service.update(userId, id, request));
+        return response(userId, service.update(userId, id, request));
     }
 
     /** Ajusta só um dia de um compromisso recorrente: done, cancelled, title, startTime. */
@@ -75,12 +78,16 @@ public class CommitmentController {
     @PatchMapping("/{id}/done")
     public CommitmentResponse setDone(@CurrentUser UUID userId, @PathVariable UUID id,
             @Valid @RequestBody DonePatch patch) {
-        return CommitmentResponse.from(service.setDone(userId, id, patch.done()));
+        return response(userId, service.setDone(userId, id, patch.done()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@CurrentUser UUID userId, @PathVariable UUID id) {
         service.delete(userId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    private CommitmentResponse response(UUID userId, Commitment commitment) {
+        return CommitmentResponse.from(commitment, reminders.of(userId, commitment.getId()));
     }
 }

@@ -45,3 +45,32 @@
   background: var(--mat-sys-error);
   color: var(--mat-sys-on-error);
 }
+
+.lembretes {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  margin: 12px 0 0;
+  padding: 8px 12px;
+}
+
+.lembretes legend {
+  font: var(--mat-sys-label-large);
+  padding: 0 4px;
+}
+
+.lembrete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.lembrete__quando {
+  width: 190px;
+}
+
+.lembrete__erro {
+  width: 100%;
+  font: var(--mat-sys-body-small);
+}

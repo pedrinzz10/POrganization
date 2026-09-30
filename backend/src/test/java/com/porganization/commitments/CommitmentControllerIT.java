@@ -120,4 +120,91 @@ class CommitmentControllerIT extends IntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(header().exists(HttpHeaders.CONTENT_TYPE));
     }
+
+    // ---------- lembretes (I04) ----------
+
+    private void configurar(UUID userId, String json) throws Exception {
+        mockMvc.perform(put("/api/settings").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk());
+    }
+
+    // I04 T1 (CA1)
+    @Test
+    void criacaoRapidaGanhaOLembretePadraoDasConfiguracoes() throws Exception {
+        configurar(usuarioA, "{\"timezone\":\"America/Sao_Paulo\",\"channels\":[\"PUSH\"],\"defaultReminderMinutes\":30}");
+
+        String id = criarDentista(usuarioA);
+
+        mockMvc.perform(get("/api/commitments/" + id).with(usuario(usuarioA)))
+                .andExpect(jsonPath("$.reminders.length()").value(1))
+                .andExpect(jsonPath("$.reminders[0].minutesBefore").value(30))
+                .andExpect(jsonPath("$.reminders[0].channels").value(org.hamcrest.Matchers.contains("PUSH")));
+        assertThat(jdbc.queryForObject("select count(*) from reminders where commitment_id = ?::uuid and minutes_before = 30 "
+                + "and channels = '[\"PUSH\"]'::jsonb", Integer.class, id)).isEqualTo(1);
+    }
+
+    @Test
+    void semLembretePadraoOCompromissoNasceSemLembrete() throws Exception {
+        String id = criarDentista(usuarioA);
+
+        mockMvc.perform(get("/api/commitments/" + id).with(usuario(usuarioA)))
+                .andExpect(jsonPath("$.reminders.length()").value(0));
+    }
+
+    // I04 CA2
+    @Test
+    void editarComListaVaziaApagaOsLembretesESemOCampoMantem() throws Exception {
+        MvcResult criado = criar(usuarioA, """
+                {"title":"Prova","date":"2026-10-02","startTime":"08:00",
+                 "reminders":[{"minutesBefore":1440,"channels":["EMAIL"]},{"minutesBefore":60,"channels":["PUSH","EMAIL"]}]}
+                """);
+        String id = JsonPath.read(criado.getResponse().getContentAsString(), "$.id");
+        mockMvc.perform(get("/api/commitments/" + id).with(usuario(usuarioA)))
+                .andExpect(jsonPath("$.reminders[*].minutesBefore").value(org.hamcrest.Matchers.contains(60, 1440)));
+
+        // Sem "reminders": mantém
+        mockMvc.perform(put("/api/commitments/" + id).with(usuario(usuarioA)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Prova de Java\",\"date\":\"2026-10-02\",\"startTime\":\"08:00\"}"))
+                .andExpect(jsonPath("$.reminders.length()").value(2));
+
+        // "reminders": [] apaga
+        mockMvc.perform(put("/api/commitments/" + id).with(usuario(usuarioA)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Prova de Java\",\"date\":\"2026-10-02\",\"startTime\":\"08:00\",\"reminders\":[]}"))
+                .andExpect(jsonPath("$.reminders.length()").value(0));
+        assertThat(jdbc.queryForObject("select count(*) from reminders where commitment_id = ?::uuid", Integer.class, id)).isZero();
+    }
+
+    @Test
+    void lembreteSemCanalOuComAntecedenciaNegativaResponde400() throws Exception {
+        MvcResult semCanal = criar(usuarioA, """
+                {"title":"X","date":"2026-10-02","reminders":[{"minutesBefore":10,"channels":[]}]}
+                """);
+        assertThat(semCanal.getResponse().getStatus()).isEqualTo(400);
+        MvcResult negativo = criar(usuarioA, """
+                {"title":"X","date":"2026-10-02","reminders":[{"minutesBefore":-5,"channels":["PUSH"]}]}
+                """);
+        assertThat(negativo.getResponse().getStatus()).isEqualTo(400);
+    }
+
+    @Test
+    void configuracoesDeNotificacaoIdaEVolta() throws Exception {
+        mockMvc.perform(get("/api/settings").with(usuario(usuarioB)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.timezone").value("America/Sao_Paulo"))
+                .andExpect(jsonPath("$.channels").value(org.hamcrest.Matchers.contains("PUSH")))
+                .andExpect(jsonPath("$.defaultReminderMinutes").doesNotExist())
+                .andExpect(jsonPath("$.digestTime").doesNotExist());
+
+        configurar(usuarioB, "{\"timezone\":\"Europe/Lisbon\",\"channels\":[\"EMAIL\",\"PUSH\"],\"defaultReminderMinutes\":15,\"digestTime\":\"07:00\"}");
+
+        mockMvc.perform(get("/api/settings").with(usuario(usuarioB)))
+                .andExpect(jsonPath("$.timezone").value("Europe/Lisbon"))
+                .andExpect(jsonPath("$.channels").value(org.hamcrest.Matchers.containsInAnyOrder("EMAIL", "PUSH")))
+                .andExpect(jsonPath("$.defaultReminderMinutes").value(15))
+                .andExpect(jsonPath("$.digestTime").value("07:00"));
+
+        mockMvc.perform(put("/api/settings").with(usuario(usuarioB)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"timezone\":\"Marte/Olympus\",\"channels\":[\"PUSH\"]}"))
+                .andExpect(status().isBadRequest());
+    }
 }

@@ -43,4 +43,11 @@ public class UserSettingsService {
     public Optional<String> emailOf(UUID userId) {
         return repository.findById(userId).map(UserSettings::getEmail).filter(e -> !e.isBlank());
     }
+
+    /** A linha do usuário, criada se ainda não existir (sem e-mail: ele vem do token no GET /api/me). */
+    @Transactional
+    public UserSettings settingsOf(UUID userId) {
+        repository.upsert(userId, null, UserSettings.DEFAULT_TIMEZONE);
+        return repository.findById(userId).orElseThrow();
+    }
 }

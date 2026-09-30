@@ -16,6 +16,15 @@ export interface RecurrenceRule {
   count?: number | null;
 }
 
+/** Canal de aviso: push no navegador ou e-mail. */
+export type NotifyChannel = 'PUSH' | 'EMAIL';
+
+/** Lembrete de um compromisso: quantos minutos antes e por quais canais. */
+export interface ReminderSpec {
+  minutesBefore: number;
+  channels: NotifyChannel[];
+}
+
 export interface Commitment {
   id: string;
   title: string;
@@ -29,6 +38,7 @@ export interface Commitment {
   recurrenceRule: RecurrenceRule | null;
   createdAt: string;
   updatedAt: string;
+  reminders: ReminderSpec[];
 }
 
 export interface CommitmentRequest {
@@ -40,6 +50,8 @@ export interface CommitmentRequest {
   description?: string | null;
   location?: string | null;
   recurrenceRule?: RecurrenceRule | null;
+  /** Sem o campo: na criação vale o lembrete padrão das configurações; na edição, mantém. [] = nenhum. */
+  reminders?: ReminderSpec[];
 }
 
 /** Um compromisso num dia; séries recorrentes viram uma ocorrência por dia (mesmo commitmentId). */

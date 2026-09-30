@@ -7,6 +7,10 @@ import { Commitment } from '../data/commitment.model';
 import { CommitmentFormData, CommitmentFormDialog } from './commitment-form.dialog';
 
 const URL = `${environment.apiUrl}/commitments`;
+const SETTINGS = `${environment.apiUrl}/settings`;
+
+// Deixa as promessas andarem (carga das preferências)
+const tick = () => new Promise((resolve) => setTimeout(resolve));
 
 const serie: Commitment = {
   id: 'serie-1',
@@ -21,6 +25,7 @@ const serie: Commitment = {
   recurrenceRule: { freq: 'WEEKLY', interval: 1, byWeekDays: ['MON', 'WED', 'FRI'] },
   createdAt: '2026-10-01T10:00:00Z',
   updatedAt: '2026-10-01T10:00:00Z',
+  reminders: [],
 };
 
 describe('CommitmentFormDialog', () => {
@@ -29,7 +34,8 @@ describe('CommitmentFormDialog', () => {
   let httpMock: HttpTestingController;
   let dialogRef: { close: ReturnType<typeof vi.fn> };
 
-  async function abrir(data: CommitmentFormData) {
+  /** Compromisso novo carrega as preferências (lembrete padrão); sem padrão, a não ser que o teste diga. */
+  async function abrir(data: CommitmentFormData, lembretePadrao: number | null = null) {
     dialogRef = { close: vi.fn() };
     await TestBed.configureTestingModule({
       imports: [CommitmentFormDialog],
@@ -43,6 +49,11 @@ describe('CommitmentFormDialog', () => {
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(CommitmentFormDialog);
     element = fixture.nativeElement;
+    await fixture.whenStable();
+    httpMock.match(SETTINGS).forEach((req) =>
+      req.flush({ email: null, timezone: 'America/Sao_Paulo', channels: ['PUSH'], defaultReminderMinutes: lembretePadrao, digestTime: null }),
+    );
+    await tick();
     await fixture.whenStable();
   }
 
@@ -165,5 +176,55 @@ describe('CommitmentFormDialog', () => {
     const req = httpMock.expectOne(`${URL}/serie-1/occurrences/2026-10-05`);
     expect(req.request.body).toEqual({ cancelled: true });
     req.flush({});
+  });
+
+  // I04 T2 (CA2)
+  it('remover o lembrete e salvar manda reminders: []', async () => {
+    await abrir({ commitment: { ...serie, recurrenceRule: null, reminders: [{ minutesBefore: 30, channels: ['PUSH'] }] } });
+    expect(fixture.componentInstance.reminders.length).toBe(1);
+
+    element.querySelector<HTMLButtonElement>('button[aria-label="Remover lembrete 1"]')!.click();
+    await fixture.whenStable();
+    await salvar();
+
+    const req = httpMock.expectOne({ method: 'PUT', url: `${URL}/serie-1` });
+    expect(req.request.body.reminders).toEqual([]);
+    req.flush(serie);
+  });
+
+  it('compromisso novo começa com o lembrete padrão das Configurações e, sem mexer, deixa a API aplicar', async () => {
+    await abrir({ date: '2026-10-05' }, 30);
+    const lembretes = fixture.componentInstance.reminders.getRawValue();
+    expect(lembretes).toEqual([{ minutesBefore: 30, push: true, email: false }]);
+
+    fixture.componentInstance.form.patchValue({ title: 'Dentista' });
+    await salvar();
+
+    const req = httpMock.expectOne({ method: 'POST', url: URL });
+    expect(req.request.body.reminders).toBeUndefined();
+    req.flush(serie);
+  });
+
+  it('adicionar lembrete por e-mail vai no corpo da criação', async () => {
+    await abrir({ date: '2026-10-05' });
+    fixture.componentInstance.addReminder();
+    fixture.componentInstance.reminders.at(0).patchValue({ minutesBefore: 1440, push: false, email: true });
+    fixture.componentInstance.form.patchValue({ title: 'Prova' });
+    await salvar();
+
+    const req = httpMock.expectOne({ method: 'POST', url: URL });
+    expect(req.request.body.reminders).toEqual([{ minutesBefore: 1440, channels: ['EMAIL'] }]);
+    req.flush(serie);
+  });
+
+  it('lembrete sem nenhum canal bloqueia o salvar', async () => {
+    await abrir({ date: '2026-10-05' });
+    fixture.componentInstance.addReminder();
+    fixture.componentInstance.reminders.at(0).patchValue({ push: false, email: false });
+    fixture.componentInstance.form.patchValue({ title: 'Prova' });
+    await salvar();
+
+    httpMock.expectNone({ method: 'POST', url: URL });
+    expect(element.textContent).toContain('Escolha push, e-mail ou os dois.');
   });
 });

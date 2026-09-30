@@ -60,6 +60,38 @@
       @if (repeat()) {
         <app-recurrence-editor [group]="form.controls.recurrence" />
       }
+
+      <fieldset class="lembretes" formArrayName="reminders">
+        <legend>Lembretes</legend>
+        @for (lembrete of reminders.controls; track lembrete; let i = $index) {
+          <div class="lembrete" [formGroupName]="i">
+            <mat-form-field subscriptSizing="dynamic" class="lembrete__quando">
+              <mat-label>Quando</mat-label>
+              <mat-select formControlName="minutesBefore">
+                @for (opcao of reminderOptions; track opcao.minutes) {
+                  <mat-option [value]="opcao.minutes">{{ opcao.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-checkbox formControlName="push">Push</mat-checkbox>
+            <mat-checkbox formControlName="email">E-mail</mat-checkbox>
+            <button mat-icon-button type="button" [attr.aria-label]="'Remover lembrete ' + (i + 1)" (click)="removeReminder(i)">
+              <mat-icon aria-hidden="true">close</mat-icon>
+            </button>
+            @if (lembrete.hasError('semCanal')) {
+              <span class="erro lembrete__erro">Escolha push, e-mail ou os dois.</span>
+            }
+          </div>
+        } @empty {
+          <p class="aviso">Sem lembrete.</p>
+        }
+        @if (reminders.length < maxReminders) {
+          <button mat-button type="button" (click)="addReminder()">
+            <mat-icon aria-hidden="true">add_alert</mat-icon>
+            Adicionar lembrete
+          </button>
+        }
+      </fieldset>
     }
 
     @if (error(); as mensagem) {
