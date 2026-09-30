@@ -7,7 +7,7 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     plan: free
-    # O mais perto do Supabase em sa-east-1 (São Paulo) entre as regiões do Render
+    # Mesma região do Supabase (us-east-1, Virgínia): menor latência entre a API e o banco
     region: virginia
     branch: main
     autoDeploy: true

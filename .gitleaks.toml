@@ -21,3 +21,9 @@ id = "jdbc-password"
 description = "Senha em URL JDBC"
 regex = '''(?i)jdbc:[a-z]+://\S*[?&;]password=[^$<{&\s]+'''
 keywords = ["jdbc"]
+
+# A publishable key do Supabase é pública por design (vai para o navegador no frontend).
+# Só ela é liberada: sb_secret_, senhas e tokens continuam bloqueados pelas regras acima.
+[allowlist]
+description = "Publishable key do Supabase"
+regexes = ['''^sb_publishable_[A-Za-z0-9_-]+$''']
