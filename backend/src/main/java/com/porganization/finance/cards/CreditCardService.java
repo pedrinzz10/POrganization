@@ -10,6 +10,8 @@ import com.porganization.finance.categories.Category;
 import com.porganization.finance.categories.CategoryKind;
 import com.porganization.finance.categories.CategoryRepository;
 import com.porganization.finance.transactions.TransactionRepository;
+import com.porganization.settings.UserSettingsService;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -24,14 +26,18 @@ public class CreditCardService {
     private final AccountRepository accounts;
     private final CategoryRepository categories;
     private final TransactionRepository transactions;
+    private final UserSettingsService userSettings;
+    private final Clock clock;
 
     public CreditCardService(CreditCardRepository cards, CardStatementRepository statements, AccountRepository accounts,
-            CategoryRepository categories, TransactionRepository transactions) {
+            CategoryRepository categories, TransactionRepository transactions, UserSettingsService userSettings, Clock clock) {
         this.cards = cards;
         this.statements = statements;
         this.accounts = accounts;
         this.categories = categories;
         this.transactions = transactions;
+        this.userSettings = userSettings;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -64,9 +70,10 @@ public class CreditCardService {
     @Transactional(readOnly = true)
     public List<StatementSummary> statements(UUID userId, UUID cardId) {
         find(userId, cardId);
+        LocalDate today = LocalDate.ofInstant(clock.instant(), userSettings.zoneOf(userId));
         return statements.findByUserIdAndCardIdOrderByReferenceMonthAsc(userId, cardId).stream()
                 .map(s -> new StatementSummary(s.getId(), s.getCardId(), s.getReferenceMonth(), s.getClosingDate(),
-                        s.getDueDate(), s.getStatus().name(), transactions.statementTotal(userId, s.getId())))
+                        s.getDueDate(), s.statusOn(today), transactions.statementTotal(userId, s.getId())))
                 .toList();
     }
 
