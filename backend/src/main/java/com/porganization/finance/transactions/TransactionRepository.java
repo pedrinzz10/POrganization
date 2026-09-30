@@ -28,6 +28,10 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
     /** O pagamento de uma fatura: a única linha da fatura que tem conta. */
     Optional<Transaction> findFirstByUserIdAndCardStatementIdAndAccountIdIsNotNull(UUID userId, UUID cardStatementId);
 
+    /** Contas a pagar de uma janela: gastos não pagos numa conta (fixos gerados, boletos lançados). */
+    List<Transaction> findByUserIdAndTypeAndPaidFalseAndAccountIdIsNotNullAndDateBetweenOrderByDateAsc(UUID userId,
+            TransactionType type, LocalDate from, LocalDate to);
+
     /** As Specifications de TransactionSpecifications sempre começam pelo dono (ownedBy). */
     List<Transaction> findAll(Specification<Transaction> spec, Sort sort);
 

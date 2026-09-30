@@ -7,15 +7,16 @@ import { problemMessage } from '../../core/http/problem';
 import { parseIsoDate } from '../commitments/data/date-range.util';
 import { TodayService } from './data/today.service';
 import { TodayCommitmentsComponent } from './sections/today-commitments.component';
+import { TodayFinanceComponent } from './sections/today-finance.component';
 import { TodayStudiesComponent } from './sections/today-studies.component';
 
 /**
- * Tela Hoje: busca tudo numa chamada (GET /api/today) e distribui para as seções. Cada seção
- * cuida só da sua parte; finanças chega na etapa 4.
+ * Tela Hoje: busca tudo numa chamada (GET /api/today) e distribui para as seções
+ * (compromissos, estudos e finanças). Cada seção cuida só da sua parte.
  */
 @Component({
   selector: 'app-today-page',
-  imports: [DatePipe, MatProgressBarModule, MatButtonModule, TodayCommitmentsComponent, TodayStudiesComponent],
+  imports: [DatePipe, MatProgressBarModule, MatButtonModule, TodayCommitmentsComponent, TodayFinanceComponent, TodayStudiesComponent],
   template: `
     <h1 class="titulo">Hoje</h1>
     @if (hoje(); as data) {
@@ -34,6 +35,9 @@ import { TodayStudiesComponent } from './sections/today-studies.component';
         <app-today-commitments [occurrences]="tela.value().commitments" (changed)="tela.reload()" />
         @if (tela.value().studies; as estudos) {
           <app-today-studies [today]="tela.value().date" [plan]="estudos" />
+        }
+        @if (tela.value().finance; as financas) {
+          <app-today-finance [today]="tela.value().date" [finance]="financas" (changed)="tela.reload()" />
         }
       </div>
     }
