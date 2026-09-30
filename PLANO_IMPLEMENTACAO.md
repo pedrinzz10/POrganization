@@ -1117,7 +1117,7 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
       "backend/src/main/java/com/porganization/finance/calendar/Holidays.java"
     ],
     "dependencias": [],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       {
         "id": "CA1",
