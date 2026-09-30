@@ -65,6 +65,9 @@ public class TransactionService {
     @Transactional
     public TransactionResponse update(UUID userId, UUID id, TransactionRequest request) {
         Transaction transaction = find(userId, id);
+        if (transaction.getType() == TransactionType.TRANSFER) {
+            throw new InvalidRequestException("type", "edite a transferência em /api/finance/transfers/{grupo}");
+        }
         transaction.setType(request.type());
         transaction.setAmount(request.amount());
         transaction.setDate(request.date());
@@ -72,9 +75,15 @@ public class TransactionService {
         return toResponses(userId, List.of(transaction)).getFirst();
     }
 
+    /** Excluir uma perna de transferência exclui as duas. */
     @Transactional
     public void delete(UUID userId, UUID id) {
-        transactions.delete(find(userId, id));
+        Transaction transaction = find(userId, id);
+        if (transaction.getTransferGroupId() != null) {
+            transactions.findByUserIdAndTransferGroupId(userId, transaction.getTransferGroupId()).forEach(transactions::delete);
+        } else {
+            transactions.delete(transaction);
+        }
     }
 
     /** Renda e gasto do mês, pagos ou não. Transferências não contam (F04). */
@@ -133,7 +142,8 @@ public class TransactionService {
                         t.getAccountId(), accountNames.get(t.getAccountId()), t.getCategoryId(),
                         categoryNames.get(t.getCategoryId()), t.isPaid(),
                         t.getTags().stream().sorted(Comparator.comparing(FinanceTag::getName)).map(g -> new TagRef(g.getId(), g.getName())).toList(),
-                        t.getCardStatementId(), t.getPurchaseId(), t.getInstallmentNumber(), t.getInstallmentCount()))
+                        t.getCardStatementId(), t.getPurchaseId(), t.getInstallmentNumber(), t.getInstallmentCount(),
+                        t.getTransferGroupId(), t.getTransferDirection()))
                 .toList();
     }
 }
