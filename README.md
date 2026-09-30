@@ -114,6 +114,10 @@ O backend lê variáveis de ambiente. Localmente, o perfil `dev` as carrega do `
 | `VAPID_PUBLIC_KEY` | não | chave pública do Web Push (vai para o navegador); gere o par com `npx web-push generate-vapid-keys` |
 | `VAPID_PRIVATE_KEY` | **sim** | chave privada do Web Push; sem as duas, o push fica desligado |
 | `VAPID_SUBJECT` | não | contato para os push services, ex.: `mailto:voce@exemplo.com` |
+| `GOOGLE_CLIENT_ID` | não | OAuth client do Google Cloud (tipo *Aplicativo da Web*, com a Calendar API ativada) |
+| `GOOGLE_CLIENT_SECRET` | **sim** | segredo desse OAuth client |
+| `GOOGLE_REDIRECT_URI` | não | callback cadastrado no Google: `https://<api>/api/integrations/google/callback` |
+| `GOOGLE_TOKEN_KEY` | **sim** | chave AES-256 que cifra os tokens do Google no banco (`openssl rand -base64 32`); trocá-la desconecta todo mundo |
 | `PORT` | não | porta HTTP; o Render define, localmente é `8080` |
 | `SPRING_PROFILES_ACTIVE` | não | `dev` (local com Supabase) ou `prod` (Render); sem perfil, só os testes funcionam |
 

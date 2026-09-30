@@ -3014,13 +3014,16 @@
         "backend/src/main/java/com/porganization/integrations/google/GoogleOAuthController.java",
         "backend/src/main/java/com/porganization/integrations/google/GoogleOAuthService.java",
         "backend/src/main/java/com/porganization/integrations/google/TokenCrypto.java",
-        "frontend/src/app/features/settings/google-calendar.component.ts"
+        "frontend/src/app/features/settings/google-calendar.component.ts",
+        "backend/src/main/java/com/porganization/integrations/google/GoogleConnection.java",
+        "backend/src/main/java/com/porganization/integrations/google/GoogleProperties.java",
+        "backend/src/main/java/com/porganization/integrations/google/GoogleConfig.java"
       ],
       "dependencias": [
         "I04"
       ],
       "conceito_angular": "Navegação para fora do app e retorno: o botão Conectar leva para a URL do Google, e a rota de Configurações lê o query param de retorno (?google=ok|erro) via input() com withComponentInputBinding() para mostrar o resultado.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/health", "/actuator/health", "/actuator/health/**").permitAll()
                         // Cron externo: sem JWT, protegido pelo header X-Cron-Secret no próprio controller
                         .requestMatchers("/internal/**").permitAll()
+                        // Volta do Google (redirecionamento do navegador, sem JWT): o state assinado identifica o usuário
+                        .requestMatchers("/api/integrations/google/callback").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
         return http.build();

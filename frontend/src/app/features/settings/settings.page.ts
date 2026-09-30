@@ -1,13 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PushService } from '../../core/push/push.service';
+import { GoogleCalendarComponent } from './google-calendar.component';
 import { PreferencesFormComponent } from './preferences-form.component';
 
-/** Configurações: preferências de notificação e notificações neste navegador. A I06 acrescenta o Google Calendar. */
+/** Configurações: preferências de notificação, notificações neste navegador e Google Calendar. */
 @Component({
   selector: 'app-settings-page',
-  imports: [MatButtonModule, MatIconModule, PreferencesFormComponent],
+  imports: [GoogleCalendarComponent, MatButtonModule, MatIconModule, PreferencesFormComponent],
   template: `
     <h1 class="titulo">Configurações</h1>
 
@@ -36,6 +37,11 @@ import { PreferencesFormComponent } from './preferences-form.component';
       @if (erro(); as mensagem) {
         <p class="erro" role="alert">{{ mensagem }}</p>
       }
+    </section>
+
+    <section class="bloco" aria-labelledby="config-google">
+      <h2 id="config-google" class="bloco__titulo">Google Calendar</h2>
+      <app-google-calendar [result]="google()" />
     </section>
   `,
   styles: `
@@ -68,6 +74,9 @@ import { PreferencesFormComponent } from './preferences-form.component';
 })
 export class SettingsPage {
   protected readonly push = inject(PushService);
+
+  /** Query param ?google=ok|erro com que a API devolve o usuário depois do Google. */
+  readonly google = input<string>();
   protected readonly ocupado = signal(false);
   protected readonly erro = signal<string | null>(null);
 
