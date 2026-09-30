@@ -80,7 +80,7 @@ Regras:
     "story": "Como Pedro, quero um monorepo organizado para evoluir API e frontend no mesmo repositório.",
     "arquivos": [".gitignore", ".editorconfig", "README.md", "backend/.gitkeep", "frontend/.gitkeep", "specs/README.md"],
     "dependencias": [],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "As pastas backend/, frontend/ e specs/ existem na raiz." },
       { "id": "CA2", "descricao": ".gitignore ignora target/, node_modules/, dist/, .angular/, .env e arquivos de IDE." }
@@ -98,7 +98,7 @@ Regras:
     "story": "Como Pedro, quero várias barreiras impedindo que senhas e chaves cheguem ao repositório público, e um procedimento claro se algo vazar.",
     "arquivos": ["scripts/check-secrets.sh", "scripts/test-check-secrets.sh", "scripts/setup-dev.sh", "scripts/check-github-security.sh", ".githooks/pre-commit", ".gitleaks.toml", ".github/workflows/secrets.yml", "SECURITY.md", "README.md"],
     "dependencias": ["B01"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "check-secrets.sh falha para sb_secret_, JWT service_role, chave privada, URL de banco com senha, senha literal em application*.yml e arquivo proibido rastreado; passa para sb_publishable_, JWT anon e ${VAR}. A saída nunca imprime o segredo inteiro." },
       { "id": "CA2", "descricao": "No .env.example, variáveis com nome sensível (PASSWORD, SECRET, TOKEN, PRIVATE, _KEY) ficam sem valor." },
@@ -120,16 +120,18 @@ Regras:
     "titulo": "Esqueleto da API Spring Boot com health check",
     "acao": "Gerar o projeto Spring Boot 4.x em backend/ pelo Spring Initializr (Maven wrapper, Java 21) com Web MVC, Validation, Data JPA, Flyway, PostgreSQL, Security, OAuth2 Resource Server, Actuator e Testcontainers, usando os starters modulares do Boot 4 (ex.: spring-boot-starter-flyway + flyway-database-postgresql, pois só flyway-core não é mais autoconfigurado; starters de teste separados para MockMvc, Data JPA e Security; testcontainers-postgresql); expor GET /api/health público; no Actuator expor só health e usar management.endpoint.env.show-values=never e configprops.show-values=never para nenhum segredo aparecer em endpoint ou log.",
     "story": "Como Pedro, quero uma API que sobe localmente e responde um health check para validar o setup.",
-    "arquivos": ["backend/pom.xml", "backend/mvnw", "backend/src/main/java/com/porganization/PorganizationApplication.java", "backend/src/main/java/com/porganization/common/HealthController.java", "backend/src/main/resources/application.yml"],
+    "arquivos": ["backend/pom.xml", "backend/mvnw", "backend/src/main/java/com/porganization/PorganizationApplication.java", "backend/src/main/java/com/porganization/common/HealthController.java", "backend/src/main/resources/application.yml", "backend/src/main/java/com/porganization/security/SecurityConfig.java", "backend/src/test/java/com/porganization/TestcontainersConfiguration.java"],
     "dependencias": ["B01"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "`./mvnw verify` passa em máquina limpa com Docker disponível." },
-      { "id": "CA2", "descricao": "GET /api/health responde 200 com {\"status\":\"UP\"} sem autenticação." }
+      { "id": "CA2", "descricao": "GET /api/health responde 200 com {\"status\":\"UP\"} sem autenticação." },
+      { "id": "CA3", "descricao": "O Actuator expõe só /actuator/health; /actuator/env e /actuator/configprops não são acessíveis sem autenticação." }
     ],
     "testes_dos_criterios": [
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/PorganizationApplicationTests.java", "cenario": "Dado o contexto Spring com Postgres do Testcontainers, quando a aplicação inicia, então o contexto carrega sem erro." },
-      { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/common/HealthControllerTest.java", "cenario": "Dado nenhum token, quando GET /api/health, então status 200 e body.status == UP." }
+      { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/common/HealthControllerTest.java", "cenario": "Dado nenhum token, quando GET /api/health, então status 200 e body.status == UP." },
+      { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/common/HealthControllerTest.java", "cenario": "Dado nenhum token, quando GET /actuator/health, então 200; quando GET /actuator/env ou /actuator/configprops, então não é 200." }
     ]
   },
   {
