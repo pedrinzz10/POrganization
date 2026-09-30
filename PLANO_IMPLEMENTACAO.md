@@ -786,14 +786,14 @@ Regras:
     "story": "Como Pedro, quero cadastrar minhas contas e ver o saldo de cada uma.",
     "arquivos": ["backend/src/main/resources/db/migration/V7__accounts.sql", "backend/src/main/java/com/porganization/finance/accounts/Account.java", "backend/src/main/java/com/porganization/finance/accounts/AccountController.java", "backend/src/main/java/com/porganization/finance/accounts/AccountService.java", "backend/src/main/java/com/porganization/config/JacksonConfig.java"],
     "dependencias": ["B05"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Valores trafegam como string decimal no JSON e são BigDecimal com escala 2 no Java." },
       { "id": "CA2", "descricao": "Conta com transações não pode ser excluída (409), só arquivada." }
     ],
     "testes_dos_criterios": [
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java", "cenario": "Dado POST initialBalance '1000.10', então GET devolve '1000.10' (não 1000.1 nem float)." },
-      { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java", "cenario": "Dado conta com 1 transação, quando DELETE, então 409; PATCH archived=true, então 200." }
+      { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java", "cenario": "Dado conta sem transações, quando PATCH archived=true, então 200 e some da lista padrão; DELETE de conta sem uso responde 204. O caso 'conta com 1 transação → DELETE 409' entra neste mesmo arquivo na F03, quando a tabela de transações (FK on delete restrict) passa a existir." }
     ]
   },
   {
@@ -826,12 +826,14 @@ Regras:
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "amount <= 0 responde 400; a categoria precisa ser do mesmo kind do tipo (gasto com categoria de gasto)." },
       { "id": "CA2", "descricao": "Saldo da conta = inicial + rendas pagas - gastos pagos." },
-      { "id": "CA3", "descricao": "Filtros combinados (mês + categoria + tag) retornam só o que casa com todos." }
+      { "id": "CA3", "descricao": "Filtros combinados (mês + categoria + tag) retornam só o que casa com todos." },
+      { "id": "CA4", "descricao": "Conta com transações não pode ser excluída (409), só arquivada (completa o CA2 da F01)." }
     ],
     "testes_dos_criterios": [
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado amount '0.00', então 400; dado EXPENSE com categoria Salário, então 400." },
       { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado inicial 1000.00, renda 2500.00 paga, gasto 300.55 pago e gasto 100.00 não pago, então saldo == 3199.45." },
-      { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado 4 transações variando mês, categoria e tag, quando filtra month=2026-10&category=Lazer&tag=viagem, então só 1." }
+      { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado 4 transações variando mês, categoria e tag, quando filtra month=2026-10&category=Lazer&tag=viagem, então só 1." },
+      { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java", "cenario": "Dado conta com 1 transação, quando DELETE, então 409 e a conta continua; PATCH archived=true, então 200." }
     ]
   },
   {

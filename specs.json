@@ -125,7 +125,7 @@
     }
   ],
   "total_specs": 58,
-  "total_criterios": 157,
+  "total_criterios": 158,
   "specs": [
     {
       "id": "B01",
@@ -1967,7 +1967,7 @@
       "dependencias": [
         "B05"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1991,7 +1991,7 @@
           "criterio": "CA2",
           "tipo": "integracao",
           "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java",
-          "cenario": "Dado conta com 1 transação, quando DELETE, então 409; PATCH archived=true, então 200."
+          "cenario": "Dado conta sem transações, quando PATCH archived=true, então 200 e some da lista padrão; DELETE de conta sem uso responde 204. O caso 'conta com 1 transação → DELETE 409' entra neste mesmo arquivo na F03, quando a tabela de transações (FK on delete restrict) passa a existir."
         }
       ]
     },
@@ -2067,6 +2067,10 @@
         {
           "id": "CA3",
           "descricao": "Filtros combinados (mês + categoria + tag) retornam só o que casa com todos."
+        },
+        {
+          "id": "CA4",
+          "descricao": "Conta com transações não pode ser excluída (409), só arquivada (completa o CA2 da F01)."
         }
       ],
       "testes_dos_criterios": [
@@ -2090,6 +2094,13 @@
           "tipo": "integracao",
           "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java",
           "cenario": "Dado 4 transações variando mês, categoria e tag, quando filtra month=2026-10&category=Lazer&tag=viagem, então só 1."
+        },
+        {
+          "id": "T4",
+          "criterio": "CA4",
+          "tipo": "integracao",
+          "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java",
+          "cenario": "Dado conta com 1 transação, quando DELETE, então 409 e a conta continua; PATCH archived=true, então 200."
         }
       ]
     },
