@@ -53,3 +53,39 @@ export function daysOf(range: DateRange): IsoDate[] {
   }
   return days;
 }
+
+/** Mês de um ano, com month de 1 a 12. */
+export interface YearMonth {
+  year: number;
+  month: number;
+}
+
+export function yearMonthOf(iso: IsoDate): YearMonth {
+  const [year, month] = iso.split('-').map(Number);
+  return { year, month };
+}
+
+export function shiftMonth(ym: YearMonth, delta: number): YearMonth {
+  const index = ym.year * 12 + (ym.month - 1) + delta;
+  return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+}
+
+/**
+ * Grade de 6 semanas (42 dias) do mês, de segunda a domingo: começa na segunda que abre a
+ * semana do dia 1 e inclui os dias do mês anterior e do seguinte que completam a grade.
+ */
+export function monthGrid(year: number, month: number): IsoDate[] {
+  const first = `${year}-${String(month).padStart(2, '0')}-01`;
+  const start = weekRange(first).from;
+  return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+}
+
+/** Intervalo coberto pela grade do mês: uma consulta só para a tela inteira. */
+export function monthGridRange(year: number, month: number): DateRange {
+  const grid = monthGrid(year, month);
+  return { from: grid[0], to: grid[41] };
+}
+
+export function yearRange(year: number): DateRange {
+  return { from: `${year}-01-01`, to: `${year}-12-31` };
+}

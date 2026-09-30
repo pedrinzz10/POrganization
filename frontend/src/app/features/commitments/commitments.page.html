@@ -2,17 +2,38 @@
 
 <app-quick-add (created)="recarregar()" />
 
-<mat-tab-group mat-stretch-tabs="false" (selectedIndexChange)="selecionarAba($event)" animationDuration="0ms">
+<ng-template #carregando>
+  @if (ocorrencias.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  @if (erro(); as mensagem) {
+    <p class="painel__erro" role="alert">{{ mensagem }}</p>
+  }
+</ng-template>
+
+<mat-tab-group
+  mat-stretch-tabs="false"
+  animationDuration="0ms"
+  [selectedIndex]="indiceAba()"
+  (selectedIndexChange)="selecionarAba($event)"
+>
   <mat-tab label="Hoje">
     <section class="painel">
-      <h2 class="painel__titulo">{{ hojeData | date: "EEEE, d 'de' MMMM" }}</h2>
-      @if (aba() === 'hoje') {
-        @if (ocorrencias.isLoading()) {
-          <mat-progress-bar mode="indeterminate" />
+      <div class="painel__nav">
+        <button mat-icon-button type="button" aria-label="Dia anterior" (click)="mudarDia(-1)">
+          <mat-icon aria-hidden="true">chevron_left</mat-icon>
+        </button>
+        <h2 class="painel__titulo">{{ diaData() | date: "EEEE, d 'de' MMMM" }}</h2>
+        <button mat-icon-button type="button" aria-label="Próximo dia" (click)="mudarDia(1)">
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </button>
+        @if (dia() !== hoje) {
+          <button mat-button type="button" (click)="irParaHoje()">Voltar para hoje</button>
         }
-        @if (erro(); as mensagem) {
-          <p class="painel__erro" role="alert">{{ mensagem }}</p>
-        } @else if (ocorrencias.hasValue()) {
+      </div>
+      @if (aba() === 'dia') {
+        <ng-container [ngTemplateOutlet]="carregando" />
+        @if (!erro() && ocorrencias.hasValue()) {
           <app-day-view [occurrences]="ocorrencias.value()" />
         }
       }
@@ -31,15 +52,11 @@
         <button mat-icon-button type="button" aria-label="Próxima semana" (click)="proximaSemana()">
           <mat-icon aria-hidden="true">chevron_right</mat-icon>
         </button>
-        <button mat-button type="button" (click)="semanaAtual()">Esta semana</button>
+        <button mat-button type="button" (click)="irParaHoje()">Esta semana</button>
       </div>
       @if (aba() === 'semana') {
-        @if (ocorrencias.isLoading()) {
-          <mat-progress-bar mode="indeterminate" />
-        }
-        @if (erro(); as mensagem) {
-          <p class="painel__erro" role="alert">{{ mensagem }}</p>
-        } @else if (ocorrencias.hasValue()) {
+        <ng-container [ngTemplateOutlet]="carregando" />
+        @if (!erro() && ocorrencias.hasValue()) {
           <app-week-view [range]="semana()" [occurrences]="ocorrencias.value()" />
         }
       }
@@ -47,10 +64,46 @@
   </mat-tab>
 
   <mat-tab label="Mês">
-    <p class="painel painel__aviso">A visão do mês chega na próxima spec (C08).</p>
+    <section class="painel">
+      <div class="painel__nav">
+        <button mat-icon-button type="button" aria-label="Mês anterior" (click)="mudarMes(-1)">
+          <mat-icon aria-hidden="true">chevron_left</mat-icon>
+        </button>
+        <h2 class="painel__titulo">{{ mesData() | date: "MMMM 'de' yyyy" }}</h2>
+        <button mat-icon-button type="button" aria-label="Próximo mês" (click)="mudarMes(1)">
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </button>
+        <button mat-button type="button" (click)="irParaHoje()">Este mês</button>
+      </div>
+      @if (aba() === 'mes') {
+        <ng-container [ngTemplateOutlet]="carregando" />
+        @if (!erro() && ocorrencias.hasValue()) {
+          <app-month-view
+            [year]="mes().year"
+            [month]="mes().month"
+            [occurrences]="ocorrencias.value()"
+            (daySelected)="abrirDia($event)"
+          />
+        }
+      }
+    </section>
   </mat-tab>
 
   <mat-tab label="Ano">
-    <p class="painel painel__aviso">A visão do ano chega na próxima spec (C08).</p>
+    <section class="painel">
+      <div class="painel__nav">
+        <button mat-icon-button type="button" aria-label="Ano anterior" (click)="mudarAno(-1)">
+          <mat-icon aria-hidden="true">chevron_left</mat-icon>
+        </button>
+        <h2 class="painel__titulo">{{ ano() }}</h2>
+        <button mat-icon-button type="button" aria-label="Próximo ano" (click)="mudarAno(1)">
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </button>
+        <button mat-button type="button" (click)="irParaHoje()">Este ano</button>
+      </div>
+      @if (aba() === 'ano') {
+        <app-year-view [year]="ano()" (monthSelected)="abrirMes($event)" />
+      }
+    </section>
   </mat-tab>
 </mat-tab-group>
