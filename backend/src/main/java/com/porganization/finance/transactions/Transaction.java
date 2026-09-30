@@ -75,6 +75,9 @@ public class Transaction {
     @Column(name = "transfer_direction")
     private TransferDirection transferDirection;
 
+    @Column(name = "recurring_id")
+    private UUID recurringId;
+
     @ManyToMany
     @JoinTable(name = "transaction_tags", joinColumns = @JoinColumn(name = "transaction_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
@@ -205,6 +208,14 @@ public class Transaction {
         this.transferGroupId = groupId;
         this.transferDirection = direction;
         this.categoryId = null;
+    }
+
+    public UUID getRecurringId() {
+        return recurringId;
+    }
+
+    public void setRecurringId(UUID recurringId) {
+        this.recurringId = recurringId;
     }
 
     public Set<FinanceTag> getTags() {

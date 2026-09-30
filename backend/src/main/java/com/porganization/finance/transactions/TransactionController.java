@@ -1,5 +1,6 @@
 package com.porganization.finance.transactions;
 
+import com.porganization.finance.recurring.RecurringGenerator;
 import com.porganization.finance.transactions.TransactionDtos.MonthSummary;
 import com.porganization.finance.transactions.TransactionDtos.TransactionRequest;
 import com.porganization.finance.transactions.TransactionDtos.TransactionResponse;
@@ -26,9 +27,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class TransactionController {
 
     private final TransactionService service;
+    private final RecurringGenerator recurring;
 
-    public TransactionController(TransactionService service) {
+    public TransactionController(TransactionService service, RecurringGenerator recurring) {
         this.service = service;
+        this.recurring = recurring;
     }
 
     /** Filtros combináveis: ?month=YYYY-MM&accountId&categoryId&tagId&type. */
@@ -39,6 +42,10 @@ public class TransactionController {
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) UUID tagId,
             @RequestParam(required = false) TransactionType type) {
+        if (month != null) {
+            // Consultar um mês gera os fixos dele (idempotente)
+            recurring.generate(userId, month);
+        }
         return service.list(userId, month, accountId, categoryId, tagId, type);
     }
 
@@ -69,6 +76,7 @@ public class TransactionController {
     /** Renda x gasto do mês. */
     @GetMapping("/summary")
     public MonthSummary summary(@CurrentUser UUID userId, @RequestParam YearMonth month) {
+        recurring.generate(userId, month);
         return service.summary(userId, month);
     }
 }

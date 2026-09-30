@@ -154,7 +154,7 @@ public class TransactionService {
                         categoryNames.get(t.getCategoryId()), t.isPaid(),
                         t.getTags().stream().sorted(Comparator.comparing(FinanceTag::getName)).map(g -> new TagRef(g.getId(), g.getName())).toList(),
                         t.getCardStatementId(), t.getPurchaseId(), t.getInstallmentNumber(), t.getInstallmentCount(),
-                        t.getTransferGroupId(), t.getTransferDirection()))
+                        t.getTransferGroupId(), t.getTransferDirection(), t.getRecurringId()))
                 .toList();
     }
 }

@@ -2339,12 +2339,14 @@
         "backend/src/main/resources/db/migration/V13__recurring_transactions.sql",
         "backend/src/main/java/com/porganization/finance/recurring/RecurringTransaction.java",
         "backend/src/main/java/com/porganization/finance/recurring/RecurringGenerator.java",
-        "backend/src/main/java/com/porganization/finance/recurring/RecurringController.java"
+        "backend/src/main/java/com/porganization/finance/recurring/RecurringController.java",
+        "backend/src/main/java/com/porganization/finance/recurring/RecurringService.java",
+        "backend/src/main/java/com/porganization/finance/recurring/RecurringJob.java"
       ],
       "dependencias": [
         "F05"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
