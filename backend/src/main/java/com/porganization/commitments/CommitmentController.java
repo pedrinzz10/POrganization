@@ -5,7 +5,11 @@ import com.porganization.commitments.dto.CommitmentResponse;
 import com.porganization.security.CurrentUser;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -34,6 +39,14 @@ public class CommitmentController {
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(created.getId()).toUri();
         return ResponseEntity.created(location).body(CommitmentResponse.from(created));
+    }
+
+    /** Compromissos de from a to (inclusive), em ordem cronológica. */
+    @GetMapping
+    public List<CommitmentResponse> findInRange(@CurrentUser UUID userId,
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate to) {
+        return service.findInRange(userId, from, to).stream().map(CommitmentResponse::from).toList();
     }
 
     @GetMapping("/{id}")
