@@ -2,13 +2,19 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PushService } from '../../core/push/push.service';
+import { PreferencesFormComponent } from './preferences-form.component';
 
-/** Configurações: notificações no navegador. As specs seguintes acrescentam preferências e o Google Calendar. */
+/** Configurações: preferências de notificação e notificações neste navegador. A I06 acrescenta o Google Calendar. */
 @Component({
   selector: 'app-settings-page',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, PreferencesFormComponent],
   template: `
     <h1 class="titulo">Configurações</h1>
+
+    <section class="bloco" aria-labelledby="config-preferencias">
+      <h2 id="config-preferencias" class="bloco__titulo">Lembretes e resumo</h2>
+      <app-preferences-form />
+    </section>
 
     <section class="bloco" aria-labelledby="config-notificacoes">
       <h2 id="config-notificacoes" class="bloco__titulo">Notificações no navegador</h2>

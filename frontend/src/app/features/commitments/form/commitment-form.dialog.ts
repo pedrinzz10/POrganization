@@ -1,16 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { firstValueFrom, startWith } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
-import { Commitment, CommitmentRequest, IsoDate, OccurrencePatch } from '../data/commitment.model';
+import { PreferencesService, REMINDER_OPTIONS } from '../../../core/settings/preferences.service';
+import { Commitment, CommitmentRequest, IsoDate, NotifyChannel, OccurrencePatch, ReminderSpec } from '../data/commitment.model';
 import { CommitmentsService } from '../data/commitments.service';
 import { today } from '../data/date-range.util';
 import { createRecurrenceGroup, fromRecurrenceRule, RecurrenceEditorComponent, toRecurrenceRule } from './recurrence-editor.component';
@@ -29,6 +32,21 @@ export type CommitmentFormResult = 'saved' | 'deleted' | undefined;
 
 type Scope = 'this' | 'series';
 
+type ReminderGroup = FormGroup<{
+  minutesBefore: FormControl<number>;
+  push: FormControl<boolean>;
+  email: FormControl<boolean>;
+}>;
+
+/** Pelo menos um canal marcado em cada lembrete. */
+function atLeastOneChannel(group: AbstractControl): ValidationErrors | null {
+  const { push, email } = group.value as { push: boolean; email: boolean };
+  return push || email ? null : { semCanal: true };
+}
+
+/** Máximo de lembretes por compromisso (a API aceita até 5). */
+const MAX_REMINDERS = 5;
+
 /**
  * Formulário completo em diálogo: todos os campos, repetição e exclusão. Ao editar um dia de um
  * compromisso recorrente, pergunta se a mudança vale só para esta ocorrência ou para a série.
@@ -44,6 +62,8 @@ type Scope = 'this' | 'series';
     MatCheckboxModule,
     MatSlideToggleModule,
     MatRadioModule,
+    MatSelectModule,
+    MatIconModule,
     RecurrenceEditorComponent,
   ],
   templateUrl: './commitment-form.dialog.html',
@@ -53,7 +73,11 @@ export class CommitmentFormDialog {
   private readonly data = inject<CommitmentFormData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<CommitmentFormDialog, CommitmentFormResult>>(MatDialogRef);
   private readonly commitments = inject(CommitmentsService);
+  private readonly preferences = inject(PreferencesService);
   private readonly fb = inject(FormBuilder);
+
+  protected readonly reminderOptions = REMINDER_OPTIONS;
+  protected readonly maxReminders = MAX_REMINDERS;
 
   protected readonly editing = this.data.commitment;
   /** Editando um dia de uma série: mostra a escolha "só esta" / "toda a série". */
@@ -72,6 +96,8 @@ export class CommitmentFormDialog {
     description: ['', Validators.maxLength(2000)],
     repeat: [false],
     recurrence: createRecurrenceGroup(this.fb),
+    /** Lembretes: editando, os do compromisso; criando, o padrão das Configurações (signal do PreferencesService). */
+    reminders: this.fb.array<ReminderGroup>([]),
   });
 
   protected readonly saving = signal(false);
@@ -106,6 +132,17 @@ export class CommitmentFormDialog {
       if (c.recurrenceRule) {
         this.form.controls.recurrence.setValue(fromRecurrenceRule(c.recurrenceRule));
       }
+      this.setReminders(c.reminders ?? []);
+    } else {
+      // Compromisso novo começa com o lembrete padrão, se o usuário ainda não mexeu nos lembretes
+      this.preferences.load().then(
+        (p) => {
+          if (!this.form.controls.reminders.dirty && p.defaultReminderMinutes !== null) {
+            this.setReminders([{ minutesBefore: p.defaultReminderMinutes, channels: p.channels }]);
+          }
+        },
+        () => undefined,
+      );
     }
     // Validação condicional: o subgrupo de repetição só conta quando "repetir" está ligado
     this.form.controls.repeat.valueChanges
@@ -143,6 +180,21 @@ export class CommitmentFormDialog {
     });
   }
 
+  get reminders(): FormArray<ReminderGroup> {
+    return this.form.controls.reminders;
+  }
+
+  addReminder(): void {
+    const last = this.reminders.at(this.reminders.length - 1)?.getRawValue();
+    this.reminders.push(this.reminderGroup({ minutesBefore: 30, channels: last ? channelsOf(last) : ['PUSH'] }));
+    this.reminders.markAsDirty();
+  }
+
+  removeReminder(index: number): void {
+    this.reminders.removeAt(index);
+    this.reminders.markAsDirty();
+  }
+
   askDelete(): void {
     this.confirmingDelete.set(true);
   }
@@ -171,7 +223,28 @@ export class CommitmentFormDialog {
       location: v.location.trim() || null,
       description: v.description.trim() || null,
       recurrenceRule: v.repeat ? toRecurrenceRule(v.recurrence) : null,
+      // Criando sem mexer nos lembretes, o campo vai vazio e a API aplica o padrão (mesmo que o mostrado)
+      ...(this.data.commitment || this.reminders.dirty
+        ? { reminders: v.reminders.map((r) => ({ minutesBefore: r.minutesBefore, channels: channelsOf(r) })) }
+        : {}),
     };
+  }
+
+  private setReminders(reminders: ReminderSpec[]): void {
+    this.reminders.clear({ emitEvent: false });
+    reminders.forEach((r) => this.reminders.push(this.reminderGroup(r), { emitEvent: false }));
+    this.reminders.updateValueAndValidity();
+  }
+
+  private reminderGroup(r: ReminderSpec): ReminderGroup {
+    return this.fb.nonNullable.group(
+      {
+        minutesBefore: [r.minutesBefore],
+        push: [r.channels.includes('PUSH')],
+        email: [r.channels.includes('EMAIL')],
+      },
+      { validators: atLeastOneChannel },
+    );
   }
 
   private async run(action: () => Promise<void>): Promise<void> {
@@ -185,4 +258,8 @@ export class CommitmentFormDialog {
       this.saving.set(false);
     }
   }
+}
+
+function channelsOf(r: { push: boolean; email: boolean }): NotifyChannel[] {
+  return [...(r.push ? (['PUSH'] as const) : []), ...(r.email ? (['EMAIL'] as const) : [])];
 }

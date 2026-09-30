@@ -7,6 +7,7 @@ import com.porganization.commitments.recurrence.RecurrenceExpander;
 import com.porganization.common.DateRanges;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
+import com.porganization.notifications.ReminderService;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,17 +32,22 @@ public class CommitmentService {
 
     private final CommitmentRepository repository;
     private final OccurrenceOverrideRepository overrides;
+    private final ReminderService reminders;
 
-    public CommitmentService(CommitmentRepository repository, OccurrenceOverrideRepository overrides) {
+    public CommitmentService(CommitmentRepository repository, OccurrenceOverrideRepository overrides,
+            ReminderService reminders) {
         this.repository = repository;
         this.overrides = overrides;
+        this.reminders = reminders;
     }
 
     @Transactional
     public Commitment create(UUID userId, CommitmentRequest request) {
         Commitment commitment = new Commitment(userId, request.title().trim(), request.date());
         apply(commitment, request);
-        return repository.save(commitment);
+        Commitment saved = repository.save(commitment);
+        reminders.onCreate(userId, saved.getId(), request.reminders());
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -134,6 +140,7 @@ public class CommitmentService {
         commitment.setTitle(request.title().trim());
         commitment.setDate(request.date());
         apply(commitment, request);
+        reminders.onUpdate(userId, id, request.reminders());
         return commitment;
     }
 

@@ -20,6 +20,7 @@ const criado: Commitment = {
   recurrenceRule: null,
   createdAt: '2026-10-01T12:00:00Z',
   updatedAt: '2026-10-01T12:00:00Z',
+  reminders: [],
 };
 
 describe('QuickAddComponent', () => {
