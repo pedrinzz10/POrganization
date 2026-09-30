@@ -40,3 +40,17 @@ services:
       # Segredo do header X-Cron-Secret que o cron externo manda para /internal/reminders/dispatch
       - key: CRON_SECRET
         generateValue: true
+      # URL do app na Vercel (links dos e-mails e notificações)
+      - key: APP_URL
+        sync: false
+      # SMTP dos lembretes por e-mail; sem MAIL_HOST, o e-mail fica desligado
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false

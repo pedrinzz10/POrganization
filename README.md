@@ -105,6 +105,12 @@ O backend lê variáveis de ambiente. Localmente, o perfil `dev` as carrega do `
 | `SUPABASE_ISSUER` | não | `https://<ref>.supabase.co/auth/v1` |
 | `FRONTEND_ORIGIN` | não | origem liberada no CORS; padrão `http://localhost:4200`, várias separadas por vírgula |
 | `CRON_SECRET` | **sim** | segredo do header `X-Cron-Secret` que o cron externo manda para `/internal/**` (lembretes); sem ele, esses endpoints respondem 401 |
+| `APP_URL` | não | endereço do app, usado nos links dos e-mails e notificações; padrão `http://localhost:4200` |
+| `MAIL_HOST` | não | servidor SMTP dos lembretes por e-mail (ex.: `smtp.gmail.com`, `smtp-relay.brevo.com`); vazio = e-mail desligado |
+| `MAIL_PORT` | não | porta SMTP com STARTTLS; padrão `587` |
+| `MAIL_USERNAME` | não | usuário do SMTP |
+| `MAIL_PASSWORD` | **sim** | senha do SMTP (no Gmail, uma *senha de app*) |
+| `MAIL_FROM` | não | remetente, ex.: `POrganization <avisos@seu-dominio.com>` |
 | `PORT` | não | porta HTTP; o Render define, localmente é `8080` |
 | `SPRING_PROFILES_ACTIVE` | não | `dev` (local com Supabase) ou `prod` (Render); sem perfil, só os testes funcionam |
 
