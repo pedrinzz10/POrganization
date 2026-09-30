@@ -1,0 +1,42 @@
+.shell {
+  height: 100dvh;
+}
+
+.shell__sidenav {
+  width: 240px;
+}
+
+.shell__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  gap: 8px;
+  background: var(--mat-sys-surface-container);
+}
+
+.shell__brand {
+  font: var(--mat-sys-title-large);
+}
+
+.shell__spacer {
+  flex: 1;
+}
+
+.shell__user {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40vw;
+}
+
+.shell__main {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-item--ativo {
+  font-weight: 600;
+}
