@@ -60,6 +60,10 @@ public class Commitment {
     @Column(name = "google_event_id")
     private String googleEventId;
 
+    /** "APP" (criado aqui) ou "GOOGLE" (importado da agenda, I08). */
+    @Column(name = "source", nullable = false, updatable = false)
+    private String source = "APP";
+
     /** A última mudança ainda não chegou ao Google; o cron tenta de novo. */
     @Column(name = "sync_pending", nullable = false)
     private boolean syncPending;
@@ -188,5 +192,17 @@ public class Commitment {
 
     public void setSyncPending(boolean syncPending) {
         this.syncPending = syncPending;
+    }
+
+    public boolean isFromGoogle() {
+        return "GOOGLE".equals(source);
+    }
+
+    /** Compromisso novo vindo de um evento do Google. */
+    public static Commitment importedFromGoogle(UUID userId, String googleEventId, String title, LocalDate date) {
+        Commitment commitment = new Commitment(userId, title, date);
+        commitment.source = "GOOGLE";
+        commitment.googleEventId = googleEventId;
+        return commitment;
     }
 }

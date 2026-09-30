@@ -60,6 +60,9 @@ public class GoogleSyncService {
 
     /** Cria ou atualiza o evento do compromisso. Sem conexão com o Google, não faz nada. */
     public void sync(UUID userId, UUID commitmentId) {
+        if (!oauth.available()) {
+            return;
+        }
         Optional<GoogleConnection> connection = connections.findById(userId);
         Optional<Commitment> found = commitments.findByIdAndUserId(commitmentId, userId);
         if (connection.isEmpty() || found.isEmpty()) {
@@ -104,6 +107,9 @@ public class GoogleSyncService {
 
     /** Chamado pelo cron: tenta de novo o que ficou pendente. Devolve quantos foram sincronizados. */
     public int retryPending() {
+        if (!oauth.available()) {
+            return 0;
+        }
         int synced = 0;
         for (Commitment pending : commitments.findBySyncPendingTrue()) {
             sync(pending.getUserId(), pending.getId());
@@ -142,7 +148,10 @@ public class GoogleSyncService {
         }
         // PATCH com lista vazia tira a recorrência de um evento que deixou de repetir
         event.put("recurrence", recurrence);
-        event.put("extendedProperties", Map.of("private", Map.of(APP_ID_PROPERTY, c.getId().toString())));
+        if (!c.isFromGoogle()) {
+            // Só os criados aqui levam a marca: evento importado continua sendo "do Google" e as mudanças de lá voltam
+            event.put("extendedProperties", Map.of("private", Map.of(APP_ID_PROPERTY, c.getId().toString())));
+        }
         return event;
     }
 }
