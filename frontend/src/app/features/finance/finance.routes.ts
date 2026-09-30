@@ -12,4 +12,15 @@ export const FINANCE_ROUTES: Routes = [
     title: 'Contas · Finanças · POrganization',
     loadComponent: () => import('./accounts/accounts.page').then((m) => m.AccountsPage),
   },
+  {
+    path: 'cartoes',
+    title: 'Cartões · Finanças · POrganization',
+    loadComponent: () => import('./cards/cards.page').then((m) => m.CardsPage),
+  },
+  {
+    // Fatura que vence no mês :mes ("2026-10"); os parâmetros viram input() da StatementPage
+    path: 'cartoes/:id/faturas/:mes',
+    title: 'Fatura · Finanças · POrganization',
+    loadComponent: () => import('./cards/statement.page').then((m) => m.StatementPage),
+  },
 ];

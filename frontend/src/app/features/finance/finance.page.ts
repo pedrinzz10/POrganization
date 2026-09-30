@@ -6,6 +6,7 @@ import { IsActiveMatchOptions, RouterLink, RouterLinkActive, RouterOutlet } from
 export const FINANCE_TABS = [
   { label: 'Extrato', path: './' },
   { label: 'Contas', path: 'contas' },
+  { label: 'Cartões', path: 'cartoes' },
 ];
 
 /** Seção Finanças: título, abas de navegação e a tela da aba escolhida. */

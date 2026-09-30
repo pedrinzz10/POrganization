@@ -2585,14 +2585,18 @@
       "arquivos": [
         "frontend/src/app/features/finance/cards/cards.page.ts",
         "frontend/src/app/features/finance/cards/card-purchase-form.component.ts",
-        "frontend/src/app/features/finance/cards/statement.page.ts"
+        "frontend/src/app/features/finance/cards/statement.page.ts",
+        "frontend/src/app/features/finance/cards/card-form.dialog.ts",
+        "frontend/src/app/features/finance/cards/installments.ts",
+        "frontend/src/app/features/finance/cards/statement-period.ts",
+        "frontend/src/app/shared/confirm-dialog/confirm.dialog.ts"
       ],
       "dependencias": [
         "F07",
         "F12"
       ],
       "conceito_angular": "Rotas com parâmetros (/financas/cartoes/:id/faturas/:mes) lidos com input() via withComponentInputBinding().",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

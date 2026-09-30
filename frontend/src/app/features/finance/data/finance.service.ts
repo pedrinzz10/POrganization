@@ -5,9 +5,15 @@ import { environment } from '../../../../environments/environment';
 import {
   Account,
   AccountRequest,
+  Card,
+  CardRequest,
   Category,
   FinanceTag,
   MonthSummary,
+  PurchaseRequest,
+  PurchaseResponse,
+  Statement,
+  StatementSummary,
   Transaction,
   TransactionFilters,
   TransactionRequest,
@@ -83,5 +89,42 @@ export class FinanceService {
 
   summary(month: string): Observable<MonthSummary> {
     return this.http.get<MonthSummary>(`${this.api}/summary`, { params: { month } });
+  }
+
+  // ---------- cartões e faturas ----------
+
+  listCards(): Observable<Card[]> {
+    return this.http.get<Card[]>(`${this.api}/cards`);
+  }
+
+  createCard(request: CardRequest): Observable<Card> {
+    return this.http.post<Card>(`${this.api}/cards`, request);
+  }
+
+  updateCard(id: string, request: CardRequest): Observable<Card> {
+    return this.http.put<Card>(`${this.api}/cards/${id}`, request);
+  }
+
+  /** Compra à vista ou parcelada: cada parcela cai numa fatura seguida. */
+  purchase(cardId: string, request: PurchaseRequest): Observable<PurchaseResponse> {
+    return this.http.post<PurchaseResponse>(`${this.api}/cards/${cardId}/purchases`, request);
+  }
+
+  /** Exclui a compra com todas as parcelas. */
+  deletePurchase(purchaseId: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/cards/purchases/${purchaseId}`);
+  }
+
+  listStatements(cardId: string): Observable<StatementSummary[]> {
+    return this.http.get<StatementSummary[]>(`${this.api}/cards/${cardId}/statements`);
+  }
+
+  /** Fatura que vence no mês ("2026-10"), com itens e limite disponível. */
+  statement(cardId: string, month: string): Observable<Statement> {
+    return this.http.get<Statement>(`${this.api}/cards/${cardId}/statements`, { params: { month } });
+  }
+
+  payStatement(statementId: string): Observable<Statement> {
+    return this.http.post<Statement>(`${this.api}/cards/statements/${statementId}/pay`, {});
   }
 }
