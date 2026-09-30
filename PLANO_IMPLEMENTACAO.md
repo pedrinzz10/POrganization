@@ -822,7 +822,7 @@ Regras:
     "story": "Como Pedro, quero registrar rendas e gastos e filtrá-los por mês e categoria.",
     "arquivos": ["backend/src/main/resources/db/migration/V9__transactions.sql", "backend/src/main/java/com/porganization/finance/transactions/Transaction.java", "backend/src/main/java/com/porganization/finance/transactions/TransactionController.java", "backend/src/main/java/com/porganization/finance/transactions/TransactionService.java", "backend/src/main/java/com/porganization/finance/transactions/TransactionSpecifications.java"],
     "dependencias": ["F02"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "amount <= 0 responde 400; a categoria precisa ser do mesmo kind do tipo (gasto com categoria de gasto)." },
       { "id": "CA2", "descricao": "Saldo da conta = inicial + rendas pagas - gastos pagos." },
