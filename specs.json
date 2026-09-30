@@ -581,7 +581,7 @@
         "B06"
       ],
       "conceito_angular": "Serviços com injeção de dependência (inject()) e signals: o AuthService é um singleton que guarda o estado do login e qualquer componente reage quando ele muda. Reactive Forms validam os campos.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
