@@ -804,14 +804,14 @@ Regras:
     "story": "Como Pedro, quero classificar gastos e rendas por categoria e tags livres.",
     "arquivos": ["backend/src/main/resources/db/migration/V8__categories_tags.sql", "backend/src/main/java/com/porganization/finance/categories/Category.java", "backend/src/main/java/com/porganization/finance/categories/CategoryService.java", "backend/src/main/java/com/porganization/finance/categories/CategoryController.java"],
     "dependencias": ["F01"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "No primeiro GET de categorias o usuário recebe o conjunto padrão (Alimentação, Transporte, Moradia, Lazer, Saúde, Educação, Salário, Outros), uma única vez." },
       { "id": "CA2", "descricao": "Categoria em uso não pode ser excluída (409)." }
     ],
     "testes_dos_criterios": [
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/categories/CategoryControllerIT.java", "cenario": "Dado usuário novo, quando GET duas vezes, então as duas respostas têm as mesmas 8 categorias e o banco tem 8 linhas." },
-      { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/categories/CategoryControllerIT.java", "cenario": "Dado transação na categoria Lazer, quando DELETE Lazer, então 409." }
+      { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/categories/CategoryControllerIT.java", "cenario": "Dado categoria sem uso, quando DELETE, então 204. O caso 'transação na categoria Lazer → DELETE 409' entra na F03 (CA5/T5), quando a tabela de transações (FK on delete restrict) passa a existir." }
     ]
   },
   {
@@ -827,13 +827,15 @@ Regras:
       { "id": "CA1", "descricao": "amount <= 0 responde 400; a categoria precisa ser do mesmo kind do tipo (gasto com categoria de gasto)." },
       { "id": "CA2", "descricao": "Saldo da conta = inicial + rendas pagas - gastos pagos." },
       { "id": "CA3", "descricao": "Filtros combinados (mês + categoria + tag) retornam só o que casa com todos." },
-      { "id": "CA4", "descricao": "Conta com transações não pode ser excluída (409), só arquivada (completa o CA2 da F01)." }
+      { "id": "CA4", "descricao": "Conta com transações não pode ser excluída (409), só arquivada (completa o CA2 da F01)." },
+      { "id": "CA5", "descricao": "Categoria em uso não pode ser excluída (409) (completa o CA2 da F02)." }
     ],
     "testes_dos_criterios": [
       { "id": "T1", "criterio": "CA1", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado amount '0.00', então 400; dado EXPENSE com categoria Salário, então 400." },
       { "id": "T2", "criterio": "CA2", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado inicial 1000.00, renda 2500.00 paga, gasto 300.55 pago e gasto 100.00 não pago, então saldo == 3199.45." },
       { "id": "T3", "criterio": "CA3", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/transactions/TransactionControllerIT.java", "cenario": "Dado 4 transações variando mês, categoria e tag, quando filtra month=2026-10&category=Lazer&tag=viagem, então só 1." },
-      { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java", "cenario": "Dado conta com 1 transação, quando DELETE, então 409 e a conta continua; PATCH archived=true, então 200." }
+      { "id": "T4", "criterio": "CA4", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java", "cenario": "Dado conta com 1 transação, quando DELETE, então 409 e a conta continua; PATCH archived=true, então 200." },
+      { "id": "T5", "criterio": "CA5", "tipo": "integracao", "arquivo": "backend/src/test/java/com/porganization/finance/categories/CategoryControllerIT.java", "cenario": "Dado transação na categoria Lazer, quando DELETE Lazer, então 409 e a categoria continua." }
     ]
   },
   {
