@@ -91,6 +91,12 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
         } @else if (form.controls.weekDays.value.length === 7) {
           <p class="dica">Todos os dias</p>
         }
+
+        <mat-form-field class="lembrete">
+          <mat-label>Lembrete às</mat-label>
+          <input matInput type="time" formControlName="reminderTime" />
+          <mat-hint>Avisa se ainda não estiver feita. Vazio = sem lembrete</mat-hint>
+        </mat-form-field>
         @if (editing) {
           <p class="dica">Mudar os dias vale de hoje em diante; o histórico continua como era.</p>
         }
@@ -128,6 +134,9 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
     .dias {
       align-self: flex-start;
     }
+    .lembrete {
+      margin-top: 12px;
+    }
     .dica {
       margin: 4px 0 0;
       font: var(--mat-sys-body-small);
@@ -151,6 +160,7 @@ export class TaskFormDialog {
     title: [this.editing?.title ?? '', [Validators.required, Validators.pattern(/\S/)]],
     emoji: [this.editing?.emoji ?? ''],
     weekDays: [this.editing?.weekDays ?? DIAS.map((d) => d.dia), atLeastOneDay],
+    reminderTime: [this.editing?.reminderTime ?? ''],
   });
 
   protected readonly saving = signal(false);
@@ -167,6 +177,7 @@ export class TaskFormDialog {
       title: v.title.trim(),
       emoji: v.emoji.trim() || null,
       weekDays: DIAS.map((d) => d.dia).filter((d) => v.weekDays.includes(d)),
+      reminderTime: v.reminderTime || null,
     };
     this.saving.set(true);
     this.error.set(null);

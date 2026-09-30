@@ -13,6 +13,8 @@ public record Notification(UUID userId, Kind kind, String subject, List<String> 
         REMINDER,
         DAILY_DIGEST,
         /** Agendados para confirmar hoje (F20). */
-        SCHEDULED_NOTICE
+        SCHEDULED_NOTICE,
+        /** Lembrete de tarefa diária ainda não feita (T05). */
+        TASK_REMINDER
     }
 }

@@ -1,5 +1,6 @@
 package com.porganization.tasks;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.porganization.commitments.recurrence.WeekDay;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -16,16 +18,24 @@ public final class DailyTaskDtos {
     private DailyTaskDtos() {
     }
 
-    /** weekDays ausente = todo dia; lista vazia não vale (escolha pelo menos um dia). */
+    /**
+     * weekDays ausente = todo dia; lista vazia não vale (escolha pelo menos um dia).
+     * reminderTime: horário do lembrete (HH:mm, fuso do usuário); ausente = sem lembrete.
+     */
     public record TaskRequest(
             @NotBlank @Size(max = 100) String title,
             @Size(max = 16) String emoji,
-            Set<WeekDay> weekDays) {
+            Set<WeekDay> weekDays,
+            @JsonFormat(pattern = "HH:mm") LocalTime reminderTime) {
+
+        public TaskRequest(String title, String emoji, Set<WeekDay> weekDays) {
+            this(title, emoji, weekDays, null);
+        }
     }
 
     /** weekDays: os dias que valem hoje (a regra atual). */
     public record TaskResponse(UUID id, String title, String emoji, Set<WeekDay> weekDays, int position, boolean archived,
-            LocalDate createdOn) {
+            LocalDate createdOn, @JsonFormat(pattern = "HH:mm") LocalTime reminderTime) {
     }
 
     public record ArchivePatch(@NotNull Boolean archived) {

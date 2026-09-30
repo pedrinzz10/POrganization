@@ -37,6 +37,7 @@ public abstract class NotificationsIT extends IntegrationTest {
         jdbc.update("delete from reminders");
         // Idem para o resumo diário configurado em outros testes
         jdbc.update("update user_settings set digest_time = null, scheduled_notice_time = null");
+        jdbc.update("update daily_tasks set reminder_time = null");
         when(email.type()).thenReturn(ChannelType.EMAIL);
         when(push.type()).thenReturn(ChannelType.PUSH);
     }

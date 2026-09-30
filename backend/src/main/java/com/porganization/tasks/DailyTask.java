@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
@@ -36,6 +37,10 @@ public class DailyTask {
 
     @Column(name = "archived", nullable = false)
     private boolean archived;
+
+    /** Horário do lembrete no fuso do usuário; null = sem lembrete. */
+    @Column(name = "reminder_time")
+    private LocalTime reminderTime;
 
     @Column(name = "created_on", nullable = false, updatable = false)
     private LocalDate createdOn;
@@ -97,6 +102,14 @@ public class DailyTask {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public LocalTime getReminderTime() {
+        return reminderTime;
+    }
+
+    public void setReminderTime(LocalTime reminderTime) {
+        this.reminderTime = reminderTime;
     }
 
     public LocalDate getCreatedOn() {

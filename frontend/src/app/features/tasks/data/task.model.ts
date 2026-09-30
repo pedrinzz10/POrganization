@@ -11,13 +11,16 @@ export interface DailyTask {
   position: number;
   archived: boolean;
   createdOn: string;
+  /** Horário do lembrete (HH:mm); null = sem lembrete. */
+  reminderTime: string | null;
 }
 
-/** weekDays ausente = todo dia. */
+/** weekDays ausente = todo dia; reminderTime null = sem lembrete. */
 export interface DailyTaskRequest {
   title: string;
   emoji: string | null;
   weekDays: WeekDay[];
+  reminderTime: string | null;
 }
 
 /** Uma tarefa devida no dia, com feito ou não. */

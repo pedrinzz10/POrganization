@@ -7,6 +7,8 @@ import com.porganization.settings.UserSettings;
 import com.porganization.settings.UserSettingsRepository;
 import com.porganization.settings.UserSettingsService;
 import com.porganization.studies.DailyStudyPlanner.ReviewSuggestion;
+import com.porganization.tasks.DailyTaskDtos.DayTask;
+import com.porganization.tasks.DailyTaskService;
 import com.porganization.today.TodayResponse;
 import com.porganization.today.TodayService;
 import java.math.BigDecimal;
@@ -26,7 +28,8 @@ import org.springframework.stereotype.Service;
 /**
  * Resumo diário: no primeiro cron a partir do horário escolhido (fuso do usuário), manda por push
  * e/ou e-mail o que tem no dia (compromissos, revisões, contas e faturas vencendo), montado pelo
- * mesmo TodayService da tela Hoje. Um por dia: last_digest_date é marcado antes de enviar.
+ * mesmo TodayService da tela Hoje, mais as tarefas diárias ainda não feitas. Um por dia:
+ * last_digest_date é marcado antes de enviar.
  */
 @Service
 public class DailyDigestService {
@@ -40,14 +43,16 @@ public class DailyDigestService {
     private final UserSettingsRepository settings;
     private final UserSettingsService userSettings;
     private final TodayService today;
+    private final DailyTaskService tasks;
     private final List<NotificationChannel> channels;
     private final Clock clock;
 
     public DailyDigestService(UserSettingsRepository settings, UserSettingsService userSettings, TodayService today,
-            List<NotificationChannel> channels, Clock clock) {
+            DailyTaskService tasks, List<NotificationChannel> channels, Clock clock) {
         this.settings = settings;
         this.userSettings = userSettings;
         this.today = today;
+        this.tasks = tasks;
         this.channels = channels;
         this.clock = clock;
     }
@@ -62,7 +67,7 @@ public class DailyDigestService {
             if (now.toLocalTime().isBefore(s.getDigestTime()) || alreadySent || settings.claimDigest(s.getUserId(), day) == 0) {
                 continue;
             }
-            Optional<Notification> digest = compose(s.getUserId(), today.today(s.getUserId()));
+            Optional<Notification> digest = compose(s.getUserId(), today.today(s.getUserId()), tasks.day(s.getUserId(), day));
             if (digest.isEmpty()) {
                 // Dia vazio: nada a avisar, e o dia conta como resolvido
                 continue;
@@ -95,22 +100,29 @@ public class DailyDigestService {
     }
 
     /**
-     * Assunto com as contagens ("Seu dia: 2 compromissos, 3 revisões, 1 vencimento") e uma linha por
-     * item. Sem nada no dia, nem orçamento em alerta, não há resumo.
+     * Assunto com as contagens ("Seu dia: 2 compromissos, 3 revisões, 1 vencimento, 4 tarefas"; as
+     * tarefas só aparecem se houver alguma por fazer) e uma linha por item. Sem nada no dia, nem
+     * orçamento em alerta, não há resumo.
      */
     static Optional<Notification> compose(UUID userId, TodayResponse t) {
+        return compose(userId, t, List.of());
+    }
+
+    static Optional<Notification> compose(UUID userId, TodayResponse t, List<DayTask> dayTasks) {
         List<OccurrenceResponse> commitments = t.commitments().stream().filter(o -> !o.done()).toList();
         List<ReviewSuggestion> reviews = t.studies().reviews();
         List<DueItem> due = t.finance().dueSoon();
         var alerts = t.finance().budgetAlerts();
-        if (commitments.isEmpty() && reviews.isEmpty() && due.isEmpty() && alerts.isEmpty()) {
+        List<DayTask> pendingTasks = dayTasks.stream().filter(d -> !d.done()).toList();
+        if (commitments.isEmpty() && reviews.isEmpty() && due.isEmpty() && alerts.isEmpty() && pendingTasks.isEmpty()) {
             return Optional.empty();
         }
 
         String subject = "Seu dia: %s, %s, %s".formatted(
                 plural(commitments.size(), "compromisso", "compromissos"),
                 plural(reviews.size(), "revisão", "revisões"),
-                plural(due.size(), "vencimento", "vencimentos"));
+                plural(due.size(), "vencimento", "vencimentos"))
+                + (pendingTasks.isEmpty() ? "" : ", " + plural(pendingTasks.size(), "tarefa", "tarefas"));
 
         List<String> lines = new ArrayList<>();
         commitments.stream().limit(MAX_LINES_PER_GROUP).forEach(o -> lines.add(
@@ -118,6 +130,8 @@ public class DailyDigestService {
         reviews.stream().limit(MAX_LINES_PER_GROUP).forEach(r -> lines.add("Revisar " + r.lessonTitle() + " (" + r.subjectName() + ")"));
         due.stream().limit(MAX_LINES_PER_GROUP).forEach(d -> lines.add(
                 d.title() + ": " + money(d.amount()) + (d.dueDate().equals(t.date()) ? " vence hoje" : " vence " + d.dueDate().format(DAY_MONTH))));
+        pendingTasks.stream().limit(MAX_LINES_PER_GROUP).forEach(d -> lines.add(
+                "Tarefa: " + (d.emoji() == null ? "" : d.emoji() + " ") + d.title()));
         alerts.forEach(b -> lines.add("Orçamento de " + b.categoryName()
                 + (b.level() == BudgetLevel.ESTOURADO ? " estourado" : " perto do limite")));
         return Optional.of(new Notification(userId, Notification.Kind.DAILY_DIGEST, subject, lines, "/hoje"));

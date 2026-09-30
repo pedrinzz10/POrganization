@@ -16,4 +16,6 @@ public interface DailyTaskRepository extends Repository<DailyTask, UUID> {
     List<DailyTask> findByUserIdOrderByPositionAscTitleAsc(UUID userId);
 
     List<DailyTask> findByUserIdAndArchivedFalseOrderByPositionAscTitleAsc(UUID userId);
+
+    List<DailyTask> findByReminderTimeIsNotNullAndArchivedFalse();
 }

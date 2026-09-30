@@ -4,6 +4,7 @@ import com.porganization.finance.recurring.RecurringJob;
 import com.porganization.finance.recurring.ScheduledNoticeService;
 import com.porganization.integrations.google.GoogleImportService;
 import com.porganization.integrations.google.GoogleSyncService;
+import com.porganization.tasks.TaskReminderDispatcher;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -33,21 +34,26 @@ public class InternalCronController {
     private final GoogleImportService googleImport;
     private final ScheduledNoticeService scheduledNotices;
     private final RecurringJob recurringJob;
+    private final TaskReminderDispatcher taskReminders;
     private final byte[] secret;
 
     public InternalCronController(ReminderDispatcher reminders, DailyDigestService digests, GoogleSyncService googleSync,
             GoogleImportService googleImport, ScheduledNoticeService scheduledNotices, RecurringJob recurringJob,
-            @Value("${porganization.cron.secret:}") String secret) {
+            TaskReminderDispatcher taskReminders, @Value("${porganization.cron.secret:}") String secret) {
         this.reminders = reminders;
         this.digests = digests;
         this.googleSync = googleSync;
         this.googleImport = googleImport;
         this.scheduledNotices = scheduledNotices;
         this.recurringJob = recurringJob;
+        this.taskReminders = taskReminders;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
     }
 
-    /** Lembretes devidos, resumos diários, pendências com o Google e as mudanças vindas da agenda do Google. */
+    /**
+     * Lembretes devidos, resumos diários, pendências com o Google, mudanças vindas da agenda do Google,
+     * aviso dos agendados e lembretes das tarefas diárias.
+     */
     @PostMapping("/reminders/dispatch")
     public ResponseEntity<Map<String, Integer>> dispatch(@RequestHeader(value = SECRET_HEADER, required = false) String header) {
         if (!authorized(header)) {
@@ -60,8 +66,10 @@ public class InternalCronController {
         // Gera os agendados do mês (o @Scheduled interno não roda com a API dormindo) antes do aviso
         recurringJob.run();
         int noticesSent = scheduledNotices.run();
+        int taskRemindersSent = taskReminders.run();
         return ResponseEntity.ok(Map.of("sent", result.sent(), "failed", result.failed(), "digests", digestsSent,
-                "googleSynced", googleSynced, "googleImported", googleImported, "scheduledNotices", noticesSent));
+                "googleSynced", googleSynced, "googleImported", googleImported, "scheduledNotices", noticesSent,
+                "taskReminders", taskRemindersSent));
     }
 
     /** Comparação em tempo constante, para não vazar o segredo pelo tempo de resposta. */
