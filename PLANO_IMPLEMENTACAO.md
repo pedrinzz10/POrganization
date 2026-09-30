@@ -602,7 +602,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/studies/subjects/subjects.page.ts", "frontend/src/app/features/studies/subjects/subject-form.dialog.ts", "frontend/src/app/features/studies/data/studies.service.ts", "frontend/src/app/features/studies/data/study.model.ts"],
     "dependencias": ["E02", "B09"],
     "conceito_angular": "Angular CDK DragDrop (cdkDropList/cdkDrag) e atualização otimista: a lista muda na hora e volta ao estado anterior se a API falhar.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Arrastar uma matéria chama PUT /order com a nova ordem." },
       { "id": "CA2", "descricao": "Se o PUT falhar, a lista volta para a ordem anterior e mostra erro." },
