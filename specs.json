@@ -1607,7 +1607,7 @@
         "backend/src/main/java/com/porganization/studies/fsrs/ReviewGrade.java"
       ],
       "dependencias": [],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
