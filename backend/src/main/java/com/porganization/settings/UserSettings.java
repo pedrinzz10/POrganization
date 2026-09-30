@@ -42,6 +42,14 @@ public class UserSettings {
     @Column(name = "digest_time")
     private LocalTime digestTime;
 
+    /** Horário do aviso diário dos agendados para confirmar (F20); null = desligado. */
+    @Column(name = "scheduled_notice_time")
+    private LocalTime scheduledNoticeTime;
+
+    /** Dia do último aviso de agendados (só leitura aqui; quem grava é o UserSettingsRepository). */
+    @Column(name = "last_scheduled_notice_date", insertable = false, updatable = false)
+    private LocalDate lastScheduledNoticeDate;
+
     /** Dia do último resumo enviado (só leitura aqui; quem grava é o UserSettingsRepository.claimDigest). */
     @Column(name = "last_digest_date", insertable = false, updatable = false)
     private LocalDate lastDigestDate;
@@ -94,6 +102,18 @@ public class UserSettings {
         this.notifyChannels = new ArrayList<>(channels);
         this.defaultReminderMinutes = defaultReminderMinutes;
         this.digestTime = digestTime;
+    }
+
+    public LocalTime getScheduledNoticeTime() {
+        return scheduledNoticeTime;
+    }
+
+    public void setScheduledNoticeTime(LocalTime scheduledNoticeTime) {
+        this.scheduledNoticeTime = scheduledNoticeTime;
+    }
+
+    public LocalDate getLastScheduledNoticeDate() {
+        return lastScheduledNoticeDate;
     }
 
     public LocalDate getLastDigestDate() {

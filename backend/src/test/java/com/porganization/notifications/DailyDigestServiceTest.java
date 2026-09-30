@@ -32,7 +32,7 @@ class DailyDigestServiceTest {
 
     private static TodayResponse dia(List<OccurrenceResponse> compromissos, List<ReviewSuggestion> revisoes, List<DueItem> vencimentos) {
         return new TodayResponse(HOJE, "America/Sao_Paulo", compromissos, new Plan(revisoes, List.of()),
-                new FinanceToday(vencimentos, List.of(), BigDecimal.ZERO));
+                new FinanceToday(vencimentos, List.of(), BigDecimal.ZERO, List.of()));
     }
 
     // I05 T2 (CA2)

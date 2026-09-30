@@ -12,7 +12,7 @@ const API = `${environment.apiUrl}/finance`;
 const tick = () => new Promise((resolve) => setTimeout(resolve));
 
 function financas(mudancas: Partial<FinanceToday> = {}): FinanceToday {
-  return { dueSoon: [], budgetAlerts: [], spentToday: '0.00', ...mudancas };
+  return { dueSoon: [], budgetAlerts: [], spentToday: '0.00', toConfirm: [], ...mudancas };
 }
 
 describe('TodayFinanceComponent', () => {
@@ -102,5 +102,32 @@ describe('TodayFinanceComponent', () => {
   it('sem nada vencendo mostra aviso', async () => {
     await mostrar(financas());
     expect(element.textContent).toContain('Nada vencendo nos próximos dias.');
+  });
+
+  // F20 T2 (CA2)
+  it('agendado atrasado aparece em "Para confirmar"; "Recebi" confirma e ele sai da lista', async () => {
+    const mudou = vi.fn();
+    fixture.componentInstance.changed.subscribe(mudou);
+    await mostrar(
+      financas({
+        toConfirm: [
+          { id: 'o1', recurringId: 'r1', type: 'INCOME', description: 'Salário', amount: '3200.00', expectedAmount: '3200.00',
+            accountId: 'c1', accountName: 'Bradesco', scheduledDate: '2026-10-07', date: '2026-10-07', status: 'OVERDUE' },
+        ],
+      }),
+    );
+    const lista = element.querySelector('[aria-label="Para confirmar"]')!;
+    expect(lista.textContent).toContain('Salário');
+    expect(lista.textContent).toContain('atrasado desde 07/10');
+
+    Array.from(lista.querySelectorAll<HTMLButtonElement>('button')).find((b) => b.textContent!.includes('Recebi'))!.click();
+    const req = httpMock.expectOne(`${API}/scheduled/o1/confirm`);
+    expect(req.request.method).toBe('POST');
+    req.flush({});
+    await tick();
+    await fixture.whenStable();
+
+    expect(element.querySelector('[aria-label="Para confirmar"]')).toBeNull();
+    expect(mudou).toHaveBeenCalled();
   });
 });

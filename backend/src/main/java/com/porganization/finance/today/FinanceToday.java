@@ -1,6 +1,7 @@
 package com.porganization.finance.today;
 
 import com.porganization.finance.budgets.BudgetDtos.BudgetStatus;
+import com.porganization.finance.recurring.ScheduledDtos.Occurrence;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -13,8 +14,10 @@ import java.util.UUID;
  * @param dueSoon      faturas e contas não pagas que vencem hoje ou nos próximos 3 dias
  * @param budgetAlerts orçamentos do mês em ATENCAO ou ESTOURADO
  * @param spentToday   gasto lançado hoje (contas e cartão; pagamento de fatura não conta)
+ * @param toConfirm    agendados em conta para confirmar hoje ou atrasados (F20)
  */
-public record FinanceToday(List<DueItem> dueSoon, List<BudgetStatus> budgetAlerts, BigDecimal spentToday) {
+public record FinanceToday(List<DueItem> dueSoon, List<BudgetStatus> budgetAlerts, BigDecimal spentToday,
+        List<Occurrence> toConfirm) {
 
     public enum DueKind {
         /** Fatura de cartão (cardId e referenceMonth apontam para ela). */

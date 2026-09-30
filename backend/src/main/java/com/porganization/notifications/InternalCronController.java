@@ -1,5 +1,7 @@
 package com.porganization.notifications;
 
+import com.porganization.finance.recurring.RecurringJob;
+import com.porganization.finance.recurring.ScheduledNoticeService;
 import com.porganization.integrations.google.GoogleImportService;
 import com.porganization.integrations.google.GoogleSyncService;
 import java.nio.charset.StandardCharsets;
@@ -29,14 +31,19 @@ public class InternalCronController {
     private final DailyDigestService digests;
     private final GoogleSyncService googleSync;
     private final GoogleImportService googleImport;
+    private final ScheduledNoticeService scheduledNotices;
+    private final RecurringJob recurringJob;
     private final byte[] secret;
 
     public InternalCronController(ReminderDispatcher reminders, DailyDigestService digests, GoogleSyncService googleSync,
-            GoogleImportService googleImport, @Value("${porganization.cron.secret:}") String secret) {
+            GoogleImportService googleImport, ScheduledNoticeService scheduledNotices, RecurringJob recurringJob,
+            @Value("${porganization.cron.secret:}") String secret) {
         this.reminders = reminders;
         this.digests = digests;
         this.googleSync = googleSync;
         this.googleImport = googleImport;
+        this.scheduledNotices = scheduledNotices;
+        this.recurringJob = recurringJob;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
     }
 
@@ -50,8 +57,11 @@ public class InternalCronController {
         int digestsSent = digests.run();
         int googleSynced = googleSync.retryPending();
         int googleImported = googleImport.importAll();
+        // Gera os agendados do mês (o @Scheduled interno não roda com a API dormindo) antes do aviso
+        recurringJob.run();
+        int noticesSent = scheduledNotices.run();
         return ResponseEntity.ok(Map.of("sent", result.sent(), "failed", result.failed(), "digests", digestsSent,
-                "googleSynced", googleSynced, "googleImported", googleImported));
+                "googleSynced", googleSynced, "googleImported", googleImported, "scheduledNotices", noticesSent));
     }
 
     /** Comparação em tempo constante, para não vazar o segredo pelo tempo de resposta. */

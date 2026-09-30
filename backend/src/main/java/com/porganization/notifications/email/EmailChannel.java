@@ -66,7 +66,7 @@ public class EmailChannel implements NotificationChannel {
 
     private static String template(Notification.Kind kind) {
         return switch (kind) {
-            case REMINDER -> "reminder-email";
+            case REMINDER, SCHEDULED_NOTICE -> "reminder-email";
             case DAILY_DIGEST -> "daily-digest-email";
         };
     }

@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -7,10 +7,10 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { firstValueFrom, startWith } from 'rxjs';
+import { catchError, debounceTime, firstValueFrom, map, merge, of, startWith, switchMap } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
 import { MoneyInputDirective } from '../../../shared/money-input/money-input.directive';
-import { Recurring, RecurringRequest } from '../data/finance.model';
+import { Adjustment, Recurring, RecurringRequest, RulePreview, ScheduleRule } from '../data/finance.model';
 import { FinanceService } from '../data/finance.service';
 import { currentMonth } from '../data/month.util';
 
@@ -47,17 +47,48 @@ export interface RecurringFormData {
           <mat-label>Descrição</mat-label>
           <input matInput formControlName="description" maxlength="200" placeholder="Ex.: Aluguel" />
         </mat-form-field>
-        <div class="linha">
-          <mat-form-field>
-            <mat-label>Valor</mat-label>
-            <input matInput appMoneyInput formControlName="amount" placeholder="R$ 0,00" />
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>Dia do mês</mat-label>
-            <input matInput type="number" min="1" max="31" formControlName="dayOfMonth" />
-            <mat-hint>31 cai no último dia em meses curtos</mat-hint>
-          </mat-form-field>
-        </div>
+        <mat-form-field>
+          <mat-label>Valor</mat-label>
+          <input matInput appMoneyInput formControlName="amount" placeholder="R$ 0,00" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Quando</mat-label>
+          <mat-select formControlName="ruleType">
+            <mat-option value="DAY_OF_MONTH">Dia fixo do mês</mat-option>
+            <mat-option value="BUSINESS_DAY">N-ésimo dia útil do mês</mat-option>
+            <mat-option value="LAST_BUSINESS_DAY">Último dia útil do mês</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @switch (regra()) {
+          @case ('DAY_OF_MONTH') {
+            <div class="linha">
+              <mat-form-field>
+                <mat-label>Dia do mês</mat-label>
+                <input matInput type="number" min="1" max="31" formControlName="dayOfMonth" />
+                <mat-hint>31 cai no último dia em meses curtos</mat-hint>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Se cair em fim de semana ou feriado</mat-label>
+                <mat-select formControlName="adjustment">
+                  <mat-option value="KEEP">Mantém o dia</mat-option>
+                  <mat-option value="ANTICIPATE">Antecipa para o dia útil anterior</mat-option>
+                  <mat-option value="POSTPONE">Adia para o próximo dia útil</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
+          @case ('BUSINESS_DAY') {
+            <mat-form-field>
+              <mat-label>Qual dia útil</mat-label>
+              <input matInput type="number" min="1" max="15" formControlName="businessDay" />
+              <mat-hint>Ex.: 5 para o 5º dia útil (sem fins de semana e feriados nacionais)</mat-hint>
+            </mat-form-field>
+          }
+        }
+        @if (proximas().length > 0) {
+          <p class="previa" aria-live="polite">Próximas datas: {{ proximas().join(' · ') }}</p>
+        }
         <mat-form-field>
           <mat-label>Categoria</mat-label>
           <mat-select formControlName="categoryId">
@@ -105,6 +136,11 @@ export interface RecurringFormData {
     </mat-dialog-actions>
   `,
   styles: `
+    .previa {
+      margin: 0 0 8px;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-primary);
+    }
     .form {
       display: flex;
       flex-direction: column;
@@ -142,7 +178,10 @@ export class RecurringFormDialog {
     type: [this.editing?.type ?? ('EXPENSE' as 'INCOME' | 'EXPENSE')],
     description: [this.editing?.description ?? ''],
     amount: [this.editing?.amount ?? (null as string | null), Validators.required],
-    dayOfMonth: [this.editing?.dayOfMonth ?? 10, [Validators.required, Validators.min(1), Validators.max(31)]],
+    ruleType: [this.editing?.ruleType ?? ('DAY_OF_MONTH' as ScheduleRule)],
+    dayOfMonth: [this.editing?.dayOfMonth ?? (10 as number | null)],
+    businessDay: [this.editing?.businessDay ?? (5 as number | null)],
+    adjustment: [this.editing?.adjustment ?? ('KEEP' as Adjustment)],
     categoryId: [this.editing?.categoryId ?? (null as string | null), Validators.required],
     /** "conta:<id>" ou "cartao:<id>" */
     target: [
@@ -160,13 +199,64 @@ export class RecurringFormDialog {
     (this.categorias.value() ?? []).filter((c) => c.kind === (this.tipo() === 'INCOME' ? 'INCOME' : 'EXPENSE')),
   );
 
+  /** A regra escolhida decide quais campos aparecem e quais validações valem. */
+  protected readonly regra = toSignal(
+    this.form.controls.ruleType.valueChanges.pipe(startWith(this.form.controls.ruleType.value)),
+    { requireSync: true },
+  );
+
+  /** Próximas datas calculadas pela API (dias úteis e feriados ficam no backend). */
+  protected readonly proximas = signal<string[]>([]);
+
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  constructor() {
+    // Validação dinâmica: só o campo da regra escolhida é obrigatório
+    this.form.controls.ruleType.valueChanges
+      .pipe(startWith(this.form.controls.ruleType.value), takeUntilDestroyed())
+      .subscribe((regra) => {
+        const { dayOfMonth, businessDay } = this.form.controls;
+        dayOfMonth.setValidators(regra === 'DAY_OF_MONTH' ? [Validators.required, Validators.min(1), Validators.max(31)] : []);
+        businessDay.setValidators(regra === 'BUSINESS_DAY' ? [Validators.required, Validators.min(1), Validators.max(15)] : []);
+        dayOfMonth.updateValueAndValidity({ emitEvent: false });
+        businessDay.updateValueAndValidity({ emitEvent: false });
+      });
+    // Prévia: recalcula quando a regra muda (e só quando os campos dela estão válidos)
+    merge(
+      this.form.controls.ruleType.valueChanges,
+      this.form.controls.dayOfMonth.valueChanges,
+      this.form.controls.businessDay.valueChanges,
+      this.form.controls.adjustment.valueChanges,
+    )
+      .pipe(
+        startWith(null),
+        debounceTime(300),
+        map(() => this.regraAtual()),
+        switchMap((regra) => (regra ? this.finance.previewRule(regra).pipe(catchError(() => of({ nextDates: [] }))) : of({ nextDates: [] }))),
+        takeUntilDestroyed(),
+      )
+      .subscribe(({ nextDates }) => this.proximas.set(nextDates.map(formatarData)));
+  }
+
+  private regraAtual(): RulePreview | null {
+    const v = this.form.getRawValue();
+    const regra = v.ruleType!;
+    if ((regra === 'DAY_OF_MONTH' && this.form.controls.dayOfMonth.invalid) || (regra === 'BUSINESS_DAY' && this.form.controls.businessDay.invalid)) {
+      return null;
+    }
+    return {
+      ruleType: regra,
+      dayOfMonth: regra === 'DAY_OF_MONTH' ? Number(v.dayOfMonth) : null,
+      businessDay: regra === 'BUSINESS_DAY' ? Number(v.businessDay) : null,
+      adjustment: regra === 'DAY_OF_MONTH' ? v.adjustment! : 'KEEP',
+    };
+  }
 
   async save(): Promise<void> {
     if (this.form.invalid || this.saving()) {
       this.form.markAllAsTouched();
-      this.error.set('Preencha valor, dia, categoria, onde cai e o mês de início.');
+      this.error.set('Preencha valor, quando cai, categoria, conta e o mês de início.');
       return;
     }
     const v = this.form.getRawValue();
@@ -178,7 +268,7 @@ export class RecurringFormDialog {
       accountId: destino === 'conta' ? id : null,
       cardId: destino === 'cartao' ? id : null,
       categoryId: v.categoryId!,
-      dayOfMonth: Number(v.dayOfMonth),
+      ...this.regraAtual()!,
       startMonth: v.startMonth!,
       endMonth: v.endMonth || null,
     };
@@ -203,4 +293,9 @@ export class RecurringFormDialog {
       this.saving.set(false);
     }
   }
+}
+
+/** "2026-10-07" → "07/10/2026". */
+function formatarData(iso: string): string {
+  return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 }

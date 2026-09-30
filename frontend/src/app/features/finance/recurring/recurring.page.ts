@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, output } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,10 +17,10 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
   imports: [BrlPipe, MatButtonModule, MatIconModule, MatProgressBarModule],
   template: `
     <div class="topo">
-      <p class="dica">Aluguel, assinaturas, salário: cadastre uma vez e eles entram no extrato todo mês.</p>
+      <p class="dica">Salário, aluguel, assinaturas: cadastre a regra uma vez e cada mês aparece para você confirmar.</p>
       <button mat-flat-button type="button" (click)="editar()">
         <mat-icon aria-hidden="true">add</mat-icon>
-        Novo fixo
+        Novo agendado
       </button>
     </div>
 
@@ -34,7 +34,7 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
     <ul class="lista">
       @for (fixo of fixos.value() ?? []; track fixo.id) {
         <li class="fixo">
-          <span class="fixo__dia">dia {{ fixo.dayOfMonth }}</span>
+          <span class="fixo__dia">{{ quando(fixo) }}</span>
           <button type="button" class="fixo__texto" (click)="editar(fixo)">
             <span class="fixo__nome">{{ fixo.description ?? nomeCategoria(fixo.categoryId) }}</span>
             <span class="fixo__detalhe">{{ nomeCategoria(fixo.categoryId) }} · {{ destino(fixo) }} · {{ periodo(fixo) }}</span>
@@ -45,7 +45,7 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
         </li>
       } @empty {
         @if (fixos.hasValue()) {
-          <li class="vazio">Nenhum fixo cadastrado.</li>
+          <li class="vazio">Nenhum agendado cadastrado.</li>
         }
       }
     </ul>
@@ -83,7 +83,7 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
       border-bottom: 1px solid var(--mat-sys-outline-variant);
     }
     .fixo__dia {
-      width: 52px;
+      width: 150px;
       font: var(--mat-sys-label-large);
       color: var(--mat-sys-on-surface-variant);
     }
@@ -116,6 +116,9 @@ export class RecurringPage {
   private readonly finance = inject(FinanceService);
   private readonly dialog = inject(MatDialog);
 
+  /** Uma regra mudou: a lista do mês (Agendados) recarrega. */
+  readonly changed = output<void>();
+
   protected readonly fixos = rxResource({ stream: () => this.finance.listRecurring() });
   private readonly contas = rxResource({ stream: () => this.finance.listAccounts(true) });
   private readonly cartoes = rxResource({ stream: () => this.finance.listCards() });
@@ -127,6 +130,17 @@ export class RecurringPage {
 
   protected nomeCategoria(id: string): string {
     return this.categorias.value()?.find((c) => c.id === id)?.name ?? '';
+  }
+
+  /** "5º dia útil", "último dia útil" ou "dia 20" (com o ajuste), e a próxima data. */
+  protected quando(fixo: Recurring): string {
+    const regra =
+      fixo.ruleType === 'BUSINESS_DAY'
+        ? `${fixo.businessDay}º dia útil`
+        : fixo.ruleType === 'LAST_BUSINESS_DAY'
+          ? 'último dia útil'
+          : `dia ${fixo.dayOfMonth}${fixo.adjustment === 'ANTICIPATE' ? ' (antecipa)' : fixo.adjustment === 'POSTPONE' ? ' (adia)' : ''}`;
+    return fixo.nextDate ? `${regra} · próximo ${fixo.nextDate.slice(8, 10)}/${fixo.nextDate.slice(5, 7)}` : regra;
   }
 
   protected destino(fixo: Recurring): string {
@@ -147,6 +161,7 @@ export class RecurringPage {
       .subscribe((mudou) => {
         if (mudou) {
           this.fixos.reload();
+          this.changed.emit();
         }
       });
   }

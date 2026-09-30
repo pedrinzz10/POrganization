@@ -20,6 +20,25 @@ public interface UserSettingsRepository extends JpaRepository<UserSettings, UUID
             """, nativeQuery = true)
     void upsert(UUID userId, String email, String timezone);
 
+    /** Quem ligou o aviso diário dos agendados. */
+    List<UserSettings> findByScheduledNoticeTimeIsNotNull();
+
+    /** Marca o aviso dos agendados do dia como enviado; 0 se já saiu hoje (atômico). */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query(value = """
+            update user_settings set last_scheduled_notice_date = :day
+            where user_id = :userId and (last_scheduled_notice_date is null or last_scheduled_notice_date < :day)
+            """, nativeQuery = true)
+    int claimScheduledNotice(UUID userId, LocalDate day);
+
+    /** Desfaz quando nenhum canal entregou: o próximo cron tenta de novo. */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query(value = "update user_settings set last_scheduled_notice_date = :previous where user_id = :userId and last_scheduled_notice_date = :day",
+            nativeQuery = true)
+    int releaseScheduledNotice(UUID userId, LocalDate day, LocalDate previous);
+
     /** Quem quer o resumo diário. */
     List<UserSettings> findByDigestTimeIsNotNull();
 

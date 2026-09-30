@@ -2,9 +2,12 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
+import { problemMessage } from '../../../core/http/problem';
 import { BrlPipe } from '../../../shared/money-input/brl.pipe';
+import { ScheduledOccurrence } from '../../finance/data/finance.model';
 import { FinanceService } from '../../finance/data/finance.service';
 import { TransactionFormComponent } from '../../finance/transactions/transaction-form.component';
 import { DueItem, FinanceToday } from '../data/today.service';
@@ -48,6 +51,26 @@ const DIA = 86_400_000;
             <p class="vazio">Cadastre uma conta em <a routerLink="/financas/contas">Finanças › Contas</a> para lançar.</p>
           }
         }
+      }
+
+      @if (paraConfirmar().length > 0) {
+        <ul class="lista confirmar" aria-label="Para confirmar">
+          @for (o of paraConfirmar(); track o.id) {
+            <li class="conta" [class.conta--atrasada]="o.status === 'OVERDUE'">
+              <div class="conta__texto">
+                <span class="conta__titulo">{{ o.description ?? (o.type === 'INCOME' ? 'Recebimento' : 'Pagamento') }}</span>
+                <span class="conta__detalhe" [class.conta__detalhe--hoje]="o.status === 'OVERDUE'">
+                  {{ o.accountName }} · {{ o.status === 'OVERDUE' ? 'atrasado desde ' + diaMes(o.date) : 'para confirmar hoje' }}
+                </span>
+              </div>
+              <span class="conta__valor">{{ o.amount | brl }}</span>
+              <button mat-flat-button type="button" [disabled]="confirmando() === o.id" (click)="confirmar(o)">
+                {{ o.type === 'INCOME' ? 'Recebi' : 'Paguei' }}
+              </button>
+            </li>
+          }
+        </ul>
+        <a mat-button routerLink="/financas/agendados" class="mais">Remarcar ou ajustar valor</a>
       }
 
       @for (b of finance().budgetAlerts; track b.id) {
@@ -143,6 +166,15 @@ const DIA = 86_400_000;
       color: var(--mat-sys-error);
       font-weight: 600;
     }
+    .conta--atrasada {
+      border-left: 4px solid var(--mat-sys-error);
+    }
+    .confirmar {
+      margin-bottom: 4px;
+    }
+    .mais {
+      margin-bottom: 8px;
+    }
     .conta__valor {
       font-weight: 600;
     }
@@ -150,6 +182,7 @@ const DIA = 86_400_000;
 })
 export class TodayFinanceComponent {
   private readonly financeApi = inject(FinanceService);
+  private readonly snackBar = inject(MatSnackBar);
 
   /** Hoje segundo a API (fuso do usuário). */
   readonly today = input.required<string>();
@@ -158,6 +191,13 @@ export class TodayFinanceComponent {
   readonly changed = output<void>();
 
   protected readonly lancando = signal(false);
+
+  /** Confirmados nesta tela somem na hora (a tela Hoje recarrega em seguida). */
+  private readonly confirmados = signal<ReadonlySet<string>>(new Set());
+  protected readonly paraConfirmar = computed(() =>
+    (this.finance().toConfirm ?? []).filter((o) => o.id && !this.confirmados().has(o.id)),
+  );
+  protected readonly confirmando = signal<string | null>(null);
 
   /** Contas e categorias só são buscadas quando o formulário abre. */
   protected readonly dados = rxResource({
@@ -174,6 +214,24 @@ export class TodayFinanceComponent {
   protected quando(item: DueItem): string {
     const dias = this.diasAte(item);
     return dias <= 0 ? 'vence hoje' : dias === 1 ? 'vence amanhã' : `vence em ${dias} dias`;
+  }
+
+  /** "Recebi"/"Paguei" rápido: valor previsto e data de hoje (ajustes ficam na tela Agendados). */
+  protected async confirmar(o: ScheduledOccurrence): Promise<void> {
+    this.confirmando.set(o.id);
+    try {
+      await firstValueFrom(this.financeApi.confirmOccurrence(o.id!));
+      this.confirmados.update((ids) => new Set([...ids, o.id!]));
+      this.changed.emit();
+    } catch (error) {
+      this.snackBar.open(problemMessage(error, 'Não foi possível confirmar.'), 'OK', { duration: 5000 });
+    } finally {
+      this.confirmando.set(null);
+    }
+  }
+
+  protected diaMes(iso: string): string {
+    return `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
   }
 
   protected lancado(): void {

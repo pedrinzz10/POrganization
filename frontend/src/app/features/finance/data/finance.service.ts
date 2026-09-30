@@ -21,6 +21,9 @@ import {
   PurchaseResponse,
   Recurring,
   RecurringRequest,
+  RescheduleResult,
+  RulePreview,
+  ScheduledOccurrence,
   Statement,
   StatementSummary,
   Transaction,
@@ -149,6 +152,31 @@ export class FinanceService {
 
   updateRecurring(id: string, request: RecurringRequest): Observable<Recurring> {
     return this.http.put<Recurring>(`${this.api}/recurring/${id}`, request);
+  }
+
+  /** Próximas 3 datas de uma regra (o formulário mostra antes de salvar). */
+  previewRule(rule: RulePreview): Observable<{ nextDates: string[] }> {
+    return this.http.post<{ nextDates: string[] }>(`${this.api}/recurring/preview`, rule);
+  }
+
+  // ---------- ocorrências dos agendados ----------
+
+  scheduled(month: string): Observable<ScheduledOccurrence[]> {
+    return this.http.get<ScheduledOccurrence[]>(`${this.api}/scheduled`, { params: { month } });
+  }
+
+  /** "Recebi"/"Paguei": sem valor e data, o previsto e hoje. */
+  confirmOccurrence(id: string, change: { amount?: string; date?: string } = {}): Observable<ScheduledOccurrence> {
+    return this.http.post<ScheduledOccurrence>(`${this.api}/scheduled/${id}/confirm`, change);
+  }
+
+  rescheduleOccurrence(id: string, date: string): Observable<RescheduleResult> {
+    return this.http.post<RescheduleResult>(`${this.api}/scheduled/${id}/reschedule`, { date });
+  }
+
+  /** "Não vou receber/pagar este mês". */
+  skipOccurrence(id: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/scheduled/${id}/skip`, {});
   }
 
   /** Os lançamentos já gerados ficam; só o modelo sai. */

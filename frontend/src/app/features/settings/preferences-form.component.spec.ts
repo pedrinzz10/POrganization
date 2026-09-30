@@ -20,6 +20,7 @@ describe('PreferencesFormComponent', () => {
     fixture = TestBed.createComponent(PreferencesFormComponent);
     httpMock.expectOne(API).flush({
       email: 'pedro@teste.com', timezone: 'America/Manaus', channels: ['PUSH'], defaultReminderMinutes: null, digestTime: null,
+      scheduledNoticeTime: '09:00',
     });
     await tick();
     await fixture.whenStable();
@@ -30,6 +31,7 @@ describe('PreferencesFormComponent', () => {
   it('abre com as preferências da API', () => {
     expect(fixture.componentInstance.form.getRawValue()).toEqual({
       timezone: 'America/Manaus', push: true, email: false, defaultReminderMinutes: null, digestTime: '',
+      scheduledNoticeTime: '09:00',
     });
   });
 
@@ -40,6 +42,7 @@ describe('PreferencesFormComponent', () => {
     const req = httpMock.expectOne({ method: 'PUT', url: API });
     expect(req.request.body).toEqual({
       timezone: 'America/Manaus', channels: ['PUSH', 'EMAIL'], defaultReminderMinutes: 30, digestTime: null,
+      scheduledNoticeTime: '09:00',
     });
     req.flush({ email: 'pedro@teste.com', timezone: 'America/Manaus', channels: ['EMAIL', 'PUSH'], defaultReminderMinutes: 30, digestTime: null });
     await salvando;

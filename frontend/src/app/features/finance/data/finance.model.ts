@@ -188,7 +188,13 @@ export interface Statement {
   items: StatementItem[];
 }
 
-// ---------- fixos ----------
+// ---------- agendados (antigos "fixos") ----------
+
+/** Como a data de cada mês é calculada. */
+export type ScheduleRule = 'DAY_OF_MONTH' | 'BUSINESS_DAY' | 'LAST_BUSINESS_DAY';
+
+/** Dia do mês que cai em fim de semana ou feriado. */
+export type Adjustment = 'KEEP' | 'ANTICIPATE' | 'POSTPONE';
 
 export interface Recurring {
   id: string;
@@ -198,9 +204,16 @@ export interface Recurring {
   accountId: string | null;
   cardId: string | null;
   categoryId: string;
-  dayOfMonth: number;
+  ruleType: ScheduleRule;
+  /** Só em DAY_OF_MONTH. */
+  dayOfMonth: number | null;
+  /** Só em BUSINESS_DAY (1 a 15). */
+  businessDay: number | null;
+  adjustment: Adjustment;
   startMonth: string;
   endMonth: string | null;
+  /** Próxima ocorrência a partir de hoje; null se já terminou. */
+  nextDate: string | null;
 }
 
 /** accountId ou cardId, nunca os dois; cartão só para gasto. */
@@ -211,9 +224,44 @@ export interface RecurringRequest {
   accountId: string | null;
   cardId: string | null;
   categoryId: string;
-  dayOfMonth: number;
+  ruleType: ScheduleRule;
+  dayOfMonth: number | null;
+  businessDay: number | null;
+  adjustment: Adjustment;
   startMonth: string;
   endMonth: string | null;
+}
+
+export interface RulePreview {
+  ruleType: ScheduleRule;
+  dayOfMonth: number | null;
+  businessDay: number | null;
+  adjustment: Adjustment;
+}
+
+export type OccurrenceStatus = 'EXPECTED' | 'TO_CONFIRM' | 'OVERDUE' | 'CONFIRMED' | 'RESCHEDULED' | 'CANCELLED';
+
+/** Uma ocorrência de agendado em conta. id null = cancelada. */
+export interface ScheduledOccurrence {
+  id: string | null;
+  recurringId: string;
+  type: 'INCOME' | 'EXPENSE';
+  description: string | null;
+  amount: Money;
+  expectedAmount: Money;
+  accountId: string;
+  accountName: string | null;
+  /** Data que a regra deu. */
+  scheduledDate: string;
+  /** Data atual (remarcada ou confirmada). */
+  date: string;
+  status: OccurrenceStatus;
+}
+
+export interface RescheduleResult {
+  occurrence: ScheduledOccurrence;
+  /** A nova data passou da próxima ocorrência da regra. */
+  warning: string | null;
 }
 
 // ---------- orçamentos ----------
