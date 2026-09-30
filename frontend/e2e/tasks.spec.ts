@@ -104,7 +104,7 @@ test('cria a tarefa pelo menu, marca na tela Hoje, vê a sequência subir e excl
   await menu.getByRole('link', { name: 'Tarefas' }).click();
   await expect(page).toHaveURL('/tarefas');
   await page.getByRole('button', { name: 'Nova tarefa' }).click();
-  await page.getByLabel('Emoji').fill('📚');
+  await page.getByRole('radio', { name: 'Leitura' }).click();
   await page.getByLabel('Tarefa', { exact: true }).fill('Ler 20 min');
   await page.getByRole('button', { name: 'Salvar' }).click();
 

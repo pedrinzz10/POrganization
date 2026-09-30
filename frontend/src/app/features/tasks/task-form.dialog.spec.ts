@@ -86,4 +86,59 @@ describe('TaskFormDialog', () => {
     req.flush({});
     await salvando;
   });
+
+  // T06: emojis pré-definidos
+  it('escolher um emoji da lista vai no POST; "sem emoji" manda null', async () => {
+    const emoji = (nome: string) =>
+      element.querySelector<HTMLButtonElement>(`[role="radio"][aria-label="${nome}"]`)!;
+    expect(emoji('Sem emoji').getAttribute('aria-checked')).toBe('true');
+
+    emoji('Leitura').click();
+    await fixture.whenStable();
+    expect(emoji('Leitura').getAttribute('aria-checked')).toBe('true');
+    expect(emoji('Sem emoji').getAttribute('aria-checked')).toBe('false');
+
+    fixture.componentInstance.form.patchValue({ title: 'Ler 20 min' });
+    const salvando = fixture.componentInstance.save();
+    const req = httpMock.expectOne({ method: 'POST', url: API });
+    expect(req.request.body.emoji).toBe('📚');
+    req.flush({});
+    await salvando;
+  });
+});
+
+describe('TaskFormDialog editando tarefa com emoji fora da lista', () => {
+  it('mantém o emoji atual marcado', async () => {
+    await TestBed.configureTestingModule({
+      imports: [TaskFormDialog],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {
+            task: {
+              id: 't1',
+              title: 'Surfar',
+              emoji: '🏄',
+              weekDays: ['SAT', 'SUN'],
+              position: 1,
+              archived: false,
+              createdOn: '2026-09-01',
+              reminderTime: null,
+            },
+          },
+        },
+        { provide: MatDialogRef, useValue: { close: vi.fn() } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(TaskFormDialog);
+    await fixture.whenStable();
+
+    const atual = fixture.nativeElement.querySelector(
+      '[role="radio"][aria-label="Emoji atual"]',
+    ) as HTMLElement;
+    expect(atual.textContent).toContain('🏄');
+    expect(atual.getAttribute('aria-checked')).toBe('true');
+  });
 });
