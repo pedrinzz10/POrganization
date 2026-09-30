@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -40,6 +41,10 @@ public class UserSettings {
     /** Horário do resumo diário (fuso do usuário); null = sem resumo. */
     @Column(name = "digest_time")
     private LocalTime digestTime;
+
+    /** Dia do último resumo enviado (só leitura aqui; quem grava é o UserSettingsRepository.claimDigest). */
+    @Column(name = "last_digest_date", insertable = false, updatable = false)
+    private LocalDate lastDigestDate;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -89,6 +94,10 @@ public class UserSettings {
         this.notifyChannels = new ArrayList<>(channels);
         this.defaultReminderMinutes = defaultReminderMinutes;
         this.digestTime = digestTime;
+    }
+
+    public LocalDate getLastDigestDate() {
+        return lastDigestDate;
     }
 
     public OffsetDateTime getCreatedAt() {

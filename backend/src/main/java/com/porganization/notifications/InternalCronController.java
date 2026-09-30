@@ -24,20 +24,25 @@ public class InternalCronController {
     public static final String SECRET_HEADER = "X-Cron-Secret";
 
     private final ReminderDispatcher reminders;
+    private final DailyDigestService digests;
     private final byte[] secret;
 
-    public InternalCronController(ReminderDispatcher reminders, @Value("${porganization.cron.secret:}") String secret) {
+    public InternalCronController(ReminderDispatcher reminders, DailyDigestService digests,
+            @Value("${porganization.cron.secret:}") String secret) {
         this.reminders = reminders;
+        this.digests = digests;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
     }
 
+    /** Lembretes devidos e resumos diários que já deram a hora. */
     @PostMapping("/reminders/dispatch")
     public ResponseEntity<Map<String, Integer>> dispatch(@RequestHeader(value = SECRET_HEADER, required = false) String header) {
         if (!authorized(header)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         ReminderDispatcher.Result result = reminders.dispatch();
-        return ResponseEntity.ok(Map.of("sent", result.sent(), "failed", result.failed()));
+        int digestsSent = digests.run();
+        return ResponseEntity.ok(Map.of("sent", result.sent(), "failed", result.failed(), "digests", digestsSent));
     }
 
     /** Comparação em tempo constante, para não vazar o segredo pelo tempo de resposta. */

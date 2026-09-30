@@ -98,7 +98,8 @@ public class PushChannel implements NotificationChannel {
     String payload(Notification notification) {
         Map<String, Object> body = Map.of("notification", Map.of(
                 "title", notification.subject(),
-                "body", notification.lines().isEmpty() ? "" : String.join(" · ", notification.lines()),
+                // Notificação é curta: as duas primeiras linhas (no lembrete, dia/hora e local)
+                "body", String.join(" · ", notification.lines().subList(0, Math.min(2, notification.lines().size()))),
                 "icon", "/favicon.ico",
                 "tag", notification.kind().name().toLowerCase() + ":" + notification.subject(),
                 "data", Map.of("url", notification.url(), "onActionClick", Map.of(

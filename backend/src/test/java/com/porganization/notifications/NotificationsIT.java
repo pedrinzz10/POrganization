@@ -35,6 +35,8 @@ abstract class NotificationsIT extends IntegrationTest {
     void tiposDosCanais() {
         // O dispatcher olha os lembretes de todos os usuários: sobra de outro teste dispararia aqui
         jdbc.update("delete from reminders");
+        // Idem para o resumo diário configurado em outros testes
+        jdbc.update("update user_settings set digest_time = null");
         when(email.type()).thenReturn(ChannelType.EMAIL);
         when(push.type()).thenReturn(ChannelType.PUSH);
     }
