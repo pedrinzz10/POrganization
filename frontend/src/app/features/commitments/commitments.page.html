@@ -1,6 +1,12 @@
 <h1 class="titulo">Compromissos</h1>
 
-<app-quick-add (created)="recarregar()" />
+<div class="topo">
+  <app-quick-add class="topo__rapido" (created)="recarregar()" />
+  <button mat-stroked-button type="button" class="topo__novo" (click)="novo()">
+    <mat-icon aria-hidden="true">edit_calendar</mat-icon>
+    Formulário completo
+  </button>
+</div>
 
 <ng-template #carregando>
   @if (ocorrencias.isLoading()) {
@@ -34,7 +40,7 @@
       @if (aba() === 'dia') {
         <ng-container [ngTemplateOutlet]="carregando" />
         @if (!erro() && ocorrencias.hasValue()) {
-          <app-day-view [occurrences]="ocorrencias.value()" />
+          <app-day-view [occurrences]="ocorrencias.value()" (opened)="editar($event)" />
         }
       }
     </section>
@@ -57,7 +63,7 @@
       @if (aba() === 'semana') {
         <ng-container [ngTemplateOutlet]="carregando" />
         @if (!erro() && ocorrencias.hasValue()) {
-          <app-week-view [range]="semana()" [occurrences]="ocorrencias.value()" />
+          <app-week-view [range]="semana()" [occurrences]="ocorrencias.value()" (opened)="editar($event)" />
         }
       }
     </section>

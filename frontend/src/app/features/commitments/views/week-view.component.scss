@@ -29,8 +29,15 @@
 }
 
 .week__item {
+  display: block;
+  width: 100%;
   font: var(--mat-sys-body-small);
   padding: 2px 0;
+  color: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
 }
 
 .week__item.done {

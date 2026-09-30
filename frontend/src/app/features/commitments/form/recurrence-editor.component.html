@@ -1,0 +1,50 @@
+<div class="recorrencia" [formGroup]="group()">
+  <div class="linha">
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Repete</mat-label>
+      <mat-select formControlName="freq">
+        <mat-option value="DAILY">Todo dia</mat-option>
+        <mat-option value="WEEKLY">Toda semana</mat-option>
+        <mat-option value="MONTHLY">Todo mês</mat-option>
+        <mat-option value="YEARLY">Todo ano</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="intervalo" subscriptSizing="dynamic">
+      <mat-label>A cada</mat-label>
+      <input matInput type="number" min="1" max="99" formControlName="interval" />
+    </mat-form-field>
+  </div>
+
+  @if (value()?.freq === 'WEEKLY') {
+    <mat-button-toggle-group class="dias" formControlName="byWeekDays" multiple aria-label="Dias da semana">
+      @for (dia of weekDays; track dia.value) {
+        <mat-button-toggle [value]="dia.value">{{ dia.label }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+    @if (group().hasError('semDias')) {
+      <p class="erro" role="alert">Escolha pelo menos um dia da semana.</p>
+    }
+  }
+
+  <mat-radio-group class="fim" formControlName="endType" aria-label="Quando termina">
+    <mat-radio-button value="never">Sem data para terminar</mat-radio-button>
+    <mat-radio-button value="until">Até uma data</mat-radio-button>
+    <mat-radio-button value="count">Depois de algumas vezes</mat-radio-button>
+  </mat-radio-group>
+
+  @if (value()?.endType === 'until') {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Até</mat-label>
+      <input matInput type="date" formControlName="until" />
+    </mat-form-field>
+  } @else if (value()?.endType === 'count') {
+    <mat-form-field class="intervalo" subscriptSizing="dynamic">
+      <mat-label>Quantas vezes</mat-label>
+      <input matInput type="number" min="1" max="1000" formControlName="count" />
+    </mat-form-field>
+    @if (group().hasError('quantidadeInvalida')) {
+      <p class="erro" role="alert">Use de 1 a 1000 vezes.</p>
+    }
+  }
+</div>

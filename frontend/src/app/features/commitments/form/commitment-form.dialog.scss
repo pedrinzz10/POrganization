@@ -1,0 +1,47 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(480px, 80vw);
+  padding-top: 8px;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.escopo {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.aviso {
+  margin: 0 0 8px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.erro {
+  color: var(--mat-sys-error);
+}
+
+.espaco {
+  flex: 1;
+}
+
+.confirmacao {
+  font: var(--mat-sys-body-medium);
+}
+
+.perigo-texto {
+  color: var(--mat-sys-error);
+}
+
+.perigo {
+  background: var(--mat-sys-error);
+  color: var(--mat-sys-on-error);
+}

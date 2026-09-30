@@ -35,3 +35,18 @@
 .painel__aviso {
   color: var(--mat-sys-on-surface-variant);
 }
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.topo__rapido {
+  flex: 1 1 520px;
+}
+
+.topo__novo {
+  margin-top: 8px;
+}

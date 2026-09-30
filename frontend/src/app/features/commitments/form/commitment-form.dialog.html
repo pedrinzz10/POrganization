@@ -1,0 +1,84 @@
+<h2 mat-dialog-title>{{ editing ? 'Editar compromisso' : 'Novo compromisso' }}</h2>
+
+<mat-dialog-content>
+  <form class="form" [formGroup]="form" (ngSubmit)="save()" id="commitment-form">
+    @if (isOccurrenceOfSeries) {
+      <mat-radio-group class="escopo" [formControl]="scope" aria-label="Aplicar a mudança a">
+        <mat-radio-button value="this">Só esta ocorrência</mat-radio-button>
+        <mat-radio-button value="series">Toda a série</mat-radio-button>
+      </mat-radio-group>
+      @if (onlyThis()) {
+        <p class="aviso">Só nesta ocorrência dá para mudar o título e o horário.</p>
+      }
+    }
+
+    <mat-form-field>
+      <mat-label>Título</mat-label>
+      <input matInput formControlName="title" required />
+      @if (form.controls.title.invalid) {
+        <mat-error>Informe o título.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (!onlyThis()) {
+      <div class="linha">
+        <mat-form-field>
+          <mat-label>Dia</mat-label>
+          <input matInput type="date" formControlName="date" required />
+        </mat-form-field>
+        <mat-slide-toggle formControlName="allDay">Dia todo</mat-slide-toggle>
+      </div>
+    }
+
+    @if (!allDay() || onlyThis()) {
+      <div class="linha">
+        <mat-form-field>
+          <mat-label>Início</mat-label>
+          <input matInput type="time" formControlName="startTime" />
+        </mat-form-field>
+        @if (!onlyThis()) {
+          <mat-form-field>
+            <mat-label>Fim</mat-label>
+            <input matInput type="time" formControlName="endTime" />
+          </mat-form-field>
+        }
+      </div>
+    }
+
+    @if (!onlyThis()) {
+      <mat-form-field>
+        <mat-label>Local</mat-label>
+        <input matInput formControlName="location" />
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Descrição</mat-label>
+        <textarea matInput rows="3" formControlName="description"></textarea>
+      </mat-form-field>
+
+      <mat-slide-toggle formControlName="repeat">Repetir</mat-slide-toggle>
+      @if (repeat()) {
+        <app-recurrence-editor [group]="form.controls.recurrence" />
+      }
+    }
+
+    @if (error(); as mensagem) {
+      <p class="erro" role="alert">{{ mensagem }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  @if (editing) {
+    @if (confirmingDelete()) {
+      <span class="confirmacao">Tem certeza?</span>
+      <button mat-button type="button" (click)="confirmingDelete.set(false)">Não</button>
+      <button mat-flat-button type="button" class="perigo" [disabled]="saving()" (click)="confirmDelete()">Sim, excluir</button>
+    } @else {
+      <button mat-button type="button" class="perigo-texto" (click)="askDelete()">Excluir</button>
+    }
+  }
+  <span class="espaco"></span>
+  <button mat-button type="button" mat-dialog-close>Cancelar</button>
+  <button mat-flat-button type="submit" form="commitment-form" [disabled]="saving()">Salvar</button>
+</mat-dialog-actions>

@@ -20,6 +20,16 @@
 
 .day-item__title {
   font: var(--mat-sys-body-large);
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.day-item__title:hover {
+  text-decoration: underline;
 }
 
 .day-item__icon {

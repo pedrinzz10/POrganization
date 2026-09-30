@@ -517,7 +517,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/form/commitment-form.dialog.ts", "frontend/src/app/features/commitments/form/commitment-form.dialog.html", "frontend/src/app/features/commitments/form/recurrence-editor.component.ts"],
     "dependencias": ["C07"],
     "conceito_angular": "FormGroup aninhado e validação condicional: o subgrupo de recorrência só é obrigatório quando 'repetir' está ligado. MatDialog abre um componente em modal e devolve um resultado ao fechar.",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Ligar 'repetir' semanal exige ao menos um dia da semana." },
       { "id": "CA2", "descricao": "O formulário gera o JSON de recurrenceRule esperado pela API." },
