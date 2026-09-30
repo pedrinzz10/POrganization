@@ -1,0 +1,9 @@
+# Perfil prod (Render): valores só em variáveis de ambiente do painel do Render.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      # O session pooler do Supabase no plano gratuito aceita poucas conexões por projeto
+      maximum-pool-size: 5

@@ -269,7 +269,7 @@
       "dependencias": [
         "B01"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -320,13 +320,16 @@
         "backend/src/main/resources/application-prod.yml",
         "backend/src/main/resources/db/migration/V1__user_settings.sql",
         "backend/src/test/java/com/porganization/support/IntegrationTest.java",
-        ".env.example"
+        ".env.example",
+        "backend/src/main/resources/db/migration/afterMigrate.sql",
+        "backend/src/main/java/com/porganization/settings/UserSettings.java",
+        "backend/src/main/java/com/porganization/settings/UserSettingsRepository.java"
       ],
       "dependencias": [
         "B02",
         "B13"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -373,6 +376,13 @@
           "tipo": "integracao",
           "arquivo": "backend/src/test/java/com/porganization/support/RowLevelSecurityTest.java",
           "cenario": "Dado todas as migrações aplicadas, quando consulta pg_class.relrowsecurity das tabelas do schema public, então todas são true (o teste roda em toda spec e barra migração nova sem RLS)."
+        },
+        {
+          "id": "T5",
+          "criterio": "CA3",
+          "tipo": "integracao",
+          "arquivo": "backend/src/test/java/com/porganization/support/SchemaValidationTest.java",
+          "cenario": "Dado o banco migrado e uma entidade mapeando user_settings com uma coluna que não existe, quando o Hibernate sobe com ddl-auto=validate, então a inicialização falha com SchemaManagementException citando a coluna."
         }
       ]
     },
