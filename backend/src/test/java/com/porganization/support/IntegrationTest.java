@@ -52,5 +52,7 @@ public abstract class IntegrationTest {
         registry.add("SUPABASE_JWKS_URI", TestJwks::jwksUri);
         registry.add("SUPABASE_ISSUER", () -> TestJwks.ISSUER);
         registry.add("FRONTEND_ORIGIN", () -> FRONTEND_ORIGIN);
+        // Jobs agendados não rodam nos testes; os testes chamam o job direto quando precisam
+        registry.add("app.jobs.enabled", () -> "false");
     }
 }

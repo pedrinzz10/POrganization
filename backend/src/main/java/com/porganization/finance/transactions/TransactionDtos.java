@@ -46,7 +46,8 @@ public final class TransactionDtos {
             Integer installmentNumber,
             Integer installmentCount,
             UUID transferGroupId,
-            TransferDirection transferDirection) {
+            TransferDirection transferDirection,
+            UUID recurringId) {
     }
 
     public record TransferRequest(
