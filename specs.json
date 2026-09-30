@@ -859,7 +859,7 @@
       "dependencias": [
         "B11"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -901,7 +901,7 @@
       "dependencias": [
         "B05"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -996,7 +996,7 @@
       "dependencias": [
         "C02"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1039,7 +1039,7 @@
       "dependencias": [
         "C03"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1093,7 +1093,7 @@
       "dependencias": [
         "C04"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1149,7 +1149,7 @@
         "B09"
       ],
       "conceito_angular": "HttpClient devolve Observables (RxJS): a requisição só acontece quando alguém faz subscribe. output() emite um evento do componente filho para o pai avisar que algo foi criado.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1205,7 +1205,7 @@
         "C06"
       ],
       "conceito_angular": "input() recebe dados do componente pai; computed() deriva valores de signals (ex.: agrupar ocorrências por dia) e recalcula sozinho quando a lista muda. @for e @if são o controle de fluxo nos templates.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1259,7 +1259,7 @@
         "C07"
       ],
       "conceito_angular": "Componentes de apresentação reutilizáveis: o mesmo mini-mês é usado 12 vezes no ano, recebendo o mês por input().",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1313,7 +1313,7 @@
         "C07"
       ],
       "conceito_angular": "FormGroup aninhado e validação condicional: o subgrupo de recorrência só é obrigatório quando 'repetir' está ligado. MatDialog abre um componente em modal e devolve um resultado ao fechar.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1369,7 +1369,7 @@
         "C07"
       ],
       "conceito_angular": "Composição de página: a TodayPage só busca os dados e distribui para componentes de seção, cada um com sua responsabilidade.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1413,7 +1413,7 @@
       "dependencias": [
         "B05"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1456,7 +1456,7 @@
       "dependencias": [
         "E01"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1512,7 +1512,7 @@
         "B09"
       ],
       "conceito_angular": "Angular CDK DragDrop (cdkDropList/cdkDrag) e atualização otimista: a lista muda na hora e volta ao estado anterior se a API falhar.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1566,7 +1566,7 @@
       "dependencias": [
         "E01"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1607,7 +1607,7 @@
         "backend/src/main/java/com/porganization/studies/fsrs/ReviewGrade.java"
       ],
       "dependencias": [],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1660,7 +1660,7 @@
       "dependencias": [
         "E04"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1715,7 +1715,7 @@
         "E05",
         "E06"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1769,7 +1769,7 @@
         "E07",
         "E02"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1825,7 +1825,7 @@
         "E03"
       ],
       "conceito_angular": "Timer com signals e effect(): um signal guarda o tempo restante, atualizado por um intervalo que é limpo no DestroyRef quando o componente sai da tela.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1879,7 +1879,7 @@
         "E09"
       ],
       "conceito_angular": "Resource/rxResource (ou toSignal) para carregar dados assíncronos direto como signal, com estados de carregando e erro no template.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1923,7 +1923,7 @@
         "C10"
       ],
       "conceito_angular": "Pipes e computed(): os dias de atraso são derivados da due_date com computed() e o texto '1 dia' / '2 dias' é pluralizado no template com I18nPluralPipe.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -1967,7 +1967,7 @@
       "dependencias": [
         "B05"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2010,7 +2010,7 @@
       "dependencias": [
         "F01"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2054,7 +2054,7 @@
       "dependencias": [
         "F02"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2129,7 +2129,7 @@
       "dependencias": [
         "F03"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2184,7 +2184,7 @@
       "dependencias": [
         "F03"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2237,7 +2237,7 @@
       "dependencias": [
         "F05"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

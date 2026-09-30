@@ -20,6 +20,8 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
 
     List<Transaction> findByUserIdAndTransferGroupId(UUID userId, UUID transferGroupId);
 
+    List<Transaction> findByUserIdAndPurchaseId(UUID userId, UUID purchaseId);
+
     /** As Specifications de TransactionSpecifications sempre começam pelo dono (ownedBy). */
     List<Transaction> findAll(Specification<Transaction> spec, Sort sort);
 
