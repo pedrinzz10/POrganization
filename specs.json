@@ -1369,7 +1369,7 @@
         "C07"
       ],
       "conceito_angular": "Composição de página: a TodayPage só busca os dados e distribui para componentes de seção, cada um com sua responsabilidade.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
