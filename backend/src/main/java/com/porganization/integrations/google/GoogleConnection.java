@@ -37,6 +37,10 @@ public class GoogleConnection {
     @Column(name = "scope")
     private String scope;
 
+    /** nextSyncToken da última importação (I08); null = a próxima é completa. */
+    @Column(name = "sync_token")
+    private String syncToken;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -61,6 +65,14 @@ public class GoogleConnection {
     public void accessToken(String accessTokenEnc, Instant expiresAt) {
         this.accessTokenEnc = accessTokenEnc;
         this.accessExpiresAt = expiresAt;
+    }
+
+    public String getSyncToken() {
+        return syncToken;
+    }
+
+    public void setSyncToken(String syncToken) {
+        this.syncToken = syncToken;
     }
 
     public UUID getUserId() {

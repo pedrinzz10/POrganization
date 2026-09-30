@@ -30,4 +30,7 @@ public interface CommitmentRepository extends Repository<Commitment, UUID> {
 
     /** Mudanças que não chegaram ao Google (de todos os usuários): usado só pelo cron da sincronização. */
     List<Commitment> findBySyncPendingTrue();
+
+    /** O compromisso que veio (ou foi publicado) como este evento do Google. */
+    Optional<Commitment> findByUserIdAndGoogleEventId(UUID userId, String googleEventId);
 }

@@ -1,12 +1,15 @@
 package com.porganization.integrations.google;
 
+import com.porganization.commitments.recurrence.Frequency;
 import com.porganization.commitments.recurrence.RecurrenceRule;
 import com.porganization.commitments.recurrence.WeekDay;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +54,53 @@ public final class RRuleMapper {
         }
         return "EXDATE;TZID=" + timeZone + ":"
                 + dates.stream().map(d -> d.format(DATE) + "T" + startTime.format(TIME)).collect(Collectors.joining(","));
+    }
+
+    /**
+     * Caminho inverso (importação, I08): o recurrence de um evento do Google → RecurrenceRule, quando a
+     * regra cabe no modelo do app (FREQ, INTERVAL, BYDAY simples na semanal, COUNT, UNTIL). Regras
+     * mais ricas (BYMONTHDAY, BYSETPOS, "2MO"...) → vazio, e o evento entra como único.
+     */
+    public static Optional<RecurrenceRule> fromRRule(List<String> recurrence) {
+        String line = recurrence == null ? null
+                : recurrence.stream().filter(r -> r.startsWith("RRULE:")).findFirst().orElse(null);
+        if (line == null) {
+            return Optional.empty();
+        }
+        try {
+            Frequency freq = null;
+            Integer interval = null;
+            List<WeekDay> days = null;
+            Integer count = null;
+            LocalDate until = null;
+            for (String part : line.substring("RRULE:".length()).split(";")) {
+                String[] kv = part.split("=", 2);
+                switch (kv[0]) {
+                    case "FREQ" -> freq = Frequency.valueOf(kv[1]);
+                    case "INTERVAL" -> interval = Integer.parseInt(kv[1]);
+                    case "BYDAY" -> days = Arrays.stream(kv[1].split(",")).map(RRuleMapper::weekDay).toList();
+                    case "COUNT" -> count = Integer.parseInt(kv[1]);
+                    case "UNTIL" -> until = LocalDate.parse(kv[1].substring(0, 8), DATE);
+                    case "WKST" -> {
+                        // início da semana: não muda as datas que o app gera
+                    }
+                    default -> {
+                        return Optional.empty();
+                    }
+                }
+            }
+            if (freq == null || (days != null && freq != Frequency.WEEKLY)) {
+                return Optional.empty();
+            }
+            return Optional.of(new RecurrenceRule(freq, interval, days, until, count));
+        } catch (RuntimeException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static WeekDay weekDay(String code) {
+        return Arrays.stream(WeekDay.values()).filter(d -> day(d).equals(code)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(code));
     }
 
     private static String day(WeekDay day) {

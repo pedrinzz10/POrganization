@@ -47,4 +47,20 @@ class RRuleMapperTest {
                 .isEqualTo("EXDATE;TZID=America/Sao_Paulo:20261005T070000,20261012T070000");
         assertThat(RRuleMapper.toExDate(dias, null, "America/Sao_Paulo")).isEqualTo("EXDATE;VALUE=DATE:20261005,20261012");
     }
+
+    // I08: caminho inverso (importação)
+    @Test
+    void regraDoGoogleQueCabeNoAppVoltaComoRecurrenceRule() {
+        assertThat(RRuleMapper.fromRRule(List.of("RRULE:FREQ=WEEKLY;BYDAY=MO,WE;UNTIL=20261231T235959Z")))
+                .contains(new RecurrenceRule(Frequency.WEEKLY, null, List.of(WeekDay.MON, WeekDay.WED), LocalDate.parse("2026-12-31"), null));
+        assertThat(RRuleMapper.fromRRule(List.of("EXDATE;VALUE=DATE:20261005", "RRULE:FREQ=DAILY;INTERVAL=2;COUNT=5")))
+                .contains(new RecurrenceRule(Frequency.DAILY, 2, null, null, 5));
+    }
+
+    @Test
+    void regraMaisRicaQueOAppViraEventoUnico() {
+        assertThat(RRuleMapper.fromRRule(List.of("RRULE:FREQ=MONTHLY;BYDAY=2MO"))).isEmpty();
+        assertThat(RRuleMapper.fromRRule(List.of("RRULE:FREQ=MONTHLY;BYMONTHDAY=15"))).isEmpty();
+        assertThat(RRuleMapper.fromRRule(List.of())).isEmpty();
+    }
 }
