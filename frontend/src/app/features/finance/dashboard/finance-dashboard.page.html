@@ -19,33 +19,44 @@
   @let d = painel.value();
 
   <section class="numeros" aria-label="Números do mês">
-    <div class="numero">
-      <span class="numero__rotulo">Saldo total</span>
-      <span class="numero__valor">{{ d.totalBalance | brl }}</span>
+    <div class="ds-card ds-card--lavender numero">
+      <h3>Saldo total</h3>
+      <span class="ds-stat">{{ d.totalBalance | brl }}</span>
+      <span class="ds-shape ds-shape--burst" aria-hidden="true"></span>
     </div>
-    <div class="numero" title="Saldo + a receber − a pagar dos agendados em aberto até o fim do mês">
-      <span class="numero__rotulo">Previsto no fim do mês</span>
-      <span class="numero__valor" [class.sai]="d.forecast.startsWith('-')">{{ d.forecast | brl }}</span>
-      <span class="numero__detalhe">+{{ d.receivable | brl }} a receber · −{{ d.payable | brl }} a pagar</span>
+    <div
+      class="ds-card ds-card--ink numero"
+      title="Saldo + a receber − a pagar dos agendados em aberto até o fim do mês"
+    >
+      <h3>Previsto no fim do mês</h3>
+      <span class="ds-stat">{{ d.forecast | brl }}</span>
+      <span class="ds-unit numero__detalhe"
+        >+{{ d.receivable | brl }} a receber · −{{ d.payable | brl }} a pagar</span
+      >
+      <span class="ds-shape ds-shape--disc" aria-hidden="true"></span>
     </div>
-    <div class="numero">
-      <span class="numero__rotulo">Renda</span>
-      <span class="numero__valor entra">{{ d.income | brl }}</span>
+    <div class="ds-card ds-card--steel numero">
+      <h3>Renda</h3>
+      <span class="ds-stat">+{{ d.income | brl }}</span>
+      <span class="ds-shape ds-shape--tri" aria-hidden="true"></span>
     </div>
-    <div class="numero">
-      <span class="numero__rotulo">Gasto</span>
-      <span class="numero__valor sai">{{ d.expense | brl }}</span>
+    <div class="ds-card numero">
+      <h3>Gasto</h3>
+      <span class="ds-stat">−{{ d.expense | brl }}</span>
     </div>
-    <div class="numero">
-      <span class="numero__rotulo">Resultado</span>
-      <span class="numero__valor" [class.sai]="d.net.startsWith('-')">{{ d.net | brl }}</span>
+    <div class="ds-card ds-card--slate numero">
+      <h3>Resultado</h3>
+      <span class="ds-stat">{{ d.net | brl }}</span>
     </div>
   </section>
 
   @if (d.accounts.length > 0) {
     <ul class="contas" aria-label="Saldo por conta">
       @for (c of d.accounts; track c.id) {
-        <li class="conta"><span>{{ c.name }}</span> <strong [class.sai]="c.balance.startsWith('-')">{{ c.balance | brl }}</strong></li>
+        <li class="conta">
+          <span>{{ c.name }}</span>
+          <strong [class.sai]="c.balance.startsWith('-')">{{ c.balance | brl }}</strong>
+        </li>
       }
     </ul>
   }
@@ -75,8 +86,14 @@
       <ul class="lista">
         @for (item of faturasAbertas(); track item.fatura.id) {
           <li class="lista__item">
-            <a [routerLink]="['cartoes', item.card.cardId, 'faturas', item.fatura.referenceMonth]">{{ item.card.name }}</a>
-            <span class="detalhe">{{ rotulosStatus[item.fatura.status] }} · vence {{ diaMes(item.fatura.dueDate) }}</span>
+            <a
+              [routerLink]="['cartoes', item.card.cardId, 'faturas', item.fatura.referenceMonth]"
+              >{{ item.card.name }}</a
+            >
+            <span class="detalhe"
+              >{{ rotulosStatus[item.fatura.status] }} · vence
+              {{ diaMes(item.fatura.dueDate) }}</span
+            >
             <span class="valor">{{ item.fatura.total | brl }}</span>
           </li>
         } @empty {
@@ -91,7 +108,9 @@
         @for (b of d.budgetAlerts; track b.id) {
           <li [class]="'lista__item alerta ' + (b.level | budgetLevel)">
             <span>{{ b.categoryName }}</span>
-            <span class="detalhe">{{ b.level | budgetLevel: 'label' }} · {{ b.percent.replace('.', ',') }}%</span>
+            <span class="detalhe"
+              >{{ b.level | budgetLevel: 'label' }} · {{ b.percent.replace('.', ',') }}%</span
+            >
             <span class="valor">{{ b.spent | brl }} de {{ b.amount | brl }}</span>
           </li>
         } @empty {
@@ -106,7 +125,9 @@
         @for (g of d.goals; track g.id) {
           <li class="lista__item meta">
             <span>{{ g.name }}</span>
-            <span class="barra"><span class="barra__cheia" [style.width.%]="largura(g.progress)"></span></span>
+            <span class="barra"
+              ><span class="barra__cheia" [style.width.%]="largura(g.progress)"></span
+            ></span>
             <span class="detalhe">{{ g.progress.replace('.', ',') }}%</span>
           </li>
         } @empty {

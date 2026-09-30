@@ -2,15 +2,27 @@ import { Component, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PushService } from '../../core/push/push.service';
+import { AppearanceComponent } from './appearance.component';
 import { GoogleCalendarComponent } from './google-calendar.component';
 import { PreferencesFormComponent } from './preferences-form.component';
 
-/** Configurações: preferências de notificação, notificações neste navegador e Google Calendar. */
+/** Configurações: aparência (tema), preferências de notificação, notificações neste navegador e Google Calendar. */
 @Component({
   selector: 'app-settings-page',
-  imports: [GoogleCalendarComponent, MatButtonModule, MatIconModule, PreferencesFormComponent],
+  imports: [
+    AppearanceComponent,
+    GoogleCalendarComponent,
+    MatButtonModule,
+    MatIconModule,
+    PreferencesFormComponent,
+  ],
   template: `
     <h1 class="titulo">Configurações</h1>
+
+    <section class="bloco" aria-labelledby="config-aparencia">
+      <h2 id="config-aparencia" class="bloco__titulo">Aparência</h2>
+      <app-appearance />
+    </section>
 
     <section class="bloco" aria-labelledby="config-preferencias">
       <h2 id="config-preferencias" class="bloco__titulo">Lembretes e resumo</h2>
@@ -21,12 +33,16 @@ import { PreferencesFormComponent } from './preferences-form.component';
       <h2 id="config-notificacoes" class="bloco__titulo">Notificações no navegador</h2>
       @if (!push.supported) {
         <p class="dica">
-          Este navegador não recebe notificações do app. Elas funcionam na versão publicada, em navegadores com suporte a
-          Web Push (no iPhone, adicione o app à tela de início).
+          Este navegador não recebe notificações do app. Elas funcionam na versão publicada, em
+          navegadores com suporte a Web Push (no iPhone, adicione o app à tela de início).
         </p>
       } @else if (push.subscribed()) {
-        <p class="status"><mat-icon aria-hidden="true">notifications_active</mat-icon> Ativadas neste navegador.</p>
-        <button mat-stroked-button type="button" [disabled]="ocupado()" (click)="desativar()">Desativar notificações</button>
+        <p class="status">
+          <mat-icon aria-hidden="true">notifications_active</mat-icon> Ativadas neste navegador.
+        </p>
+        <button mat-stroked-button type="button" [disabled]="ocupado()" (click)="desativar()">
+          Desativar notificações
+        </button>
       } @else {
         <p class="dica">Receba os lembretes dos compromissos aqui, mesmo com o app fechado.</p>
         <button mat-flat-button type="button" [disabled]="ocupado()" (click)="ativar()">
@@ -81,7 +97,10 @@ export class SettingsPage {
   protected readonly erro = signal<string | null>(null);
 
   protected async ativar(): Promise<void> {
-    await this.executar(() => this.push.enable(), 'Não foi possível ativar. Verifique se o navegador permitiu as notificações.');
+    await this.executar(
+      () => this.push.enable(),
+      'Não foi possível ativar. Verifique se o navegador permitiu as notificações.',
+    );
   }
 
   protected async desativar(): Promise<void> {
@@ -94,7 +113,9 @@ export class SettingsPage {
     try {
       await acao();
     } catch (error) {
-      this.erro.set(error instanceof Error && error.message.includes('configuradas') ? error.message : falha);
+      this.erro.set(
+        error instanceof Error && error.message.includes('configuradas') ? error.message : falha,
+      );
     } finally {
       this.ocupado.set(false);
     }

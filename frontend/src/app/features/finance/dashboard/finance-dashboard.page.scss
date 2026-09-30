@@ -21,32 +21,45 @@
 }
 
 .entra {
-  color: #2e7d32;
+  color: var(--status-positive);
 }
 
 .numeros {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px;
-  margin: 12px 0;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
 }
 
 .numero {
   display: flex;
   flex-direction: column;
-  padding: 12px;
-  border-radius: 12px;
-  background: var(--mat-sys-surface-container-low);
+  gap: var(--space-1);
+  min-height: 120px;
 }
 
-.numero__rotulo {
-  font: var(--mat-sys-label-medium);
-  color: var(--mat-sys-on-surface-variant);
+// Texto acima da forma decorativa
+.numero > :not(.ds-shape) {
+  position: relative;
+  z-index: 1;
+}
+
+// Forma decorativa só no canto, abaixo do texto (sobre ela o texto perderia contraste)
+.numero .ds-shape {
+  width: 76px;
+  height: 76px;
+  right: -26px;
+  bottom: -30px;
+}
+
+// Valor numa linha só: diminui em telas estreitas em vez de quebrar "R$" do número
+.numero .ds-stat {
+  font-size: clamp(20px, 1.9vw, 28px);
+  white-space: nowrap;
 }
 
 .numero__detalhe {
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
+  max-width: 80%;
 }
 
 .contas {
@@ -65,10 +78,6 @@
   border-radius: 16px;
   background: var(--mat-sys-secondary-container);
   color: var(--mat-sys-on-secondary-container);
-}
-
-.numero__valor {
-  font: var(--mat-sys-title-large);
 }
 
 .graficos,
@@ -143,4 +152,11 @@
   padding: 16px 0;
   text-align: center;
   color: var(--mat-sys-on-surface-variant);
+}
+
+// No celular cada card ocupa a largura toda: o valor volta ao tamanho cheio
+@media (max-width: 599px) {
+  .numero .ds-stat {
+    font-size: 28px;
+  }
 }

@@ -22,13 +22,16 @@ describe('gráficos do resumo', () => {
     expect(dados.datasets[0].backgroundColor).toEqual(['#6D4C41', '#8E24AA']);
   });
 
-  it('categoria sem cor ganha uma cor de reserva', () => {
+  it('categoria sem cor ganha uma cor da paleta do design system', () => {
     const fixture = TestBed.createComponent(CategoryChartComponent);
-    fixture.componentRef.setInput('categories', [{ categoryId: 'x', name: null, color: null, total: '10.00' }]);
+    fixture.componentRef.setInput('categories', [
+      { categoryId: 'x', name: null, color: null, total: '10.00' },
+    ]);
 
     const dados = fixture.componentInstance.chartData();
     expect(dados.labels).toEqual(['Sem categoria']);
-    expect(dados.datasets[0].backgroundColor).toEqual(['#1976D2']);
+    // Sem os tokens carregados (teste), vale o valor de reserva do --slate
+    expect(dados.datasets[0].backgroundColor).toEqual(['#474a56']);
   });
 
   it('barras: um rótulo por mês e as séries de renda e gasto', () => {

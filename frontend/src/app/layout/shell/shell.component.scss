@@ -1,21 +1,77 @@
+// Layout no estilo do Intelly (DESIGN_SYSTEM.md, .ds-sidenav): menu escuro e arredondado,
+// descolado da borda, sobre o fundo lavender-50 da página.
 .shell {
   height: 100dvh;
+  background: var(--bg-page);
 }
 
 .shell__sidenav {
-  width: 240px;
+  width: 256px;
+  background: transparent;
+  border: 0;
+}
+
+// O painel escuro fica dentro do sidenav (o Material desloca o conteúdo pela largura do sidenav,
+// então a "margem" do menu flutuante é o padding daqui)
+.shell__painel {
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--space-6) var(--space-3);
+  background: var(--bg-sidebar);
+  color: var(--fg-on-dark);
+  overflow-y: auto;
+
+  // Itens da lista sobre o fundo escuro; o ativo em slate, como no .ds-navitem
+  --mat-sys-on-surface: var(--fg-on-dark);
+  --mat-sys-on-surface-variant: var(--fg-on-dark);
+  --mat-sys-secondary-container: var(--surface-slate);
+  --mat-sys-on-secondary-container: var(--on-surface-slate);
+  --mat-list-active-indicator-shape: var(--radius-md);
+}
+
+// No computador o menu flutua com respiro e raio grande; no celular é gaveta de canto a canto
+.shell__sidenav:not(.mobile) {
+  padding: var(--space-4) 0 var(--space-4) var(--space-4);
+}
+
+.shell__sidenav:not(.mobile) .shell__painel {
+  border-radius: var(--radius-xl);
+}
+
+.shell__sidenav.mobile {
+  background: var(--bg-sidebar);
+}
+
+.shell__logo {
+  font: 700 22px/1 var(--font-sans);
+  letter-spacing: -0.02em;
+  padding: 0 var(--space-3) var(--space-5);
+  color: var(--fg-on-dark);
+}
+
+.nav-item {
+  margin-bottom: 2px;
+}
+
+.nav-item--ativo {
+  font-weight: 700;
+}
+
+.shell__content {
+  background: var(--bg-page);
 }
 
 .shell__toolbar {
   position: sticky;
   top: 0;
   z-index: 2;
-  gap: 8px;
-  background: var(--mat-sys-surface-container);
+  gap: var(--space-2);
+  background: var(--bg-page);
 }
 
 .shell__brand {
-  font: var(--mat-sys-title-large);
+  font: 700 18px/1 var(--font-sans);
+  letter-spacing: -0.02em;
 }
 
 .shell__spacer {
@@ -24,7 +80,7 @@
 
 .shell__user {
   font: var(--mat-sys-body-medium);
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--fg-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -32,11 +88,13 @@
 }
 
 .shell__main {
-  padding: 16px;
+  padding: 0 var(--space-6) var(--space-6);
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.nav-item--ativo {
-  font-weight: 600;
+@media (max-width: 599px) {
+  .shell__main {
+    padding: 0 var(--space-4) var(--space-4);
+  }
 }
