@@ -142,7 +142,7 @@ Regras:
     "story": "Como Pedro, quero que o esquema do banco seja versionado e aplicado automaticamente no Supabase.",
     "arquivos": ["backend/src/main/resources/application.yml", "backend/src/main/resources/application-dev.yml", "backend/src/main/resources/application-prod.yml", "backend/src/main/resources/db/migration/V1__user_settings.sql", "backend/src/test/java/com/porganization/support/IntegrationTest.java", ".env.example", "backend/src/main/resources/db/migration/afterMigrate.sql", "backend/src/main/java/com/porganization/settings/UserSettings.java", "backend/src/main/java/com/porganization/settings/UserSettingsRepository.java"],
     "dependencias": ["B02", "B13"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Ao subir, o Flyway aplica V1 e a tabela user_settings existe." },
       { "id": "CA2", "descricao": "Nenhuma credencial fica no código; .env.example lista todas as variáveis." },
@@ -165,7 +165,7 @@ Regras:
     "story": "Como Pedro, quero que só eu, logado pelo Supabase, acesse meus dados pela API.",
     "arquivos": ["backend/src/main/java/com/porganization/security/SecurityConfig.java", "backend/src/main/java/com/porganization/security/CurrentUser.java", "backend/src/main/java/com/porganization/security/CurrentUserArgumentResolver.java", "backend/src/main/java/com/porganization/security/MeController.java", "backend/src/main/resources/application.yml", ".env.example"],
     "dependencias": ["B03"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Requisição sem token ou com token inválido/expirado em /api/** responde 401." },
       { "id": "CA2", "descricao": "Com token válido, GET /api/me devolve o userId igual ao sub do token." },
