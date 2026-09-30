@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,19 +6,35 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { problemMessage } from '../../core/http/problem';
+import { IsoDate } from './data/commitment.model';
 import { CommitmentsService } from './data/commitments.service';
-import { DateRange, nextWeek, parseIsoDate, previousWeek, today, weekRange } from './data/date-range.util';
+import {
+  addDays,
+  DateRange,
+  monthGridRange,
+  nextWeek,
+  parseIsoDate,
+  previousWeek,
+  shiftMonth,
+  today,
+  weekRange,
+  YearMonth,
+  yearMonthOf,
+} from './data/date-range.util';
 import { QuickAddComponent } from './quick-add/quick-add.component';
 import { DayViewComponent } from './views/day-view.component';
+import { MonthViewComponent } from './views/month-view.component';
 import { WeekViewComponent } from './views/week-view.component';
+import { YearViewComponent } from './views/year-view.component';
 
-type Aba = 'hoje' | 'semana' | 'mes' | 'ano';
-const ABAS: Aba[] = ['hoje', 'semana', 'mes', 'ano'];
+type Aba = 'dia' | 'semana' | 'mes' | 'ano';
+const ABAS: Aba[] = ['dia', 'semana', 'mes', 'ano'];
 
 @Component({
   selector: 'app-commitments-page',
   imports: [
     DatePipe,
+    NgTemplateOutlet,
     MatTabsModule,
     MatButtonModule,
     MatIconModule,
@@ -26,6 +42,8 @@ const ABAS: Aba[] = ['hoje', 'semana', 'mes', 'ano'];
     QuickAddComponent,
     DayViewComponent,
     WeekViewComponent,
+    MonthViewComponent,
+    YearViewComponent,
   ],
   templateUrl: './commitments.page.html',
   styleUrl: './commitments.page.scss',
@@ -33,20 +51,28 @@ const ABAS: Aba[] = ['hoje', 'semana', 'mes', 'ano'];
 export class CommitmentsPage {
   private readonly commitments = inject(CommitmentsService);
 
-  protected readonly aba = signal<Aba>('hoje');
-  protected readonly semana = signal<DateRange>(weekRange(today()));
   protected readonly hoje = today();
-  protected readonly hojeData = parseIsoDate(this.hoje);
+  protected readonly aba = signal<Aba>('dia');
+  protected readonly indiceAba = computed(() => ABAS.indexOf(this.aba()));
 
-  /** Intervalo que a aba atual precisa; mudar aba ou semana recarrega sozinho. */
+  protected readonly dia = signal<IsoDate>(this.hoje);
+  protected readonly diaData = computed(() => parseIsoDate(this.dia()));
+  protected readonly semana = signal<DateRange>(weekRange(this.hoje));
+  protected readonly mes = signal<YearMonth>(yearMonthOf(this.hoje));
+  protected readonly mesData = computed(() => parseIsoDate(`${this.mes().year}-${String(this.mes().month).padStart(2, '0')}-01`));
+  protected readonly ano = signal<number>(yearMonthOf(this.hoje).year);
+
+  /** Intervalo que a aba atual precisa; mudar aba, dia, semana ou mês recarrega sozinho. */
   private readonly intervalo = computed<DateRange | undefined>(() => {
     switch (this.aba()) {
-      case 'hoje':
-        return { from: this.hoje, to: this.hoje };
+      case 'dia':
+        return { from: this.dia(), to: this.dia() };
       case 'semana':
         return this.semana();
+      case 'mes':
+        return monthGridRange(this.mes().year, this.mes().month);
       default:
-        return undefined; // Mês e Ano chegam na C08
+        return undefined; // a visão do ano faz a própria consulta
     }
   });
 
@@ -63,6 +89,10 @@ export class CommitmentsPage {
     this.aba.set(ABAS[index]);
   }
 
+  protected mudarDia(delta: number): void {
+    this.dia.update((d) => addDays(d, delta));
+  }
+
   protected semanaAnterior(): void {
     this.semana.update(previousWeek);
   }
@@ -71,8 +101,32 @@ export class CommitmentsPage {
     this.semana.update(nextWeek);
   }
 
-  protected semanaAtual(): void {
-    this.semana.set(weekRange(today()));
+  protected mudarMes(delta: number): void {
+    this.mes.update((m) => shiftMonth(m, delta));
+  }
+
+  protected mudarAno(delta: number): void {
+    this.ano.update((a) => a + delta);
+  }
+
+  /** Volta todas as visões para hoje. */
+  protected irParaHoje(): void {
+    this.dia.set(this.hoje);
+    this.semana.set(weekRange(this.hoje));
+    this.mes.set(yearMonthOf(this.hoje));
+    this.ano.set(yearMonthOf(this.hoje).year);
+  }
+
+  /** Clique num dia da grade do mês: abre a visão do dia. */
+  protected abrirDia(date: IsoDate): void {
+    this.dia.set(date);
+    this.aba.set('dia');
+  }
+
+  /** Clique num mês da visão do ano: abre a grade daquele mês. */
+  protected abrirMes(month: number): void {
+    this.mes.set({ year: this.ano(), month });
+    this.aba.set('mes');
   }
 
   protected recarregar(): void {

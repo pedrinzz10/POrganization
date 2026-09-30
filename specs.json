@@ -1259,7 +1259,7 @@
         "C07"
       ],
       "conceito_angular": "Componentes de apresentação reutilizáveis: o mesmo mini-mês é usado 12 vezes no ano, recebendo o mês por input().",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",

@@ -496,7 +496,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/commitments/views/month-view.component.ts", "frontend/src/app/features/commitments/views/year-view.component.ts", "frontend/src/app/features/commitments/data/date-range.util.ts"],
     "dependencias": ["C07"],
     "conceito_angular": "Componentes de apresentação reutilizáveis: o mesmo mini-mês é usado 12 vezes no ano, recebendo o mês por input().",
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "A grade do mês de outubro/2026 começa em 28/09 e tem 42 células." },
       { "id": "CA2", "descricao": "Dia com mais de 3 compromissos mostra 3 títulos e '+N'." },

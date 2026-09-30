@@ -1,0 +1,74 @@
+.month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.month__weekday {
+  text-align: center;
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+  padding: 4px 0;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 88px;
+  padding: 4px;
+  border: none;
+  border-radius: 6px;
+  background: var(--mat-sys-surface-container-low);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.cell:hover {
+  background: var(--mat-sys-surface-container-high);
+}
+
+.cell.fora-do-mes {
+  opacity: 0.45;
+}
+
+.cell.hoje {
+  outline: 2px solid var(--mat-sys-primary);
+}
+
+.cell__day {
+  font: var(--mat-sys-label-large);
+}
+
+.cell__item {
+  font: var(--mat-sys-body-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 3px solid var(--mat-sys-primary);
+  padding-left: 4px;
+}
+
+.cell__item.done {
+  text-decoration: line-through;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.cell__more {
+  font: var(--mat-sys-label-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// No celular só cabem os números e a quantidade
+@media (max-width: 767.98px) {
+  .cell {
+    min-height: 48px;
+  }
+  .cell__item {
+    display: none;
+  }
+}
