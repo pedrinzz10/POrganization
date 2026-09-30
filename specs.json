@@ -125,7 +125,7 @@
     }
   ],
   "total_specs": 58,
-  "total_criterios": 158,
+  "total_criterios": 159,
   "specs": [
     {
       "id": "B01",
@@ -2010,7 +2010,7 @@
       "dependencias": [
         "F01"
       ],
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2034,7 +2034,7 @@
           "criterio": "CA2",
           "tipo": "integracao",
           "arquivo": "backend/src/test/java/com/porganization/finance/categories/CategoryControllerIT.java",
-          "cenario": "Dado transação na categoria Lazer, quando DELETE Lazer, então 409."
+          "cenario": "Dado categoria sem uso, quando DELETE, então 204. O caso 'transação na categoria Lazer → DELETE 409' entra na F03 (CA5/T5), quando a tabela de transações (FK on delete restrict) passa a existir."
         }
       ]
     },
@@ -2071,6 +2071,10 @@
         {
           "id": "CA4",
           "descricao": "Conta com transações não pode ser excluída (409), só arquivada (completa o CA2 da F01)."
+        },
+        {
+          "id": "CA5",
+          "descricao": "Categoria em uso não pode ser excluída (409) (completa o CA2 da F02)."
         }
       ],
       "testes_dos_criterios": [
@@ -2101,6 +2105,13 @@
           "tipo": "integracao",
           "arquivo": "backend/src/test/java/com/porganization/finance/accounts/AccountControllerIT.java",
           "cenario": "Dado conta com 1 transação, quando DELETE, então 409 e a conta continua; PATCH archived=true, então 200."
+        },
+        {
+          "id": "T5",
+          "criterio": "CA5",
+          "tipo": "integracao",
+          "arquivo": "backend/src/test/java/com/porganization/finance/categories/CategoryControllerIT.java",
+          "cenario": "Dado transação na categoria Lazer, quando DELETE Lazer, então 409 e a categoria continua."
         }
       ]
     },
