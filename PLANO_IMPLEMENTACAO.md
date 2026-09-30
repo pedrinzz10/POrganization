@@ -886,7 +886,7 @@ Regras:
     "story": "Como Pedro, quero lançar uma compra parcelada e ver cada parcela nas faturas futuras.",
     "arquivos": ["backend/src/main/java/com/porganization/finance/cards/InstallmentCalculator.java", "backend/src/main/java/com/porganization/finance/cards/CardPurchaseService.java", "backend/src/main/resources/db/migration/V12__installments.sql"],
     "dependencias": ["F05"],
-    "status": "em_revisao",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "100.00 em 3x gera 33.34, 33.33, 33.33 e a soma é exatamente 100.00." },
       { "id": "CA2", "descricao": "Cada parcela cai em uma fatura consecutiva, com descrição 'Loja (2/3)'." },
@@ -906,7 +906,7 @@ Regras:
     "story": "Como Pedro, quero ver a fatura do mês, quanto do limite usei e registrar o pagamento.",
     "arquivos": ["backend/src/main/java/com/porganization/finance/cards/StatementService.java", "backend/src/main/java/com/porganization/finance/cards/StatementController.java", "backend/src/main/java/com/porganization/finance/cards/dto/StatementResponse.java"],
     "dependencias": ["F06"],
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Limite disponível = limite - soma de todas as parcelas de faturas não pagas." },
       { "id": "CA2", "descricao": "Pagar a fatura cria gasto do valor total na conta de pagamento e status vira PAID; pagar de novo responde 409." },
@@ -926,7 +926,7 @@ Regras:
     "story": "Como Pedro, quero cadastrar aluguel, assinaturas e salário uma vez e vê-los todo mês.",
     "arquivos": ["backend/src/main/resources/db/migration/V13__recurring_transactions.sql", "backend/src/main/java/com/porganization/finance/recurring/RecurringTransaction.java", "backend/src/main/java/com/porganization/finance/recurring/RecurringGenerator.java", "backend/src/main/java/com/porganization/finance/recurring/RecurringController.java"],
     "dependencias": ["F05"],
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Gerar o mesmo mês duas vezes não duplica lançamentos (unique recurring_id + month)." },
       { "id": "CA2", "descricao": "day_of_month 31 em fevereiro gera no último dia." },
@@ -946,7 +946,7 @@ Regras:
     "story": "Como Pedro, quero limitar quanto gasto por categoria e ser avisado quando estiver perto do limite.",
     "arquivos": ["backend/src/main/resources/db/migration/V14__budgets.sql", "backend/src/main/java/com/porganization/finance/budgets/Budget.java", "backend/src/main/java/com/porganization/finance/budgets/BudgetService.java", "backend/src/main/java/com/porganization/finance/budgets/BudgetController.java"],
     "dependencias": ["F07"],
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Orçamento de 500.00 com 400.00 gastos retorna 80% e ATENCAO; com 500.00 retorna ESTOURADO." },
       { "id": "CA2", "descricao": "Compras no cartão contam no mês da compra, não no da fatura." }
@@ -964,7 +964,7 @@ Regras:
     "story": "Como Pedro, quero definir metas de economia e acompanhar quanto falta e quanto guardar por mês.",
     "arquivos": ["backend/src/main/resources/db/migration/V15__savings_goals.sql", "backend/src/main/java/com/porganization/finance/goals/SavingsGoal.java", "backend/src/main/java/com/porganization/finance/goals/GoalService.java", "backend/src/main/java/com/porganization/finance/goals/GoalController.java"],
     "dependencias": ["F01"],
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Meta de 6000.00 com aportes de 1500.00 mostra 25% e faltam 4500.00." },
       { "id": "CA2", "descricao": "Aporte mensal necessário = falta / meses restantes (arredondado para cima no centavo); prazo vencido mostra o valor total que falta." }
@@ -982,7 +982,7 @@ Regras:
     "story": "Como Pedro, quero um resumo do mês em um só lugar.",
     "arquivos": ["backend/src/main/java/com/porganization/finance/dashboard/DashboardService.java", "backend/src/main/java/com/porganization/finance/dashboard/DashboardController.java", "backend/src/main/java/com/porganization/finance/dashboard/DashboardResponse.java"],
     "dependencias": ["F08", "F09", "F10"],
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Os números do dashboard batem com os endpoints individuais para o mesmo cenário." },
       { "id": "CA2", "descricao": "A série de 6 meses traz meses sem movimento com 0.00." }
@@ -1001,7 +1001,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/finance/data/finance.service.ts", "frontend/src/app/features/finance/data/finance.model.ts", "frontend/src/app/features/finance/accounts/accounts.page.ts", "frontend/src/app/features/finance/transactions/transactions.page.ts", "frontend/src/app/features/finance/transactions/transaction-form.component.ts", "frontend/src/app/shared/money-input/money-input.component.ts"],
     "dependencias": ["F04", "B09"],
     "conceito_angular": "ControlValueAccessor: o MoneyInput é um componente próprio que funciona como campo de formulário (formControlName), exibindo 'R$ 1.234,56' e entregando '1234.56' ao form. Filtros ficam em query params da rota para o link ser compartilhável.",
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Digitar 123456 no campo de valor exibe 'R$ 1.234,56' e envia amount '1234.56'." },
       { "id": "CA2", "descricao": "Mudar filtros atualiza os query params e recarregar a página mantém os filtros." },
@@ -1022,7 +1022,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/finance/cards/cards.page.ts", "frontend/src/app/features/finance/cards/card-purchase-form.component.ts", "frontend/src/app/features/finance/cards/statement.page.ts"],
     "dependencias": ["F07", "F12"],
     "conceito_angular": "Rotas com parâmetros (/financas/cartoes/:id/faturas/:mes) lidos com input() via withComponentInputBinding().",
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "A prévia das parcelas mostra os mesmos valores que a API vai gerar (resto na primeira)." },
       { "id": "CA2", "descricao": "Pagar a fatura pede confirmação e depois mostra status 'Paga'." }
@@ -1041,7 +1041,7 @@ Regras:
     "arquivos": ["frontend/src/app/features/finance/recurring/recurring.page.ts", "frontend/src/app/features/finance/budgets/budgets.page.ts", "frontend/src/app/features/finance/goals/goals.page.ts"],
     "dependencias": ["F11", "F12"],
     "conceito_angular": "Pipes personalizados: um pipe budgetLevel transforma o nível de alerta em classe CSS e texto, deixando o template limpo.",
-    "status": "pendente",
+    "status": "concluida",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Barra de orçamento fica verde em OK, amarela em ATENCAO e vermelha em ESTOURADO." },
       { "id": "CA2", "descricao": "Registrar aporte atualiza o progresso da meta na tela." }

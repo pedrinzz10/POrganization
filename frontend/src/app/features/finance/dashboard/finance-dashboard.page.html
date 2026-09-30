@@ -1,0 +1,105 @@
+<div class="mes">
+  <button mat-icon-button type="button" aria-label="Mês anterior" (click)="mudarMes(-1)">
+    <mat-icon aria-hidden="true">chevron_left</mat-icon>
+  </button>
+  <h2 class="mes__rotulo">{{ rotuloMes() }}</h2>
+  <button mat-icon-button type="button" aria-label="Próximo mês" (click)="mudarMes(1)">
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+  </button>
+</div>
+
+@if (painel.isLoading() && !painel.hasValue()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+@if (erro(); as mensagem) {
+  <p class="erro" role="alert">{{ mensagem }}</p>
+}
+
+@if (painel.hasValue()) {
+  @let d = painel.value();
+
+  <section class="numeros" aria-label="Números do mês">
+    <div class="numero">
+      <span class="numero__rotulo">Saldo total</span>
+      <span class="numero__valor">{{ d.totalBalance | brl }}</span>
+    </div>
+    <div class="numero">
+      <span class="numero__rotulo">Renda</span>
+      <span class="numero__valor entra">{{ d.income | brl }}</span>
+    </div>
+    <div class="numero">
+      <span class="numero__rotulo">Gasto</span>
+      <span class="numero__valor sai">{{ d.expense | brl }}</span>
+    </div>
+    <div class="numero">
+      <span class="numero__rotulo">Resultado</span>
+      <span class="numero__valor" [class.sai]="d.net.startsWith('-')">{{ d.net | brl }}</span>
+    </div>
+  </section>
+
+  <div class="graficos">
+    <section class="bloco">
+      <h3 class="bloco__titulo">Gastos por categoria</h3>
+      @if (semGastos()) {
+        <p class="vazio">Nenhum gasto neste mês.</p>
+      } @else {
+        <app-category-chart [categories]="d.expenseByCategory" />
+      }
+    </section>
+    <section class="bloco">
+      <h3 class="bloco__titulo">Últimos 6 meses</h3>
+      @if (semMovimento()) {
+        <p class="vazio">Sem movimento nos últimos 6 meses.</p>
+      } @else {
+        <app-monthly-chart [points]="d.lastSixMonths" />
+      }
+    </section>
+  </div>
+
+  <div class="listas">
+    <section class="bloco">
+      <h3 class="bloco__titulo">Faturas abertas</h3>
+      <ul class="lista">
+        @for (item of faturasAbertas(); track item.fatura.id) {
+          <li class="lista__item">
+            <a [routerLink]="['cartoes', item.card.cardId, 'faturas', item.fatura.referenceMonth]">{{ item.card.name }}</a>
+            <span class="detalhe">{{ rotulosStatus[item.fatura.status] }} · vence {{ diaMes(item.fatura.dueDate) }}</span>
+            <span class="valor">{{ item.fatura.total | brl }}</span>
+          </li>
+        } @empty {
+          <li class="vazio">Nenhuma fatura em aberto.</li>
+        }
+      </ul>
+    </section>
+
+    <section class="bloco">
+      <h3 class="bloco__titulo">Orçamentos em alerta</h3>
+      <ul class="lista">
+        @for (b of d.budgetAlerts; track b.id) {
+          <li [class]="'lista__item alerta ' + (b.level | budgetLevel)">
+            <span>{{ b.categoryName }}</span>
+            <span class="detalhe">{{ b.level | budgetLevel: 'label' }} · {{ b.percent.replace('.', ',') }}%</span>
+            <span class="valor">{{ b.spent | brl }} de {{ b.amount | brl }}</span>
+          </li>
+        } @empty {
+          <li class="vazio">Tudo dentro do orçamento.</li>
+        }
+      </ul>
+    </section>
+
+    <section class="bloco">
+      <h3 class="bloco__titulo">Metas</h3>
+      <ul class="lista">
+        @for (g of d.goals; track g.id) {
+          <li class="lista__item meta">
+            <span>{{ g.name }}</span>
+            <span class="barra"><span class="barra__cheia" [style.width.%]="largura(g.progress)"></span></span>
+            <span class="detalhe">{{ g.progress.replace('.', ',') }}%</span>
+          </li>
+        } @empty {
+          <li class="vazio">Nenhuma meta. <a routerLink="metas">Criar uma</a></li>
+        }
+      </ul>
+    </section>
+  </div>
+}

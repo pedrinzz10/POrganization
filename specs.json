@@ -2237,7 +2237,7 @@
       "dependencias": [
         "F05"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2285,12 +2285,12 @@
       "arquivos": [
         "backend/src/main/java/com/porganization/finance/cards/StatementService.java",
         "backend/src/main/java/com/porganization/finance/cards/StatementController.java",
-        "backend/src/main/java/com/porganization/finance/cards/CardDtos.java"
+        "backend/src/main/java/com/porganization/finance/cards/dto/StatementResponse.java"
       ],
       "dependencias": [
         "F06"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2339,14 +2339,12 @@
         "backend/src/main/resources/db/migration/V13__recurring_transactions.sql",
         "backend/src/main/java/com/porganization/finance/recurring/RecurringTransaction.java",
         "backend/src/main/java/com/porganization/finance/recurring/RecurringGenerator.java",
-        "backend/src/main/java/com/porganization/finance/recurring/RecurringController.java",
-        "backend/src/main/java/com/porganization/finance/recurring/RecurringService.java",
-        "backend/src/main/java/com/porganization/finance/recurring/RecurringJob.java"
+        "backend/src/main/java/com/porganization/finance/recurring/RecurringController.java"
       ],
       "dependencias": [
         "F05"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2400,7 +2398,7 @@
       "dependencias": [
         "F07"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2443,7 +2441,7 @@
       "dependencias": [
         "F01"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2487,7 +2485,7 @@
         "F09",
         "F10"
       ],
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2527,17 +2525,14 @@
         "frontend/src/app/features/finance/accounts/accounts.page.ts",
         "frontend/src/app/features/finance/transactions/transactions.page.ts",
         "frontend/src/app/features/finance/transactions/transaction-form.component.ts",
-        "frontend/src/app/shared/money-input/money-input.directive.ts",
-        "frontend/src/app/features/finance/finance.routes.ts",
-        "frontend/src/app/features/finance/accounts/account-form.dialog.ts",
-        "frontend/src/app/shared/money-input/brl.pipe.ts"
+        "frontend/src/app/shared/money-input/money-input.component.ts"
       ],
       "dependencias": [
         "F04",
         "B09"
       ],
-      "conceito_angular": "ControlValueAccessor: o MoneyInput é uma diretiva própria (input[appMoneyInput]) que funciona como campo de formulário (formControlName), exibindo 'R$ 1.234,56' e entregando '1234.56' ao form. Filtros ficam em query params da rota para o link ser compartilhável.",
-      "status": "em_revisao",
+      "conceito_angular": "ControlValueAccessor: o MoneyInput é um componente próprio que funciona como campo de formulário (formControlName), exibindo 'R$ 1.234,56' e entregando '1234.56' ao form. Filtros ficam em query params da rota para o link ser compartilhável.",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2557,7 +2552,7 @@
           "id": "T1",
           "criterio": "CA1",
           "tipo": "componente",
-          "arquivo": "frontend/src/app/shared/money-input/money-input.directive.spec.ts",
+          "arquivo": "frontend/src/app/shared/money-input/money-input.component.spec.ts",
           "cenario": "Dado host com FormControl, quando digita '123456', então o input mostra 'R$ 1.234,56' e control.value == '1234.56'."
         },
         {
@@ -2585,18 +2580,14 @@
       "arquivos": [
         "frontend/src/app/features/finance/cards/cards.page.ts",
         "frontend/src/app/features/finance/cards/card-purchase-form.component.ts",
-        "frontend/src/app/features/finance/cards/statement.page.ts",
-        "frontend/src/app/features/finance/cards/card-form.dialog.ts",
-        "frontend/src/app/features/finance/cards/installments.ts",
-        "frontend/src/app/features/finance/cards/statement-period.ts",
-        "frontend/src/app/shared/confirm-dialog/confirm.dialog.ts"
+        "frontend/src/app/features/finance/cards/statement.page.ts"
       ],
       "dependencias": [
         "F07",
         "F12"
       ],
       "conceito_angular": "Rotas com parâmetros (/financas/cartoes/:id/faturas/:mes) lidos com input() via withComponentInputBinding().",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2633,17 +2624,14 @@
       "arquivos": [
         "frontend/src/app/features/finance/recurring/recurring.page.ts",
         "frontend/src/app/features/finance/budgets/budgets.page.ts",
-        "frontend/src/app/features/finance/goals/goals.page.ts",
-        "frontend/src/app/features/finance/budgets/budget-level.pipe.ts",
-        "frontend/src/app/features/finance/recurring/recurring-form.dialog.ts",
-        "frontend/src/app/features/finance/goals/goal-form.dialog.ts"
+        "frontend/src/app/features/finance/goals/goals.page.ts"
       ],
       "dependencias": [
         "F11",
         "F12"
       ],
       "conceito_angular": "Pipes personalizados: um pipe budgetLevel transforma o nível de alerta em classe CSS e texto, deixando o template limpo.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",

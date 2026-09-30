@@ -4,7 +4,8 @@ import { IsActiveMatchOptions, RouterLink, RouterLinkActive, RouterOutlet } from
 
 /** Uma aba por tela de finanças; cada aba é uma rota filha (/financas/contas, ...). */
 export const FINANCE_TABS = [
-  { label: 'Extrato', path: './' },
+  { label: 'Resumo', path: './' },
+  { label: 'Extrato', path: 'extrato' },
   { label: 'Contas', path: 'contas' },
   { label: 'Cartões', path: 'cartoes' },
   { label: 'Fixos', path: 'fixos' },
@@ -47,7 +48,7 @@ export const FINANCE_TABS = [
 })
 export class FinancePage {
   protected readonly abas = FINANCE_TABS;
-  // O extrato é a rota vazia: só fica ativo nela, com qualquer query param (?month=...)
+  // O resumo é a rota vazia: só fica ativo nela, com qualquer query param (?month=...)
   protected readonly exato: IsActiveMatchOptions = { paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' };
   protected readonly parcial: IsActiveMatchOptions = { paths: 'subset', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' };
 }
