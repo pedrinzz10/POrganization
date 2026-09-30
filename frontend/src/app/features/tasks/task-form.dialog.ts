@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormBuilder,
@@ -11,7 +12,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, startWith } from 'rxjs';
 import { problemMessage } from '../../core/http/problem';
 import { WeekDay } from '../commitments/data/commitment.model';
 import { DailyTask, DailyTaskRequest } from './data/task.model';
@@ -30,6 +31,33 @@ const DIAS: { dia: WeekDay; rotulo: string; nome: string }[] = [
   { dia: 'FRI', rotulo: 'S', nome: 'Sexta' },
   { dia: 'SAT', rotulo: 'S', nome: 'Sábado' },
   { dia: 'SUN', rotulo: 'D', nome: 'Domingo' },
+];
+
+/** Emojis para escolher com um clique; o primeiro é "sem emoji". */
+export const EMOJIS: { emoji: string; nome: string }[] = [
+  { emoji: '', nome: 'Sem emoji' },
+  { emoji: '💧', nome: 'Beber água' },
+  { emoji: '📚', nome: 'Leitura' },
+  { emoji: '📖', nome: 'Estudo' },
+  { emoji: '✍️', nome: 'Escrita' },
+  { emoji: '💻', nome: 'Programação' },
+  { emoji: '🏃', nome: 'Corrida' },
+  { emoji: '🚶', nome: 'Caminhada' },
+  { emoji: '🏋️', nome: 'Academia' },
+  { emoji: '🧘', nome: 'Meditação' },
+  { emoji: '🙏', nome: 'Oração' },
+  { emoji: '💊', nome: 'Remédio' },
+  { emoji: '🦷', nome: 'Dentes' },
+  { emoji: '🥗', nome: 'Alimentação' },
+  { emoji: '🍎', nome: 'Fruta' },
+  { emoji: '🛏️', nome: 'Dormir cedo' },
+  { emoji: '📵', nome: 'Menos celular' },
+  { emoji: '🧹', nome: 'Arrumação' },
+  { emoji: '🌱', nome: 'Plantas' },
+  { emoji: '🐶', nome: 'Pet' },
+  { emoji: '🎸', nome: 'Música' },
+  { emoji: '💰', nome: 'Economizar' },
+  { emoji: '☀️', nome: 'Sol' },
 ];
 
 /** Pelo menos um dia da semana. */
@@ -56,21 +84,37 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
     <h2 mat-dialog-title>{{ editing ? 'Editar tarefa' : 'Nova tarefa' }}</h2>
     <mat-dialog-content>
       <form class="form" [formGroup]="form" (ngSubmit)="save()" id="task-form">
-        <div class="linha">
-          <mat-form-field class="emoji">
-            <mat-label>Emoji</mat-label>
-            <input matInput formControlName="emoji" maxlength="16" placeholder="📚" />
-          </mat-form-field>
-          <mat-form-field class="titulo">
-            <mat-label>Tarefa</mat-label>
-            <input
-              matInput
-              formControlName="title"
-              maxlength="100"
-              placeholder="Ex.: Ler 20 min"
-              required
-            />
-          </mat-form-field>
+        <mat-form-field>
+          <mat-label>Tarefa</mat-label>
+          <input
+            matInput
+            formControlName="title"
+            maxlength="100"
+            placeholder="Ex.: Ler 20 min"
+            required
+          />
+        </mat-form-field>
+
+        <span class="rotulo" id="emoji-rotulo">Emoji</span>
+        <div class="emojis" role="radiogroup" aria-labelledby="emoji-rotulo">
+          @for (e of emojis; track e.emoji) {
+            <button
+              type="button"
+              role="radio"
+              class="emojis__item"
+              [class.emojis__item--escolhido]="emojiEscolhido() === e.emoji"
+              [attr.aria-checked]="emojiEscolhido() === e.emoji"
+              [attr.aria-label]="e.nome"
+              [title]="e.nome"
+              (click)="escolherEmoji(e.emoji)"
+            >
+              @if (e.emoji) {
+                {{ e.emoji }}
+              } @else {
+                <span class="emojis__nenhum" aria-hidden="true">∅</span>
+              }
+            </button>
+          }
         </div>
 
         <span class="rotulo" id="dias-rotulo">Dias</span>
@@ -118,15 +162,32 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
       min-width: min(380px, 80vw);
       padding-top: 8px;
     }
-    .linha {
-      display: flex;
-      gap: 12px;
+    .emojis {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 40px);
+      gap: 4px;
+      margin-bottom: 12px;
     }
-    .emoji {
-      width: 90px;
+    .emojis__item {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      line-height: 1;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: var(--mat-sys-surface-container);
+      cursor: pointer;
     }
-    .titulo {
-      flex: 1;
+    .emojis__item:hover {
+      background: var(--mat-sys-surface-container-high);
+    }
+    .emojis__item--escolhido {
+      border-color: var(--mat-sys-primary);
+      background: var(--mat-sys-primary-container);
+    }
+    .emojis__nenhum {
+      font-size: 16px;
+      color: var(--mat-sys-on-surface-variant);
     }
     .rotulo {
       font: var(--mat-sys-label-large);
@@ -155,6 +216,11 @@ export class TaskFormDialog {
 
   protected readonly editing = this.data.task;
   protected readonly dias = DIAS;
+  /** Os pré-definidos; o emoji de uma tarefa antiga que não está na lista entra logo depois do "sem emoji". */
+  protected readonly emojis =
+    this.editing?.emoji && !EMOJIS.some((e) => e.emoji === this.editing!.emoji)
+      ? [EMOJIS[0], { emoji: this.editing.emoji, nome: 'Emoji atual' }, ...EMOJIS.slice(1)]
+      : EMOJIS;
 
   readonly form = inject(FormBuilder).nonNullable.group({
     title: [this.editing?.title ?? '', [Validators.required, Validators.pattern(/\S/)]],
@@ -163,8 +229,17 @@ export class TaskFormDialog {
     reminderTime: [this.editing?.reminderTime ?? ''],
   });
 
+  protected readonly emojiEscolhido = toSignal(
+    this.form.controls.emoji.valueChanges.pipe(startWith(this.form.controls.emoji.value)),
+    { requireSync: true },
+  );
+
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  protected escolherEmoji(emoji: string): void {
+    this.form.controls.emoji.setValue(emoji);
+  }
 
   async save(): Promise<void> {
     if (this.form.invalid || this.saving()) {

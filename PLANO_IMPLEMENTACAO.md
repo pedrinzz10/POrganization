@@ -1898,6 +1898,53 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
         "cenario": "TodayResponse com 2 compromissos, 3 revisões, 1 vencimento e 4 tarefas pendentes → assunto termina em '4 tarefas'."
       }
     ]
+  },
+  {
+    "id": "T06",
+    "etapa": "6-tarefas",
+    "titulo": "Emojis pré-definidos nas tarefas",
+    "acao": "Trocar o campo de texto do emoji por uma grade de emojis pré-definidos (hábitos comuns: água, leitura, academia, meditação, remédio...) escolhidos com um clique, com a opção 'sem emoji'. Tarefa antiga com emoji fora da lista mostra o dela como 'Emoji atual'.",
+    "story": "Como Pedro, quero escolher o emoji da tarefa com um clique, sem precisar digitar.",
+    "arquivos": [
+      "frontend/src/app/features/tasks/task-form.dialog.ts"
+    ],
+    "dependencias": [
+      "T04"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "O formulário mostra os emojis pré-definidos como botões de opção (radio), com 'sem emoji' marcado numa tarefa nova; clicar marca um e ele vai no POST (sem emoji = null)."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Editar tarefa cujo emoji não está na lista mostra o emoji dela marcado como 'Emoji atual'."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/tasks/task-form.dialog.spec.ts",
+        "cenario": "Nova tarefa: 'Sem emoji' marcado; clicar 'Leitura' marca 📚 e o POST leva emoji '📚'."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/tasks/task-form.dialog.spec.ts",
+        "cenario": "Editando 'Surfar 🏄' → opção 'Emoji atual' com 🏄 marcada."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/tasks.spec.ts",
+        "cenario": "Criar 'Ler 20 min' escolhendo o emoji 'Leitura' pelo clique."
+      }
+    ]
   }
 ]
 ```
@@ -1989,7 +2036,7 @@ O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN
 | 3 Estudos | E01 a E11 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS |
 | 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
-| 6 Tarefas diárias | T01 a T05 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
+| 6 Tarefas diárias | T01 a T06 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
 | 7 Design | U01 | App no Intelly Design System: tema, tela Hoje em painel, agenda semanal, gráficos e tema escuro |
 
 Total: 68 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
