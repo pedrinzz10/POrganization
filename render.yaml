@@ -1,0 +1,39 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec).
+# Os segredos têm "sync: false": o Render pede o valor no painel e ele nunca fica no git.
+services:
+  - type: web
+    name: porganization-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    # O mais perto do Supabase em sa-east-1 (São Paulo) entre as regiões do Render
+    region: virginia
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    # Mudanças só no frontend não refazem o deploy da API
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Supabase > Connect > Session pooler (porta 5432):
+      # jdbc:postgresql://aws-0-<regiao>.pooler.supabase.com:5432/postgres?sslmode=require
+      - key: DB_URL
+        sync: false
+      # postgres.<ref-do-projeto>
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # https://<ref-do-projeto>.supabase.co/auth/v1/.well-known/jwks.json
+      - key: SUPABASE_JWKS_URI
+        sync: false
+      # https://<ref-do-projeto>.supabase.co/auth/v1
+      - key: SUPABASE_ISSUER
+        sync: false
+      # URL do frontend na Vercel, ex.: https://porganization.vercel.app
+      - key: FRONTEND_ORIGIN
+        sync: false

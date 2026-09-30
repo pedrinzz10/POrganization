@@ -749,7 +749,7 @@
         "B02",
         "B06"
       ],
-      "status": "em_andamento",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -796,15 +796,18 @@
       "story": "Como Pedro, quero o app publicado para usar no celular e mostrar no portfólio.",
       "arquivos": [
         "backend/Dockerfile",
+        "backend/.dockerignore",
         "render.yaml",
         "frontend/vercel.json",
-        "frontend/src/environments/environment.ts"
+        "frontend/src/environments/environment.ts",
+        "frontend/playwright.prod.config.ts"
       ],
       "dependencias": [
         "B09",
         "B10"
       ],
-      "status": "pendente",
+      "status": "bloqueada",
+      "nota": "Arquivos de deploy e CA1 prontos. CA2 e CA3 dependem do deploy real com as contas do Pedro (Render, Vercel e Supabase); os testes estão prontos em frontend/e2e/smoke-prod.spec.ts (npm run e2e:prod).",
       "criterios_de_aceite": [
         {
           "id": "CA1",
