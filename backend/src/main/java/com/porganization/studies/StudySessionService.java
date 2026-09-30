@@ -6,8 +6,10 @@ import com.porganization.common.NotFoundException;
 import com.porganization.studies.dto.FinishLessonRequest;
 import com.porganization.studies.dto.SessionResponse;
 import com.porganization.studies.dto.StartSessionRequest;
+import com.porganization.settings.UserSettingsService;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -22,13 +24,17 @@ public class StudySessionService {
     private final StudySessionRepository sessions;
     private final SubjectRepository subjects;
     private final LessonRepository lessons;
+    private final ReviewScheduler reviewScheduler;
+    private final UserSettingsService userSettings;
     private final Clock clock;
 
     public StudySessionService(StudySessionRepository sessions, SubjectRepository subjects, LessonRepository lessons,
-            Clock clock) {
+            ReviewScheduler reviewScheduler, UserSettingsService userSettings, Clock clock) {
         this.sessions = sessions;
         this.subjects = subjects;
         this.lessons = lessons;
+        this.reviewScheduler = reviewScheduler;
+        this.userSettings = userSettings;
         this.clock = clock;
     }
 
@@ -78,19 +84,29 @@ public class StudySessionService {
         return transition(userId, id, StudySession::abandon);
     }
 
-    /** Aula: cria a Lesson com a duração efetiva e liga à sessão. Revisão: ver E07. */
+    /**
+     * Aula: cria a Lesson com a duração efetiva e agenda a primeira revisão para amanhã.
+     * Revisão: exige a nota e reagenda pelo FSRS. "Hoje" é no fuso do usuário.
+     */
     @Transactional
     public SessionResponse finish(UUID userId, UUID id, FinishLessonRequest request) {
         StudySession session = find(userId, id);
         if (session.getType() == SessionType.LESSON && (request.title() == null || request.title().isBlank())) {
             throw new InvalidRequestException("title", "dê um título para a aula");
         }
+        if (session.getType() == SessionType.REVIEW && request.grade() == null) {
+            throw new InvalidRequestException("grade", "escolha como foi a revisão: DIFICIL, OK ou FACIL");
+        }
         Instant now = clock.instant();
+        LocalDate today = LocalDate.ofInstant(now, userSettings.zoneOf(userId));
         apply(session, now, StudySession::finish);
         if (session.getType() == SessionType.LESSON) {
             Lesson lesson = lessons.save(new Lesson(userId, session.getSubjectId(), request.title().trim(),
                     blankToNull(request.notes()), now, session.effectiveMinutes()));
             session.setLessonId(lesson.getId());
+            reviewScheduler.onLessonFinished(lesson, today);
+        } else {
+            reviewScheduler.onReviewFinished(userId, session.getLessonId(), request.grade(), today);
         }
         return toResponse(session, subjectOf(session));
     }
@@ -123,19 +139,12 @@ public class StudySessionService {
                 s.elapsedSeconds(clock.instant()), plannedMinutes(s, subject));
     }
 
-    /** Tempo sugerido no timer: a duração da aula da matéria; para revisão, metade da aula revisada. */
+    /** Tempo sugerido no timer: a duração da aula da matéria; para revisão, o tempo agendado da revisão. */
     private int plannedMinutes(StudySession session, Subject subject) {
         if (session.getType() == SessionType.REVIEW && session.getLessonId() != null) {
-            return lessons.findByIdAndUserId(session.getLessonId(), session.getUserId())
-                    .map(l -> reviewMinutes(l.getDurationMinutes()))
-                    .orElse(subject.getLessonMinutes());
+            return reviewScheduler.find(session.getUserId(), session.getLessonId()).getReviewMinutes();
         }
         return subject.getLessonMinutes();
-    }
-
-    /** Revisão é uma mini aula: metade do tempo da aula, arredondado para cima, no mínimo 5 minutos. */
-    static int reviewMinutes(int lessonMinutes) {
-        return Math.max(5, (lessonMinutes + 1) / 2);
     }
 
     private static String blankToNull(String value) {

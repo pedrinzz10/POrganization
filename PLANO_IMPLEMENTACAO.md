@@ -680,7 +680,7 @@ Regras:
     "story": "Como Pedro, quero que cada aula gere revisões em mini aulas com metade do tempo, reagendadas conforme eu avalio a dificuldade.",
     "arquivos": ["backend/src/main/resources/db/migration/V6__review_items.sql", "backend/src/main/java/com/porganization/studies/ReviewItem.java", "backend/src/main/java/com/porganization/studies/ReviewScheduler.java", "backend/src/main/java/com/porganization/studies/StudySessionService.java"],
     "dependencias": ["E05", "E06"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Aula de 50 min gera review_item com review_minutes 25 e due amanhã." },
       { "id": "CA2", "descricao": "Finish de REVIEW sem grade responde 400; com grade, due_date e estado são atualizados pelo FSRS." },
