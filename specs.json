@@ -944,7 +944,7 @@
       "dependencias": [
         "C01"
       ],
-      "status": "pendente",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -2674,7 +2674,7 @@
         "F14"
       ],
       "conceito_angular": "Integração de biblioteca externa em componente: os dados vêm por input() e um computed() monta a configuração do gráfico.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
