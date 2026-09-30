@@ -17,6 +17,10 @@
     {
       "source": "/(.*)\\.(js|css|woff2)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/(ngsw-worker\\.js|ngsw\\.json|safety-worker\\.js|worker-basic\\.min\\.js)",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     }
   ]
 }

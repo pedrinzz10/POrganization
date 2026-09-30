@@ -64,5 +64,11 @@ porganization:
   mail:
     # Remetente dos e-mails, ex.: "POrganization <avisos@seu-dominio.com>"
     from: ${MAIL_FROM:}
+  push:
+    # Chaves VAPID do Web Push (gere com: npx web-push generate-vapid-keys); vazias = push desligado
+    vapid-public-key: ${VAPID_PUBLIC_KEY:}
+    vapid-private-key: ${VAPID_PRIVATE_KEY:}
+    # Contato do dono do servidor para os push services, ex.: mailto:voce@exemplo.com
+    vapid-subject: ${VAPID_SUBJECT:}
   # Endereço do app (links dos e-mails e das notificações)
   app-url: ${APP_URL:http://localhost:4200}

@@ -16,6 +16,11 @@
     <properties>
         <java.version>21</java.version>
         <greenmail.version>2.1.3</greenmail.version>
+        <web-push.version>5.1.2</web-push.version>
+        <bouncycastle.version>1.80</bouncycastle.version>
+        <wiremock.version>3.13.1</wiremock.version>
+        <jose4j.version>0.9.6</jose4j.version>
+        <httpcore.version>4.4.16</httpcore.version>
     </properties>
     <dependencies>
         <dependency>
@@ -57,6 +62,44 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <!-- Web Push (VAPID + criptografia aes128gcm). Usa o cliente HTTP síncrono; o BouncyCastle
+             antigo (jdk15on) é trocado pelo atual (jdk18on, mesmos pacotes) -->
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>${web-push.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.asynchttpclient</groupId>
+                    <artifactId>async-http-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.beust</groupId>
+                    <artifactId>jcommander</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+        <!-- O PushService devolve um HttpResponse do httpcore 4 -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
+        </dependency>
+        <!-- O web-push traz o jose4j 0.7.9, com CVE; o 0.9.x é compatível -->
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+            <version>${jose4j.version}</version>
         </dependency>
 
         <dependency>
@@ -112,6 +155,13 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Servidor HTTP de mentira (push service, APIs do Google) -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- SMTP de mentira para os testes de e-mail -->
