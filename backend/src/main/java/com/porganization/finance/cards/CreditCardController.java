@@ -3,14 +3,15 @@ package com.porganization.finance.cards;
 import com.porganization.finance.cards.CardDtos.CardRequest;
 import com.porganization.finance.cards.CardDtos.CardResponse;
 import com.porganization.finance.cards.CardDtos.PurchaseRequest;
+import com.porganization.finance.cards.CardDtos.PurchaseResponse;
 import com.porganization.finance.cards.CardDtos.StatementSummary;
 import com.porganization.security.CurrentUser;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,9 +26,11 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class CreditCardController {
 
     private final CreditCardService service;
+    private final CardPurchaseService purchases;
 
-    public CreditCardController(CreditCardService service) {
+    public CreditCardController(CreditCardService service, CardPurchaseService purchases) {
         this.service = service;
+        this.purchases = purchases;
     }
 
     @GetMapping
@@ -52,12 +55,18 @@ public class CreditCardController {
         return service.update(userId, id, request);
     }
 
-    /** Lançar uma compra no cartão: cai na fatura certa pela data. */
+    /** Compra no cartão, à vista ou em até 48x: cada parcela cai numa fatura consecutiva. */
     @PostMapping("/{id}/purchases")
-    public ResponseEntity<Map<String, UUID>> purchase(@CurrentUser UUID userId, @PathVariable UUID id,
+    public ResponseEntity<PurchaseResponse> purchase(@CurrentUser UUID userId, @PathVariable UUID id,
             @Valid @RequestBody PurchaseRequest request) {
-        UUID created = service.purchase(userId, id, request);
-        return ResponseEntity.status(201).body(Map.of("id", created));
+        return ResponseEntity.status(201).body(purchases.purchase(userId, id, request));
+    }
+
+    /** Exclui a compra com todas as parcelas. */
+    @DeleteMapping("/purchases/{purchaseId}")
+    public ResponseEntity<Void> deletePurchase(@CurrentUser UUID userId, @PathVariable UUID purchaseId) {
+        purchases.delete(userId, purchaseId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/statements")

@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.UUID;
 
 public final class CardDtos {
@@ -36,6 +37,10 @@ public final class CardDtos {
             @Size(max = 200) String description,
             @NotNull UUID categoryId,
             @Min(1) @Max(48) Integer installments) {
+    }
+
+    /** id e purchaseId são o mesmo valor: o identificador da compra (todas as parcelas). */
+    public record PurchaseResponse(UUID id, UUID purchaseId, List<UUID> transactionIds) {
     }
 
     /** status: OPEN, CLOSED (hoje depois do fechamento, calculado na leitura) ou PAID. */

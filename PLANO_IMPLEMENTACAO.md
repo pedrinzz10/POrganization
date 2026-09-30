@@ -886,7 +886,7 @@ Regras:
     "story": "Como Pedro, quero lançar uma compra parcelada e ver cada parcela nas faturas futuras.",
     "arquivos": ["backend/src/main/java/com/porganization/finance/cards/InstallmentCalculator.java", "backend/src/main/java/com/porganization/finance/cards/CardPurchaseService.java", "backend/src/main/resources/db/migration/V12__installments.sql"],
     "dependencias": ["F05"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "100.00 em 3x gera 33.34, 33.33, 33.33 e a soma é exatamente 100.00." },
       { "id": "CA2", "descricao": "Cada parcela cai em uma fatura consecutiva, com descrição 'Loja (2/3)'." },
