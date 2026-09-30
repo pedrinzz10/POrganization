@@ -107,3 +107,83 @@ export interface TransactionFilters {
   tagId?: string;
   type?: TransactionType;
 }
+
+// ---------- cartões e faturas ----------
+
+export interface Card {
+  id: string;
+  name: string;
+  creditLimit: Money;
+  closingDay: number;
+  dueDay: number;
+  paymentAccountId: string;
+  archived: boolean;
+}
+
+export interface CardRequest {
+  name: string;
+  creditLimit: Money;
+  closingDay: number;
+  dueDay: number;
+  paymentAccountId: string;
+}
+
+export interface PurchaseRequest {
+  amount: Money;
+  date: string;
+  description: string | null;
+  categoryId: string;
+  installments: number;
+}
+
+export interface PurchaseResponse {
+  id: string;
+  purchaseId: string;
+  transactionIds: string[];
+}
+
+/** OPEN (aberta), CLOSED (fechada, aguardando pagamento) ou PAID (paga). */
+export type StatementStatus = 'OPEN' | 'CLOSED' | 'PAID';
+
+export const STATEMENT_STATUS_LABELS: Record<StatementStatus, string> = {
+  OPEN: 'Aberta',
+  CLOSED: 'Fechada',
+  PAID: 'Paga',
+};
+
+export interface StatementSummary {
+  id: string;
+  cardId: string;
+  referenceMonth: string;
+  closingDate: string;
+  dueDate: string;
+  status: StatementStatus;
+  total: Money;
+}
+
+export interface StatementItem {
+  id: string;
+  date: string;
+  description: string | null;
+  amount: Money;
+  categoryId: string | null;
+  purchaseId: string | null;
+  installmentNumber: number | null;
+  installmentCount: number | null;
+}
+
+/** Fatura de um mês (mês do vencimento). id null = ainda sem compras. */
+export interface Statement {
+  id: string | null;
+  cardId: string;
+  referenceMonth: string;
+  closingDate: string;
+  dueDate: string;
+  status: StatementStatus;
+  total: Money;
+  creditLimit: Money;
+  availableLimit: Money;
+  paidAt: string | null;
+  paymentTransactionId: string | null;
+  items: StatementItem[];
+}
