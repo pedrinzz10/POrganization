@@ -164,6 +164,12 @@
             <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Esperar o que roda em segundo plano (sincronização com o Google) -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- SMTP de mentira para os testes de e-mail -->
         <dependency>
             <groupId>com.icegreen</groupId>

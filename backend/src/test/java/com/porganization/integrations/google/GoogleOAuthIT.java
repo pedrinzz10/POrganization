@@ -93,7 +93,7 @@ class GoogleOAuthIT extends GoogleIT {
                 .andExpect(status().isBadRequest());
 
         google.verify(0, postRequestedFor(urlEqualTo("/token")));
-        assertThat(jdbc.queryForObject("select count(*) from google_connections", Integer.class)).isZero();
+        assertThat(conexoes()).isZero();
     }
 
     @Test
