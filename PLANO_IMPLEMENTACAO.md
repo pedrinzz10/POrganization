@@ -357,7 +357,7 @@ Regras:
     "story": "Como Pedro, quero guardar meus compromissos com o mínimo de dados obrigatórios.",
     "arquivos": ["backend/src/main/resources/db/migration/V2__commitments.sql", "backend/src/main/java/com/porganization/commitments/Commitment.java", "backend/src/main/java/com/porganization/commitments/CommitmentRepository.java"],
     "dependencias": ["B05"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Só title, date e user_id são obrigatórios; o resto é opcional." },
       { "id": "CA2", "descricao": "O repositório não retorna compromissos de outro usuário." }
