@@ -70,5 +70,17 @@ porganization:
     vapid-private-key: ${VAPID_PRIVATE_KEY:}
     # Contato do dono do servidor para os push services, ex.: mailto:voce@exemplo.com
     vapid-subject: ${VAPID_SUBJECT:}
+  google:
+    # OAuth client do Google Cloud (tipo "Aplicativo da Web"), com a Calendar API ativada
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    # URL do callback na API, cadastrada no Google: https://<api>/api/integrations/google/callback
+    redirect-uri: ${GOOGLE_REDIRECT_URI:}
+    # Chave AES-256 dos tokens (openssl rand -base64 32)
+    token-key: ${GOOGLE_TOKEN_KEY:}
+    auth-uri: https://accounts.google.com/o/oauth2/v2/auth
+    token-uri: https://oauth2.googleapis.com/token
+    revoke-uri: https://oauth2.googleapis.com/revoke
+    calendar-api: https://www.googleapis.com/calendar/v3
   # Endereço do app (links dos e-mails e das notificações)
   app-url: ${APP_URL:http://localhost:4200}
