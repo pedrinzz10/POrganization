@@ -1,0 +1,66 @@
+name: frontend
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Mesmo esquema do backend.yml: "frontend" é pulado quando o push/PR não mexe no frontend
+  mudancas:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.diff.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: bash scripts/ci-changed.sh "$BASE" '^(frontend/|\.github/workflows/frontend\.yml$)' frontend
+
+  frontend:
+    needs: mudancas
+    if: needs.mudancas.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Testes unitários e de componente
+        run: npm test -- --watch=false
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Navegador do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes e2e
+        run: npm run e2e
+
+      - name: Relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/test-results/
+          retention-days: 7

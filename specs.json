@@ -696,7 +696,7 @@
         "B08"
       ],
       "conceito_angular": "Roteamento com rotas filhas e lazy loading: cada seção é carregada só quando acessada; routerLink e routerLinkActive destacam o item atual.",
-      "status": "em_revisao",
+      "status": "concluida",
       "criterios_de_aceite": [
         {
           "id": "CA1",
@@ -749,7 +749,7 @@
         "B02",
         "B06"
       ],
-      "status": "pendente",
+      "status": "em_andamento",
       "criterios_de_aceite": [
         {
           "id": "CA1",
