@@ -866,7 +866,7 @@ Regras:
     "story": "Como Pedro, quero lançar compras do cartão manualmente e que caiam na fatura certa.",
     "arquivos": ["backend/src/main/resources/db/migration/V11__credit_cards.sql", "backend/src/main/java/com/porganization/finance/cards/CreditCard.java", "backend/src/main/java/com/porganization/finance/cards/CardStatement.java", "backend/src/main/java/com/porganization/finance/cards/StatementResolver.java", "backend/src/main/java/com/porganization/finance/cards/CreditCardController.java"],
     "dependencias": ["F03"],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       { "id": "CA1", "descricao": "Cartão com fechamento dia 5 e vencimento dia 12: compra em 04/10 vai para a fatura que vence 12/10; compra em 05/10 vai para a que vence 12/11." },
       { "id": "CA2", "descricao": "Fechamento em dia inexistente no mês (31) usa o último dia do mês." },

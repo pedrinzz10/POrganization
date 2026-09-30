@@ -40,4 +40,11 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
             where t.userId = :userId and t.type = :type and t.date between :from and :to
             """)
     BigDecimal totalOf(UUID userId, TransactionType type, LocalDate from, LocalDate to);
+
+    /** Total das compras de uma fatura (linhas sem conta; o pagamento da fatura, F07, tem conta). */
+    @Query("""
+            select coalesce(sum(t.amount), 0) from Transaction t
+            where t.userId = :userId and t.cardStatementId = :statementId and t.accountId is null
+            """)
+    BigDecimal statementTotal(UUID userId, UUID statementId);
 }
