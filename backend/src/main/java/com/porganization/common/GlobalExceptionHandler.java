@@ -49,6 +49,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidRequestException.class)
+    ResponseEntity<Object> handleInvalidRequest(InvalidRequestException ex) {
+        return badRequest(List.of(new FieldErrorDetail(ex.getField(), ex.getMessage())), new HttpHeaders());
+    }
+
     // Lançadas dentro de controllers (ex.: @CurrentUser com sub inválido) não podem virar 500
     @ExceptionHandler(AuthenticationException.class)
     ResponseEntity<ProblemDetail> handleAuthentication(AuthenticationException ex) {

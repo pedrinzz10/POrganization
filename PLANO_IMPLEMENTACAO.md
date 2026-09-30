@@ -35,7 +35,7 @@ Cada spec é um objeto JSON com estes campos:
   "arquivos": ["caminho/relativo/ao/repo (criar ou alterar)"],
   "dependencias": ["C01"],
   "conceito_angular": "Só em specs de frontend: o conceito do Angular que a spec introduz, explicado em uma frase.",
-  "status": "pendente",
+  "status": "em_revisao",
   "criterios_de_aceite": [
     { "id": "CA1", "descricao": "Comportamento observável e verificável." }
   ],
