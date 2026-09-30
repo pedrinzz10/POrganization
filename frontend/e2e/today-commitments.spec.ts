@@ -12,7 +12,7 @@ test('criar pela criação rápida na tela Hoje mostra o item sem recarregar a p
   const data = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
   const salvos: Record<string, unknown>[] = [];
   await page.route(`${API}/today`, (route) =>
-    route.fulfill({ json: { date: data, timezone: 'America/Sao_Paulo', commitments: salvos } }),
+    route.fulfill({ json: { date: data, timezone: 'America/Sao_Paulo', commitments: salvos, studies: { reviews: [], lessons: [] } } }),
   );
   await page.route(`${API}/commitments`, async (route) => {
     const body = route.request().postDataJSON();
