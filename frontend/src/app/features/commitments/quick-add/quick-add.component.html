@@ -1,0 +1,30 @@
+<form class="quick-add" [formGroup]="form" (ngSubmit)="submit()" aria-label="Criação rápida de compromisso">
+  <mat-form-field class="quick-add__title" subscriptSizing="dynamic">
+    <mat-label>Novo compromisso</mat-label>
+    <input
+      matInput
+      formControlName="title"
+      placeholder="Ex.: Dentista"
+      autocomplete="off"
+      (keydown.enter)="submit($event)"
+    />
+    @if (form.controls.title.invalid && form.controls.title.touched) {
+      <mat-error>Informe o título.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field class="quick-add__date" subscriptSizing="dynamic">
+    <mat-label>Dia</mat-label>
+    <input matInput type="date" formControlName="date" />
+  </mat-form-field>
+
+  <mat-form-field class="quick-add__time" subscriptSizing="dynamic">
+    <mat-label>Hora</mat-label>
+    <input matInput type="time" formControlName="startTime" />
+  </mat-form-field>
+
+  <button mat-flat-button type="submit" class="quick-add__save" [disabled]="saving()">
+    <mat-icon aria-hidden="true">add</mat-icon>
+    Adicionar
+  </button>
+</form>

@@ -1,9 +1,22 @@
 import { Component } from '@angular/core';
-import { SectionPlaceholderComponent } from '../../shared/section-placeholder/section-placeholder.component';
+import { QuickAddComponent } from './quick-add/quick-add.component';
 
 @Component({
   selector: 'app-commitments-page',
-  imports: [SectionPlaceholderComponent],
-  template: `<app-section-placeholder title="Compromissos" description="Criação rápida, recorrência e as visões de dia, semana, mês e ano chegam na etapa 2." />`,
+  imports: [QuickAddComponent],
+  template: `
+    <h1 class="titulo">Compromissos</h1>
+    <app-quick-add />
+    <p class="aviso">As visões de dia, semana, mês e ano chegam nas próximas specs.</p>
+  `,
+  styles: `
+    .titulo {
+      font: var(--mat-sys-headline-medium);
+      margin: 8px 0 16px;
+    }
+    .aviso {
+      color: var(--mat-sys-on-surface-variant);
+    }
+  `,
 })
 export class CommitmentsPage {}
