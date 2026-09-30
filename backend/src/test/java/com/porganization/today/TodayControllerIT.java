@@ -107,4 +107,76 @@ class TodayControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.studies.lessons", hasSize(1)))
                 .andExpect(jsonPath("$.studies.lessons[0].subjectName").value("Inglês"));
     }
+
+    // ---------- finanças (F16) ----------
+
+    private String postId(String url, String json) throws Exception {
+        String body = mockMvc.perform(post(url).with(usuario(userId)).contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.id");
+    }
+
+    private String categoria(String nome) throws Exception {
+        String body = mockMvc.perform(get("/api/finance/categories").with(usuario(userId)))
+                .andReturn().getResponse().getContentAsString();
+        java.util.List<String> ids = JsonPath.read(body, "$[?(@.name == '" + nome + "')].id");
+        return ids.getFirst();
+    }
+
+    // F16 T1 (CA1)
+    @Test
+    void faturaQueVenceEmDoisDiasApareceEmDueSoonAtePagar() throws Exception {
+        clock.setInstant(Instant.parse("2026-10-10T15:00:00Z"));
+        String conta = postId("/api/finance/accounts", "{\"name\":\"Corrente\",\"type\":\"CHECKING\",\"initialBalance\":\"1000.00\"}");
+        String cartao = postId("/api/finance/cards", """
+                {"name":"Nubank","creditLimit":"3000.00","closingDay":5,"dueDay":12,"paymentAccountId":"%s"}
+                """.formatted(conta));
+        // Compra em 01/10, antes do fechamento (5): fatura que vence em 12/10
+        mockMvc.perform(post("/api/finance/cards/" + cartao + "/purchases").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amount\":\"450.00\",\"date\":\"2026-10-01\",\"categoryId\":\"%s\"}".formatted(categoria("Lazer"))))
+                .andExpect(status().isCreated());
+
+        String body = mockMvc.perform(get("/api/today").with(usuario(userId)))
+                .andExpect(jsonPath("$.finance.dueSoon", hasSize(1)))
+                .andExpect(jsonPath("$.finance.dueSoon[0].kind").value("STATEMENT"))
+                .andExpect(jsonPath("$.finance.dueSoon[0].title").value("Fatura Nubank"))
+                .andExpect(jsonPath("$.finance.dueSoon[0].dueDate").value("2026-10-12"))
+                .andExpect(jsonPath("$.finance.dueSoon[0].amount").value("450.00"))
+                .andExpect(jsonPath("$.finance.dueSoon[0].referenceMonth").value("2026-10"))
+                .andReturn().getResponse().getContentAsString();
+        String fatura = JsonPath.read(body, "$.finance.dueSoon[0].id");
+
+        mockMvc.perform(post("/api/finance/cards/statements/" + fatura + "/pay").with(usuario(userId)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/today").with(usuario(userId)))
+                .andExpect(jsonPath("$.finance.dueSoon", hasSize(0)));
+    }
+
+    @Test
+    void fixoQueVenceNaJanelaAtravessandoOMesEOrcamentoEstourado() throws Exception {
+        // 30/09: a janela vai até 03/10, então o fixo do dia 2 de outubro já precisa ser gerado
+        clock.setInstant(Instant.parse("2026-09-30T15:00:00Z"));
+        String conta = postId("/api/finance/accounts", "{\"name\":\"Corrente\",\"type\":\"CHECKING\",\"initialBalance\":\"0.00\"}");
+        String lazer = categoria("Lazer");
+        postId("/api/finance/recurring", """
+                {"type":"EXPENSE","amount":"1500.00","description":"Aluguel","accountId":"%s","categoryId":"%s",
+                 "dayOfMonth":2,"startMonth":"2026-09"}
+                """.formatted(conta, categoria("Moradia")));
+        postId("/api/finance/budgets", "{\"categoryId\":\"%s\",\"amount\":\"100.00\"}".formatted(lazer));
+        postId("/api/finance/transactions", """
+                {"type":"EXPENSE","amount":"120.00","date":"2026-09-30","description":"Show","accountId":"%s","categoryId":"%s","paid":true}
+                """.formatted(conta, lazer));
+
+        mockMvc.perform(get("/api/today").with(usuario(userId)))
+                .andExpect(jsonPath("$.finance.dueSoon", hasSize(1)))
+                .andExpect(jsonPath("$.finance.dueSoon[0].kind").value("BILL"))
+                .andExpect(jsonPath("$.finance.dueSoon[0].title").value("Aluguel"))
+                .andExpect(jsonPath("$.finance.dueSoon[0].dueDate").value("2026-10-02"))
+                .andExpect(jsonPath("$.finance.budgetAlerts", hasSize(1)))
+                .andExpect(jsonPath("$.finance.budgetAlerts[0].categoryName").value("Lazer"))
+                .andExpect(jsonPath("$.finance.budgetAlerts[0].level").value("ESTOURADO"))
+                .andExpect(jsonPath("$.finance.spentToday").value("120.00"));
+    }
 }

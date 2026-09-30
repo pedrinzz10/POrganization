@@ -3,9 +3,10 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { IsoDate, Occurrence } from '../../commitments/data/commitment.model';
+import { BudgetStatus } from '../../finance/data/finance.model';
 import { StudyToday } from '../../studies/data/study.model';
 
-/** Resposta de GET /api/today. A etapa 4 acrescenta finanças. */
+/** Resposta de GET /api/today. */
 export interface TodayResponse {
   /** Hoje no fuso do usuário (decidido pela API). */
   date: IsoDate;
@@ -13,6 +14,26 @@ export interface TodayResponse {
   commitments: Occurrence[];
   /** Plano de estudo do dia: revisões vencidas primeiro, depois as aulas. */
   studies: Pick<StudyToday, 'reviews' | 'lessons'>;
+  /** O que vence em breve, orçamentos em alerta e o gasto do dia. */
+  finance: FinanceToday;
+}
+
+/** Fatura de cartão (STATEMENT) ou gasto pendente numa conta (BILL) que vence hoje ou nos próximos 3 dias. */
+export interface DueItem {
+  kind: 'STATEMENT' | 'BILL';
+  id: string;
+  title: string;
+  dueDate: IsoDate;
+  amount: string;
+  cardId: string | null;
+  referenceMonth: string | null;
+}
+
+export interface FinanceToday {
+  dueSoon: DueItem[];
+  /** Orçamentos do mês em ATENCAO ou ESTOURADO. */
+  budgetAlerts: BudgetStatus[];
+  spentToday: string;
 }
 
 @Injectable({ providedIn: 'root' })

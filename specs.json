@@ -2711,14 +2711,16 @@
       "arquivos": [
         "backend/src/main/java/com/porganization/today/TodayService.java",
         "backend/src/main/java/com/porganization/today/TodayResponse.java",
-        "frontend/src/app/features/today/sections/today-finance.component.ts"
+        "frontend/src/app/features/today/sections/today-finance.component.ts",
+        "backend/src/main/java/com/porganization/finance/today/FinanceTodayService.java",
+        "backend/src/main/java/com/porganization/finance/today/FinanceToday.java"
       ],
       "dependencias": [
         "F11",
         "E11"
       ],
       "conceito_angular": "Reuso entre features: a seção importa o TransactionFormComponent standalone da feature de finanças em modo compacto, configurado por input(), sem duplicar o formulário.",
-      "status": "pendente",
+      "status": "em_revisao",
       "criterios_de_aceite": [
         {
           "id": "CA1",
