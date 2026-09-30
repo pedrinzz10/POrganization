@@ -1172,7 +1172,7 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
       "F17",
       "F08"
     ],
-    "status": "pendente",
+    "status": "em_revisao",
     "criterios_de_aceite": [
       {
         "id": "CA1",

@@ -1,5 +1,7 @@
 package com.porganization.finance.recurring;
 
+import com.porganization.finance.calendar.BusinessCalendar;
+import com.porganization.finance.calendar.BusinessCalendar.Adjustment;
 import com.porganization.finance.transactions.TransactionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,8 +52,22 @@ public class RecurringTransaction {
     @Column(name = "category_id", nullable = false)
     private UUID categoryId;
 
-    @Column(name = "day_of_month", nullable = false)
-    private int dayOfMonth;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rule_type", nullable = false)
+    private ScheduleRule ruleType = ScheduleRule.DAY_OF_MONTH;
+
+    /** Só em DAY_OF_MONTH. */
+    @Column(name = "day_of_month")
+    private Integer dayOfMonth;
+
+    /** Só em BUSINESS_DAY (1 a 15). */
+    @Column(name = "business_day")
+    private Integer businessDay;
+
+    /** Em DAY_OF_MONTH, o que fazer se o dia cair em fim de semana ou feriado. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "adjustment", nullable = false)
+    private Adjustment adjustment = Adjustment.KEEP;
 
     @Column(name = "start_month", nullable = false)
     private LocalDate startMonth;
@@ -75,14 +91,18 @@ public class RecurringTransaction {
     }
 
     public void update(TransactionType type, BigDecimal amount, String description, UUID accountId, UUID cardId,
-            UUID categoryId, int dayOfMonth, YearMonth startMonth, YearMonth endMonth) {
+            UUID categoryId, ScheduleRule ruleType, Integer dayOfMonth, Integer businessDay, Adjustment adjustment,
+            YearMonth startMonth, YearMonth endMonth) {
         this.type = type;
         this.amount = amount.setScale(2, RoundingMode.UNNECESSARY);
         this.description = description;
         this.accountId = accountId;
         this.cardId = cardId;
         this.categoryId = categoryId;
-        this.dayOfMonth = dayOfMonth;
+        this.ruleType = ruleType;
+        this.dayOfMonth = ruleType == ScheduleRule.DAY_OF_MONTH ? dayOfMonth : null;
+        this.businessDay = ruleType == ScheduleRule.BUSINESS_DAY ? businessDay : null;
+        this.adjustment = ruleType == ScheduleRule.DAY_OF_MONTH && adjustment != null ? adjustment : Adjustment.KEEP;
         this.startMonth = startMonth.atDay(1);
         this.endMonth = endMonth == null ? null : endMonth.atDay(1);
     }
@@ -90,6 +110,15 @@ public class RecurringTransaction {
     /** O modelo vale para esse mês (entre o início e o fim, inclusivos)? */
     public boolean activeIn(YearMonth month) {
         return !month.isBefore(getStartMonth()) && (endMonth == null || !month.isAfter(getEndMonth()));
+    }
+
+    /** A data da ocorrência no mês, pela regra (dias úteis do BusinessCalendar). */
+    public LocalDate dateIn(YearMonth month) {
+        return switch (ruleType) {
+            case DAY_OF_MONTH -> BusinessCalendar.adjust(month.atDay(Math.min(dayOfMonth, month.lengthOfMonth())), adjustment);
+            case BUSINESS_DAY -> BusinessCalendar.nthBusinessDay(month, businessDay);
+            case LAST_BUSINESS_DAY -> BusinessCalendar.lastBusinessDay(month);
+        };
     }
 
     public UUID getId() {
@@ -124,8 +153,20 @@ public class RecurringTransaction {
         return categoryId;
     }
 
-    public int getDayOfMonth() {
+    public Integer getDayOfMonth() {
         return dayOfMonth;
+    }
+
+    public ScheduleRule getRuleType() {
+        return ruleType;
+    }
+
+    public Integer getBusinessDay() {
+        return businessDay;
+    }
+
+    public Adjustment getAdjustment() {
+        return adjustment;
     }
 
     public YearMonth getStartMonth() {

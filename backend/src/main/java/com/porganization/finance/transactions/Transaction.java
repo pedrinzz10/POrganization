@@ -78,6 +78,10 @@ public class Transaction {
     @Column(name = "recurring_id")
     private UUID recurringId;
 
+    /** Data que a regra do agendado deu; "date" pode ter mudado (remarcada ou confirmada em outro dia). */
+    @Column(name = "scheduled_date")
+    private LocalDate scheduledDate;
+
     @ManyToMany
     @JoinTable(name = "transaction_tags", joinColumns = @JoinColumn(name = "transaction_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
@@ -216,6 +220,14 @@ public class Transaction {
 
     public void setRecurringId(UUID recurringId) {
         this.recurringId = recurringId;
+    }
+
+    public LocalDate getScheduledDate() {
+        return scheduledDate;
+    }
+
+    public void setScheduledDate(LocalDate scheduledDate) {
+        this.scheduledDate = scheduledDate;
     }
 
     public Set<FinanceTag> getTags() {
