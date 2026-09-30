@@ -19,6 +19,8 @@ alter table recurring_transactions
 alter table transactions
     add column scheduled_date date;
 
--- "Não vou receber/pagar este mês": o mês fica marcado (não gera de novo) e o lançamento sai
+-- "Não vou receber/pagar este mês": o mês fica marcado (não gera de novo) e o lançamento sai.
+-- skipped_transaction_id guarda o id do lançamento cancelado (histórico e 409 numa segunda ação).
 alter table recurring_generations
-    add column skipped boolean not null default false;
+    add column skipped                boolean not null default false,
+    add column skipped_transaction_id uuid;
