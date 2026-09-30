@@ -53,6 +53,20 @@ public interface TransactionRepository extends Repository<Transaction, UUID> {
             """)
     BigDecimal totalOf(UUID userId, TransactionType type, LocalDate from, LocalDate to);
 
+    /**
+     * Gasto por categoria no período, pago ou não, pela data do lançamento: compra no cartão conta
+     * no mês da compra, não no da fatura. O pagamento de fatura fica de fora (não é gasto novo).
+     */
+    @Query("""
+            select new com.porganization.finance.transactions.CategoryTotal(t.categoryId, sum(t.amount))
+            from Transaction t
+            where t.userId = :userId and t.type = com.porganization.finance.transactions.TransactionType.EXPENSE
+              and t.date between :from and :to and t.categoryId is not null
+              and (t.accountId is null or t.cardStatementId is null)
+            group by t.categoryId
+            """)
+    List<CategoryTotal> expenseByCategory(UUID userId, LocalDate from, LocalDate to);
+
     /** Total das compras de uma fatura (linhas sem conta; o pagamento da fatura, F07, tem conta). */
     @Query("""
             select coalesce(sum(t.amount), 0) from Transaction t
