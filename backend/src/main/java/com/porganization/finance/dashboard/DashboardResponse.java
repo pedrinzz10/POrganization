@@ -23,7 +23,11 @@ public record DashboardResponse(
         List<CardOverview> cards,
         List<BudgetStatus> budgetAlerts,
         List<GoalResponse> goals,
-        List<MonthPoint> lastSixMonths) {
+        List<MonthPoint> lastSixMonths,
+        // F21: agendados em conta ainda em aberto até o fim do mês, e o saldo previsto
+        BigDecimal receivable,
+        BigDecimal payable,
+        BigDecimal forecast) {
 
     public record AccountBalance(UUID id, String name, BigDecimal balance) {
     }

@@ -17,7 +17,7 @@ test('o resumo desenha os dois gráficos sem erro no console', async ({ page }) 
           { categoryId: 'a', name: 'Alimentação', color: '#F57C00', total: '750.00' },
           { categoryId: 't', name: 'Transporte', color: '#1976D2', total: '200.00' },
         ],
-        cards: [], budgetAlerts: [], goals: [],
+        cards: [], budgetAlerts: [], goals: [], receivable: '0.00', payable: '0.00', forecast: '6350.00',
         lastSixMonths: MESES.map((month, i) => ({ month, income: i === 5 ? '5000.00' : '0.00', expense: i === 5 ? '950.00' : '100.00' })),
       },
     }),

@@ -44,6 +44,29 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
+.numero__detalhe {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.contas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.conta {
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
 .numero__valor {
   font: var(--mat-sys-title-large);
 }

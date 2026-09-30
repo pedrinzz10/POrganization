@@ -23,6 +23,11 @@
       <span class="numero__rotulo">Saldo total</span>
       <span class="numero__valor">{{ d.totalBalance | brl }}</span>
     </div>
+    <div class="numero" title="Saldo + a receber − a pagar dos agendados em aberto até o fim do mês">
+      <span class="numero__rotulo">Previsto no fim do mês</span>
+      <span class="numero__valor" [class.sai]="d.forecast.startsWith('-')">{{ d.forecast | brl }}</span>
+      <span class="numero__detalhe">+{{ d.receivable | brl }} a receber · −{{ d.payable | brl }} a pagar</span>
+    </div>
     <div class="numero">
       <span class="numero__rotulo">Renda</span>
       <span class="numero__valor entra">{{ d.income | brl }}</span>
@@ -36,6 +41,14 @@
       <span class="numero__valor" [class.sai]="d.net.startsWith('-')">{{ d.net | brl }}</span>
     </div>
   </section>
+
+  @if (d.accounts.length > 0) {
+    <ul class="contas" aria-label="Saldo por conta">
+      @for (c of d.accounts; track c.id) {
+        <li class="conta"><span>{{ c.name }}</span> <strong [class.sai]="c.balance.startsWith('-')">{{ c.balance | brl }}</strong></li>
+      }
+    </ul>
+  }
 
   <div class="graficos">
     <section class="bloco">

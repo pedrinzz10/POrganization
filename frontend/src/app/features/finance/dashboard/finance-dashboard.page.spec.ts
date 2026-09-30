@@ -19,6 +19,7 @@ function painel(mudancas: Partial<Dashboard> = {}): Dashboard {
     month: '2026-10', totalBalance: '0.00', accounts: [], income: '0.00', expense: '0.00', net: '0.00',
     expenseByCategory: [], cards: [], budgetAlerts: [], goals: [],
     lastSixMonths: MESES.map((month) => ({ month, income: '0.00', expense: '0.00' })),
+    receivable: '0.00', payable: '0.00', forecast: '0.00',
     ...mudancas,
   };
 }
