@@ -111,6 +111,9 @@ public class SubjectService {
         if (request.archived() != null) {
             subject.setArchived(request.archived());
         }
+        if (request.studyDays() != null) {
+            subject.setStudyDays(request.studyDays());
+        }
         if (request.tagIds() != null) {
             Set<UUID> wanted = new LinkedHashSet<>(request.tagIds());
             List<Tag> found = tags.findByUserIdAndIdIn(userId, wanted);

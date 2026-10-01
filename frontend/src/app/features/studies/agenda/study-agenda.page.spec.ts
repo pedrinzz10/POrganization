@@ -69,6 +69,7 @@ describe('StudyAgendaPage', () => {
               minutes: 45,
               sessionType: 'LESSON',
               overdue: false,
+              pinned: false,
             },
             {
               kind: 'REVIEW',
@@ -79,6 +80,7 @@ describe('StudyAgendaPage', () => {
               minutes: 10,
               sessionType: 'REVIEW',
               overdue: true,
+              pinned: false,
             },
             {
               kind: 'LESSON',
@@ -89,6 +91,7 @@ describe('StudyAgendaPage', () => {
               minutes: 50,
               sessionType: 'LESSON',
               overdue: false,
+              pinned: false,
             },
           ]
         : [],
@@ -128,5 +131,53 @@ describe('StudyAgendaPage', () => {
     await tick();
 
     responder(addDays(semana.from, 7), addDays(semana.to, 7));
+  });
+
+  // E13 T5 (CA2)
+  it('mover uma aula muda na hora, chama /moves e recarrega a semana', async () => {
+    const semana = weekRange(hoje);
+    const aula = {
+      kind: 'LESSON' as const,
+      subjectId: 'i',
+      subjectName: 'Inglês',
+      color: null,
+      title: null,
+      minutes: 50,
+      sessionType: 'LESSON' as const,
+      overdue: false,
+      pinned: false,
+    };
+    const destino = semana.to > hoje ? semana.to : hoje;
+    responder(semana.from, semana.to, (d) => (d === hoje ? [aula] : []));
+    await fixture.whenStable();
+
+    const movendo = fixture.componentInstance.moverAula(aula, hoje, destino);
+    await fixture.whenStable();
+    if (destino !== hoje) {
+      // Na tela antes da resposta: saiu de hoje e entrou fixada no destino
+      expect(element.querySelector('.semana__dia--hoje')!.textContent).not.toContain('Aula de Inglês');
+    }
+
+    const req = httpMock.expectOne(`${API}/moves`);
+    expect(req.request.body).toEqual({ subjectId: 'i', from: hoje, to: destino });
+    req.flush([]);
+    await movendo;
+    await tick();
+    responder(semana.from, semana.to);
+  });
+
+  it('só solta de hoje em diante e na mesma semana', () => {
+    const podeSoltar = (fixture.componentInstance as unknown as {
+      podeSoltar: (drag: { data: { from: string } }, drop: { data: string }) => boolean;
+    }).podeSoltar;
+    const proximaSemana = addDays(weekRange(hoje).from, 7);
+    const ontem = addDays(hoje, -1);
+
+    expect(podeSoltar({ data: { from: hoje } }, { data: hoje })).toBe(true);
+    expect(podeSoltar({ data: { from: hoje } }, { data: proximaSemana })).toBe(false);
+    if (weekRange(ontem).from === weekRange(hoje).from) {
+      expect(podeSoltar({ data: { from: hoje } }, { data: ontem })).toBe(false);
+    }
+    httpMock.match(() => true).forEach((r) => r.flush([]));
   });
 });

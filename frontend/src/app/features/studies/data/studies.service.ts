@@ -88,6 +88,16 @@ export class StudiesService {
     return this.http.get<StudyStats>(`${this.api}/study/stats`, { params: { from, to } });
   }
 
+  /** Move a aula da matéria de um dia para outro na mesma semana; devolve a semana atualizada. */
+  moveLesson(subjectId: string, from: string, to: string): Observable<StudyCalendarDay[]> {
+    return this.http.post<StudyCalendarDay[]>(`${this.api}/study/calendar/moves`, { subjectId, from, to });
+  }
+
+  /** Solta as aulas fixadas da matéria na semana do dia informado (volta ao automático). */
+  unpinLessons(subjectId: string, week: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/study/calendar/pins`, { params: { subjectId, week } });
+  }
+
   /** Agenda de estudos dia a dia, de from a to (inclusivos, no máximo 62 dias). */
   calendar(from: string, to: string): Observable<StudyCalendarDay[]> {
     return this.http.get<StudyCalendarDay[]>(`${this.api}/study/calendar`, {

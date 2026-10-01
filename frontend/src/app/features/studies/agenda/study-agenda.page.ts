@@ -1,13 +1,18 @@
+import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
 import { IsoDate } from '../../commitments/data/commitment.model';
 import {
   addDays,
+  daysOf,
   DateRange,
   monthGridRange,
   parseIsoDate,
@@ -21,6 +26,12 @@ import { StudyCalendarDay, StudyCalendarItem } from '../data/study.model';
 
 type Visao = 'dia' | 'semana' | 'mes';
 
+/** O que viaja no arrasto: a aula e o dia de onde ela saiu. */
+interface Arrasto {
+  item: StudyCalendarItem;
+  from: IsoDate;
+}
+
 const VISOES: { id: Visao; rotulo: string }[] = [
   { id: 'dia', rotulo: 'Dia' },
   { id: 'semana', rotulo: 'Semana' },
@@ -30,11 +41,22 @@ const VISOES: { id: Visao; rotulo: string }[] = [
 /**
  * Agenda de estudos, no mesmo formato da agenda de compromissos (Dia, Semana, Mês): até hoje o
  * que foi estudado; de hoje em diante as revisões agendadas e as aulas da meta semanal espalhadas
- * pelos dias (a previsão muda conforme as sessões acontecem).
+ * pelos dias (a previsão muda conforme as sessões acontecem). Na Semana, a aula sugerida pode ser
+ * arrastada para outro dia da mesma semana (fica fixada); no Dia, o menu "Mover para" faz o mesmo
+ * sem mouse e "Voltar ao automático" solta as fixadas da matéria na semana.
  */
 @Component({
   selector: 'app-study-agenda-page',
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule],
+  imports: [
+    CdkDrag,
+    CdkDropList,
+    CdkDropListGroup,
+    DatePipe,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatProgressBarModule,
+  ],
   template: `
     <div class="topo">
       <div class="ds-seg" role="tablist" aria-label="Visualização">
@@ -108,7 +130,33 @@ const VISOES: { id: Visao; rotulo: string }[] = [
                     <span class="card__titulo">{{ titulo_(item) }}</span>
                     <span class="card__detalhe">{{ detalhe(item) }}</span>
                   </span>
-                  <span class="card__min">{{ item.minutes }} min</span>
+                  @if (item.pinned) {
+                    <mat-icon class="card__pino" aria-label="Fixada neste dia">push_pin</mat-icon>
+                  }
+                  <span class="ds-chip">{{ item.minutes }} min</span>
+                  @if (movivel(item, d.date)) {
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="card__acoes"
+                      [matMenuTriggerFor]="acoes"
+                      [attr.aria-label]="'Opções da aula de ' + item.subjectName"
+                    >
+                      <mat-icon aria-hidden="true">more_vert</mat-icon>
+                    </button>
+                    <mat-menu #acoes="matMenu">
+                      @for (destino of destinos(d.date); track destino) {
+                        <button mat-menu-item type="button" (click)="moverAula(item, d.date, destino)">
+                          Mover para {{ destino + 'T12:00' | date: "EEEE, dd/MM" }}
+                        </button>
+                      }
+                      @if (item.pinned) {
+                        <button mat-menu-item type="button" (click)="voltarAoAutomatico(item, d.date)">
+                          Voltar ao automático
+                        </button>
+                      }
+                    </mat-menu>
+                  }
                 </li>
               } @empty {
                 <li class="vazio">
@@ -119,7 +167,8 @@ const VISOES: { id: Visao; rotulo: string }[] = [
           </section>
         }
         @case ('semana') {
-          <div class="semana">
+          <p class="dica">Arraste uma aula para outro dia da semana para fixá-la ali.</p>
+          <div class="semana" cdkDropListGroup>
             @for (d of agenda.value(); track d.date) {
               <section
                 class="semana__dia"
@@ -130,10 +179,29 @@ const VISOES: { id: Visao; rotulo: string }[] = [
                   <span class="semana__dow">{{ d.date + 'T12:00' | date: 'EEE' }}</span>
                   <span class="semana__data">{{ d.date + 'T12:00' | date: 'dd/MM' }}</span>
                 </button>
-                <div class="semana__itens">
+                <div
+                  class="semana__itens"
+                  cdkDropList
+                  [cdkDropListData]="d.date"
+                  [cdkDropListEnterPredicate]="podeSoltar"
+                  [cdkDropListSortingDisabled]="true"
+                  (cdkDropListDropped)="soltar($event)"
+                >
                   @for (item of d.items; track $index) {
-                    <div class="card card--compacto" [class]="classe(item)">
-                      <span class="card__titulo">{{ titulo_(item) }}</span>
+                    <div
+                      class="card card--compacto"
+                      [class]="classe(item)"
+                      [class.card--arrastavel]="movivel(item, d.date)"
+                      cdkDrag
+                      [cdkDragData]="{ item, from: d.date }"
+                      [cdkDragDisabled]="!movivel(item, d.date)"
+                    >
+                      <span class="card__titulo">
+                        @if (item.pinned) {
+                          <mat-icon class="card__pino" aria-label="Fixada neste dia">push_pin</mat-icon>
+                        }
+                        {{ titulo_(item) }}
+                      </span>
                       <span class="card__detalhe">{{ detalheCurto(item) }}</span>
                     </div>
                   } @empty {
@@ -176,6 +244,7 @@ const VISOES: { id: Visao; rotulo: string }[] = [
 })
 export class StudyAgendaPage {
   private readonly studies = inject(StudiesService);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly visoes = VISOES;
   protected readonly semanaCurta = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
@@ -245,6 +314,58 @@ export class StudyAgendaPage {
         break;
       }
     }
+  }
+
+  /** Só a aula sugerida, de hoje em diante, muda de dia. */
+  protected movivel(item: StudyCalendarItem, date: IsoDate): boolean {
+    return item.kind === 'LESSON' && date >= this.hoje;
+  }
+
+  /** Dias da mesma semana, de hoje em diante, para onde a aula pode ir. */
+  protected destinos(date: IsoDate): IsoDate[] {
+    return daysOf(weekRange(date)).filter((d) => d >= this.hoje && d !== date);
+  }
+
+  /** Solta só em dia de hoje em diante e na mesma semana da origem (a meta é semanal). */
+  protected readonly podeSoltar = (drag: CdkDrag<Arrasto>, drop: CdkDropList<IsoDate>): boolean =>
+    drop.data >= this.hoje && weekRange(drop.data).from === weekRange(drag.data.from).from;
+
+  protected soltar(event: CdkDragDrop<IsoDate, IsoDate, Arrasto>): void {
+    if (event.previousContainer === event.container) {
+      return;
+    }
+    void this.moverAula(event.item.data.item, event.item.data.from, event.container.data);
+  }
+
+  /** Move na tela na hora; se a API recusar, recarrega e avisa. */
+  async moverAula(item: StudyCalendarItem, from: IsoDate, to: IsoDate): Promise<void> {
+    this.agenda.update((dias) =>
+      dias?.map((d) => {
+        if (d.date === from) {
+          return { ...d, items: d.items.filter((i) => i !== item) };
+        }
+        if (d.date === to) {
+          return { ...d, items: [...d.items, { ...item, pinned: true }] };
+        }
+        return d;
+      }),
+    );
+    try {
+      await firstValueFrom(this.studies.moveLesson(item.subjectId, from, to));
+      this.snackBar.open(`Aula de ${item.subjectName} fixada no novo dia.`, 'OK', { duration: 3000 });
+    } catch (error) {
+      this.snackBar.open(problemMessage(error, 'Não foi possível mover a aula.'), 'OK', { duration: 5000 });
+    }
+    this.agenda.reload();
+  }
+
+  async voltarAoAutomatico(item: StudyCalendarItem, date: IsoDate): Promise<void> {
+    try {
+      await firstValueFrom(this.studies.unpinLessons(item.subjectId, date));
+    } catch (error) {
+      this.snackBar.open(problemMessage(error, 'Não foi possível voltar ao automático.'), 'OK', { duration: 5000 });
+    }
+    this.agenda.reload();
   }
 
   abrirDia(date: IsoDate): void {

@@ -825,6 +825,75 @@ Regras:
         "cenario": "Abre na semana com '✓ Java: Streams', 'Revisão: Lambdas' atrasada e 'Aula de Inglês' em hoje; Mês consulta a grade de 42 dias; clicar em hoje abre o Dia."
       }
     ]
+  },
+  {
+    "id": "E13",
+    "etapa": "3-estudos",
+    "titulo": "Dias de estudo por matéria e arrastar a aula na agenda",
+    "acao": "V27: subjects.study_days (null = qualquer dia) e study_lesson_pins (aula fixada num dia). A distribuição automática da agenda só usa os dias de estudo da matéria; aulas fixadas ficam no dia escolhido, contam na meta e o resto se espalha em volta. POST /api/study/calendar/moves {subjectId, from, to} move a aula dentro da mesma semana, de hoje em diante, fixando as outras aulas da matéria onde estão; DELETE /api/study/calendar/pins?subjectId&week volta a semana ao automático. Front: 'Dias de estudo' no formulário da matéria; na Semana arrastar a aula (CDK) para outro dia; no Dia, menu 'Mover para…' e 'Voltar ao automático'.",
+    "story": "Como Pedro, quero dizer em que dias posso estudar cada matéria e arrastar a aula para o dia que eu preferir.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V27__study_days_and_pins.sql",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarPlanner.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarService.java",
+      "frontend/src/app/features/studies/subjects/subject-form.dialog.ts",
+      "frontend/src/app/features/studies/agenda/study-agenda.page.ts"
+    ],
+    "dependencias": [
+      "E12"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Com dias de estudo escolhidos, a agenda só coloca aulas da matéria nesses dias (uma por dia; a meta é limitada pelos dias); lista vazia volta a qualquer dia."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Arrastar a aula para outro dia da mesma semana a fixa lá; as outras aulas da matéria ficam onde estavam; a fixada mostra 📌."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Mover para o passado ou outra semana é recusado (400); para dia que já tem aula da matéria, 409; 'Voltar ao automático' devolve a distribuição original."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarPlannerTest.java",
+        "cenario": "Java meta 3 só sáb e dom → aulas em 10/10 e 11/10."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarPlannerTest.java",
+        "cenario": "Java meta 2 fixada na sexta → sexta (pinned) e mais uma automática em outro dia."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarMoveIT.java",
+        "cenario": "Inglês com studyDays [FRI, SUN] → aulas em 02/10 e 04/10; studyDays [] volta a qualquer dia."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarMoveIT.java",
+        "cenario": "Mover para um dia livre fixa; passado/outra semana → 400; dia com aula → 409; DELETE pins → distribuição original."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/agenda/study-agenda.page.spec.ts",
+        "cenario": "Mover a aula tira de hoje na hora, POST /moves {subjectId, from, to} e recarrega a semana; soltar só de hoje em diante e na mesma semana."
+      }
+    ]
   }
 ]
 ```
@@ -2088,7 +2157,7 @@ O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN
 |---|---|---|
 | 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
-| 3 Estudos | E01 a E12 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
+| 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
 | 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T06 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
