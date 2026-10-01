@@ -87,3 +87,46 @@ describe('RecurringFormDialog (regra de data)', () => {
     httpMock.expectNone(`${API}/recurring/preview`);
   });
 });
+
+// F24 T2 (CA1)
+describe('RecurringFormDialog (assinatura no cartão)', () => {
+  it('aberto pelo cartão: título "Nova assinatura", sem Renda, cartão escolhido e cardId no POST', async () => {
+    const dialogRef = { close: vi.fn() };
+    await TestBed.configureTestingModule({
+      imports: [RecurringFormDialog],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: MAT_DIALOG_DATA, useValue: { cardId: 'nubank' } },
+        { provide: MatDialogRef, useValue: dialogRef },
+      ],
+    }).compileComponents();
+    const httpMock = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(RecurringFormDialog);
+    const element: HTMLElement = fixture.nativeElement;
+    await tick();
+    httpMock.expectOne(`${API}/accounts?includeArchived=false`).flush([]);
+    httpMock.expectOne(`${API}/cards`).flush([
+      { id: 'nubank', name: 'Nubank', creditLimit: '3000.00', closingDay: 5, dueDay: 12, paymentAccountId: 'c1', archived: false },
+    ]);
+    httpMock.expectOne(`${API}/categories`).flush([{ id: 'lazer', name: 'Lazer', kind: 'EXPENSE', color: null, icon: null }]);
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain('Nova assinatura');
+    expect(element.textContent).not.toContain('Renda');
+    expect(element.textContent).toContain('Cai todo mês na fatura do cartão');
+    const form = fixture.componentInstance.form;
+    expect(form.controls.dayOfMonth.value).toBe(new Date().getDate());
+
+    form.patchValue({ amount: '39.90', description: 'Netflix', categoryId: 'lazer' });
+    await tick(350);
+    httpMock.match(`${API}/recurring/preview`).forEach((r) => r.flush({ nextDates: [] }));
+    const salvando = fixture.componentInstance.save();
+    const post = httpMock.expectOne({ method: 'POST', url: `${API}/recurring` });
+    expect(post.request.body).toMatchObject({ type: 'EXPENSE', cardId: 'nubank', accountId: null, description: 'Netflix' });
+    post.flush({});
+    await salvando;
+    expect(dialogRef.close).toHaveBeenCalledWith(true);
+    httpMock.verify();
+  });
+});

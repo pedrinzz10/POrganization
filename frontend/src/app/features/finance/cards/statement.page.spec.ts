@@ -19,7 +19,7 @@ function fatura(mudancas: Partial<Statement> = {}): Statement {
     id: 'f1', cardId: 'nubank', referenceMonth: '2026-10', closingDate: '2026-10-05', dueDate: '2026-10-12',
     status: 'CLOSED', total: '450.00', creditLimit: '3000.00', availableLimit: '2550.00', paidAt: null,
     paymentTransactionId: null,
-    items: [{ id: 't1', date: '2026-10-01', description: 'Mercado', amount: '450.00', categoryId: 'c', purchaseId: 'p1', installmentNumber: 1, installmentCount: 1 }],
+    items: [{ id: 't1', date: '2026-10-01', description: 'Mercado', amount: '450.00', categoryId: 'c', purchaseId: 'p1', installmentNumber: 1, installmentCount: 1, recurringId: null }],
     ...mudancas,
   };
 }

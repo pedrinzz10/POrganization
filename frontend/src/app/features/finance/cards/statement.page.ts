@@ -28,11 +28,19 @@ import { addMonths, currentMonth, isMonth, monthLabel } from '../data/month.util
     </a>
 
     <div class="mes">
-      <a mat-icon-button [routerLink]="['/financas/cartoes', id(), 'faturas', mesAnterior()]" aria-label="Fatura anterior">
+      <a
+        mat-icon-button
+        [routerLink]="['/financas/cartoes', id(), 'faturas', mesAnterior()]"
+        aria-label="Fatura anterior"
+      >
         <mat-icon aria-hidden="true">chevron_left</mat-icon>
       </a>
       <h2 class="mes__rotulo">{{ nomeCartao() }} · {{ rotuloMes() }}</h2>
-      <a mat-icon-button [routerLink]="['/financas/cartoes', id(), 'faturas', proximoMes()]" aria-label="Próxima fatura">
+      <a
+        mat-icon-button
+        [routerLink]="['/financas/cartoes', id(), 'faturas', proximoMes()]"
+        aria-label="Próxima fatura"
+      >
         <mat-icon aria-hidden="true">chevron_right</mat-icon>
       </a>
     </div>
@@ -58,7 +66,9 @@ import { addMonths, currentMonth, isMonth, monthLabel } from '../data/month.util
           <span>Limite disponível {{ f.availableLimit | brl }}</span>
         </div>
         @if (podePagar()) {
-          <button mat-flat-button type="button" [disabled]="pagando()" (click)="pagar()">Pagar</button>
+          <button mat-flat-button type="button" [disabled]="pagando()" (click)="pagar()">
+            Pagar
+          </button>
         }
       </section>
 
@@ -66,10 +76,23 @@ import { addMonths, currentMonth, isMonth, monthLabel } from '../data/month.util
         @for (item of f.items; track item.id) {
           <li class="item">
             <span class="item__data">{{ data(item.date).slice(0, 5) }}</span>
-            <span class="item__descricao">{{ item.description ?? 'Compra' }}</span>
+            <span class="item__descricao">
+              {{ item.description ?? 'Compra' }}
+              @if (item.recurringId) {
+                <span class="ds-chip">
+                  <mat-icon class="item__icone" aria-hidden="true">autorenew</mat-icon>
+                  assinatura
+                </span>
+              }
+            </span>
             <span class="item__valor">{{ item.amount | brl }}</span>
             @if (item.purchaseId && f.status !== 'PAID') {
-              <button mat-icon-button type="button" [attr.aria-label]="'Excluir compra ' + (item.description ?? '')" (click)="excluirCompra(item)">
+              <button
+                mat-icon-button
+                type="button"
+                [attr.aria-label]="'Excluir compra ' + (item.description ?? '')"
+                (click)="excluirCompra(item)"
+              >
                 <mat-icon aria-hidden="true">delete</mat-icon>
               </button>
             }
@@ -157,6 +180,12 @@ import { addMonths, currentMonth, isMonth, monthLabel } from '../data/month.util
     .item__descricao {
       flex: 1;
     }
+    .item__icone {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+      margin-right: 2px;
+    }
     .item__valor {
       font-weight: 600;
     }
@@ -187,7 +216,9 @@ export class StatementPage {
     stream: ({ params }) => this.finance.statement(params.id, params.mes),
   });
   private readonly cartoes = rxResource({ stream: () => this.finance.listCards() });
-  protected readonly nomeCartao = computed(() => this.cartoes.value()?.find((c) => c.id === this.id())?.name ?? 'Cartão');
+  protected readonly nomeCartao = computed(
+    () => this.cartoes.value()?.find((c) => c.id === this.id())?.name ?? 'Cartão',
+  );
 
   protected readonly pagando = signal(false);
   protected readonly podePagar = computed(() => {
@@ -195,7 +226,9 @@ export class StatementPage {
     return !!f && !!f.id && f.status !== 'PAID' && Number(f.total) > 0;
   });
   protected readonly erro = computed(() =>
-    this.fatura.error() ? problemMessage(this.fatura.error(), 'Não foi possível carregar a fatura.') : null,
+    this.fatura.error()
+      ? problemMessage(this.fatura.error(), 'Não foi possível carregar a fatura.')
+      : null,
   );
 
   /** "2026-10-12" → "12/10/2026". */
@@ -223,18 +256,27 @@ export class StatementPage {
     try {
       this.fatura.set(await firstValueFrom(this.finance.payStatement(f.id!)));
     } catch (error) {
-      this.snackBar.open(problemMessage(error, 'Não foi possível pagar a fatura.'), 'OK', { duration: 5000 });
+      this.snackBar.open(problemMessage(error, 'Não foi possível pagar a fatura.'), 'OK', {
+        duration: 5000,
+      });
     } finally {
       this.pagando.set(false);
     }
   }
 
   protected async excluirCompra(item: StatementItem): Promise<void> {
-    const parcelas = item.installmentCount && item.installmentCount > 1 ? ` e as ${item.installmentCount} parcelas` : '';
+    const parcelas =
+      item.installmentCount && item.installmentCount > 1
+        ? ` e as ${item.installmentCount} parcelas`
+        : '';
     const confirmou = await firstValueFrom(
       this.dialog
         .open<ConfirmDialog, ConfirmData, boolean>(ConfirmDialog, {
-          data: { title: 'Excluir compra?', message: `Exclui a compra${parcelas} de todas as faturas.`, confirmLabel: 'Excluir' },
+          data: {
+            title: 'Excluir compra?',
+            message: `Exclui a compra${parcelas} de todas as faturas.`,
+            confirmLabel: 'Excluir',
+          },
         })
         .afterClosed(),
     );
@@ -245,7 +287,9 @@ export class StatementPage {
       await firstValueFrom(this.finance.deletePurchase(item.purchaseId!));
       this.fatura.reload();
     } catch (error) {
-      this.snackBar.open(problemMessage(error, 'Não foi possível excluir a compra.'), 'OK', { duration: 5000 });
+      this.snackBar.open(problemMessage(error, 'Não foi possível excluir a compra.'), 'OK', {
+        duration: 5000,
+      });
     }
   }
 }

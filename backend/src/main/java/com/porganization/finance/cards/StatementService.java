@@ -95,7 +95,7 @@ public class StatementService {
         List<StatementItem> items = transactions
                 .findByUserIdAndCardStatementIdAndAccountIdIsNullOrderByDateAscCreatedAtAsc(userId, s.getId()).stream()
                 .map(t -> new StatementItem(t.getId(), t.getDate(), t.getDescription(), t.getAmount(), t.getCategoryId(),
-                        t.getPurchaseId(), t.getInstallmentNumber(), t.getInstallmentCount()))
+                        t.getPurchaseId(), t.getInstallmentNumber(), t.getInstallmentCount(), t.getRecurringId()))
                 .toList();
         BigDecimal total = items.stream().map(StatementItem::amount).reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
         UUID paymentId = transactions.findFirstByUserIdAndCardStatementIdAndAccountIdIsNotNull(userId, s.getId())

@@ -17,7 +17,10 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
   imports: [BrlPipe, MatButtonModule, MatIconModule, MatProgressBarModule],
   template: `
     <div class="topo">
-      <p class="dica">Salário, aluguel, assinaturas: cadastre a regra uma vez e cada mês aparece para você confirmar.</p>
+      <p class="dica">
+        Salário, aluguel, assinaturas: cadastre a regra uma vez e cada mês aparece para você
+        confirmar.
+      </p>
       <button mat-flat-button type="button" (click)="editar()">
         <mat-icon aria-hidden="true">add</mat-icon>
         Novo agendado
@@ -36,10 +39,22 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
         <li class="fixo">
           <span class="fixo__dia">{{ quando(fixo) }}</span>
           <button type="button" class="fixo__texto" (click)="editar(fixo)">
-            <span class="fixo__nome">{{ fixo.description ?? nomeCategoria(fixo.categoryId) }}</span>
-            <span class="fixo__detalhe">{{ nomeCategoria(fixo.categoryId) }} · {{ destino(fixo) }} · {{ periodo(fixo) }}</span>
+            <span class="fixo__nome">
+              @if (fixo.cardId) {
+                <mat-icon class="fixo__icone" aria-label="Assinatura no cartão">autorenew</mat-icon>
+              }
+              {{ fixo.description ?? nomeCategoria(fixo.categoryId) }}
+            </span>
+            <span class="fixo__detalhe"
+              >{{ nomeCategoria(fixo.categoryId) }} · {{ destino(fixo) }} ·
+              {{ periodo(fixo) }}</span
+            >
           </button>
-          <span class="fixo__valor" [class.entra]="fixo.type === 'INCOME'" [class.sai]="fixo.type === 'EXPENSE'">
+          <span
+            class="fixo__valor"
+            [class.entra]="fixo.type === 'INCOME'"
+            [class.sai]="fixo.type === 'EXPENSE'"
+          >
             {{ (fixo.type === 'INCOME' ? fixo.amount : '-' + fixo.amount) | brl: true }}
           </span>
         </li>
@@ -102,6 +117,12 @@ import { RecurringFormData, RecurringFormDialog } from './recurring-form.dialog'
       font: var(--mat-sys-body-small);
       color: var(--mat-sys-on-surface-variant);
     }
+    .fixo__icone {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      vertical-align: -3px;
+    }
     .fixo__valor {
       font-weight: 600;
     }
@@ -125,7 +146,9 @@ export class RecurringPage {
   private readonly categorias = rxResource({ stream: () => this.finance.listCategories() });
 
   protected readonly erro = computed(() =>
-    this.fixos.error() ? problemMessage(this.fixos.error(), 'Não foi possível carregar os fixos.') : null,
+    this.fixos.error()
+      ? problemMessage(this.fixos.error(), 'Não foi possível carregar os fixos.')
+      : null,
   );
 
   protected nomeCategoria(id: string): string {
@@ -140,7 +163,9 @@ export class RecurringPage {
         : fixo.ruleType === 'LAST_BUSINESS_DAY'
           ? 'último dia útil'
           : `dia ${fixo.dayOfMonth}${fixo.adjustment === 'ANTICIPATE' ? ' (antecipa)' : fixo.adjustment === 'POSTPONE' ? ' (adia)' : ''}`;
-    return fixo.nextDate ? `${regra} · próximo ${fixo.nextDate.slice(8, 10)}/${fixo.nextDate.slice(5, 7)}` : regra;
+    return fixo.nextDate
+      ? `${regra} · próximo ${fixo.nextDate.slice(8, 10)}/${fixo.nextDate.slice(5, 7)}`
+      : regra;
   }
 
   protected destino(fixo: Recurring): string {
@@ -151,12 +176,16 @@ export class RecurringPage {
   }
 
   protected periodo(fixo: Recurring): string {
-    return fixo.endMonth ? `de ${monthLabel(fixo.startMonth)} a ${monthLabel(fixo.endMonth)}` : `desde ${monthLabel(fixo.startMonth)}`;
+    return fixo.endMonth
+      ? `de ${monthLabel(fixo.startMonth)} a ${monthLabel(fixo.endMonth)}`
+      : `desde ${monthLabel(fixo.startMonth)}`;
   }
 
   protected editar(recurring?: Recurring): void {
     this.dialog
-      .open<RecurringFormDialog, RecurringFormData, boolean>(RecurringFormDialog, { data: { recurring } })
+      .open<RecurringFormDialog, RecurringFormData, boolean>(RecurringFormDialog, {
+        data: { recurring },
+      })
       .afterClosed()
       .subscribe((mudou) => {
         if (mudou) {
