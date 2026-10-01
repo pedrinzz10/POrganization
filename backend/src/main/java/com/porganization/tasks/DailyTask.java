@@ -42,6 +42,10 @@ public class DailyTask {
     @Column(name = "reminder_time")
     private LocalTime reminderTime;
 
+    /** Minutos do cronômetro que conclui a tarefa; null = sem cronômetro. */
+    @Column(name = "timer_minutes")
+    private Integer timerMinutes;
+
     @Column(name = "created_on", nullable = false, updatable = false)
     private LocalDate createdOn;
 
@@ -110,6 +114,14 @@ public class DailyTask {
 
     public void setReminderTime(LocalTime reminderTime) {
         this.reminderTime = reminderTime;
+    }
+
+    public Integer getTimerMinutes() {
+        return timerMinutes;
+    }
+
+    public void setTimerMinutes(Integer timerMinutes) {
+        this.timerMinutes = timerMinutes;
     }
 
     public LocalDate getCreatedOn() {

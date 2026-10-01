@@ -155,4 +155,25 @@ class DailyTaskControllerIT extends IntegrationTest {
                         .content("{\"title\":\"X\",\"weekDays\":[]}"))
                 .andExpect(status().isBadRequest());
     }
+
+    // T07 T1 (CA1)
+    @Test
+    void cronometroOpcionalVaiNaTarefaENoDiaEForaDe1a240Responde400() throws Exception {
+        hoje("2026-10-07");
+        String ler = tarefa("{\"title\":\"Ler\",\"timerMinutes\":20}");
+        tarefa("{\"title\":\"Beber água\"}");
+
+        dia("2026-10-07").andExpect(jsonPath("$[0].timerMinutes").value(20))
+                .andExpect(jsonPath("$[1].timerMinutes").doesNotExist());
+        mockMvc.perform(put("/api/tasks/" + ler).with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Ler\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.timerMinutes").doesNotExist());
+        mockMvc.perform(post("/api/tasks").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Correr\",\"timerMinutes\":0}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/tasks").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Correr\",\"timerMinutes\":241}"))
+                .andExpect(status().isBadRequest());
+    }
 }

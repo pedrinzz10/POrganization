@@ -78,6 +78,10 @@ const ORDEM: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
               · <mat-icon class="tarefa__sino" aria-hidden="true">notifications</mat-icon
               >{{ t.reminderTime }}
             }
+            @if (t.timerMinutes) {
+              · <mat-icon class="tarefa__sino" aria-hidden="true">timer</mat-icon
+              >{{ t.timerMinutes }} min
+            }
           </span>
           <span class="tarefa__sequencia" [attr.aria-label]="'Sequência de ' + t.title"
             >🔥 {{ estatistica(t)?.streak ?? 0 }}</span

@@ -141,6 +141,15 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
           <input matInput type="time" formControlName="reminderTime" />
           <mat-hint>Avisa se ainda não estiver feita. Vazio = sem lembrete</mat-hint>
         </mat-form-field>
+
+        <mat-form-field class="lembrete">
+          <mat-label>Cronômetro (minutos)</mat-label>
+          <input matInput type="number" min="1" max="240" formControlName="timerMinutes" />
+          <mat-hint>Opcional: ao terminar o tempo, a tarefa é marcada como feita</mat-hint>
+          @if (form.controls.timerMinutes.invalid) {
+            <mat-error>De 1 a 240 minutos</mat-error>
+          }
+        </mat-form-field>
         @if (editing) {
           <p class="dica">Mudar os dias vale de hoje em diante; o histórico continua como era.</p>
         }
@@ -227,6 +236,10 @@ export class TaskFormDialog {
     emoji: [this.editing?.emoji ?? ''],
     weekDays: [this.editing?.weekDays ?? DIAS.map((d) => d.dia), atLeastOneDay],
     reminderTime: [this.editing?.reminderTime ?? ''],
+    timerMinutes: [
+      this.editing?.timerMinutes ?? (null as number | null),
+      [Validators.min(1), Validators.max(240)],
+    ],
   });
 
   protected readonly emojiEscolhido = toSignal(
@@ -253,6 +266,7 @@ export class TaskFormDialog {
       emoji: v.emoji.trim() || null,
       weekDays: DIAS.map((d) => d.dia).filter((d) => v.weekDays.includes(d)),
       reminderTime: v.reminderTime || null,
+      timerMinutes: v.timerMinutes || null,
     };
     this.saving.set(true);
     this.error.set(null);

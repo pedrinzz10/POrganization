@@ -2,6 +2,8 @@ package com.porganization.tasks;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.porganization.commitments.recurrence.WeekDay;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -21,21 +23,27 @@ public final class DailyTaskDtos {
     /**
      * weekDays ausente = todo dia; lista vazia não vale (escolha pelo menos um dia).
      * reminderTime: horário do lembrete (HH:mm, fuso do usuário); ausente = sem lembrete.
+     * timerMinutes: cronômetro que conclui a tarefa ao fim; ausente = sem cronômetro.
      */
     public record TaskRequest(
             @NotBlank @Size(max = 100) String title,
             @Size(max = 16) String emoji,
             Set<WeekDay> weekDays,
-            @JsonFormat(pattern = "HH:mm") LocalTime reminderTime) {
+            @JsonFormat(pattern = "HH:mm") LocalTime reminderTime,
+            @Min(1) @Max(240) Integer timerMinutes) {
 
         public TaskRequest(String title, String emoji, Set<WeekDay> weekDays) {
-            this(title, emoji, weekDays, null);
+            this(title, emoji, weekDays, null, null);
+        }
+
+        public TaskRequest(String title, String emoji, Set<WeekDay> weekDays, LocalTime reminderTime) {
+            this(title, emoji, weekDays, reminderTime, null);
         }
     }
 
     /** weekDays: os dias que valem hoje (a regra atual). */
     public record TaskResponse(UUID id, String title, String emoji, Set<WeekDay> weekDays, int position, boolean archived,
-            LocalDate createdOn, @JsonFormat(pattern = "HH:mm") LocalTime reminderTime) {
+            LocalDate createdOn, @JsonFormat(pattern = "HH:mm") LocalTime reminderTime, Integer timerMinutes) {
     }
 
     public record ArchivePatch(@NotNull Boolean archived) {
@@ -48,7 +56,11 @@ public final class DailyTaskDtos {
     public record TaskStatsResponse(UUID taskId, int streak, BigDecimal completionRate) {
     }
 
-    /** Uma tarefa devida no dia, com feito ou não. */
-    public record DayTask(UUID id, String title, String emoji, int position, boolean done) {
+    /** Uma tarefa devida no dia, com feito ou não; timerMinutes null = sem cronômetro. */
+    public record DayTask(UUID id, String title, String emoji, int position, boolean done, Integer timerMinutes) {
+
+        public DayTask(UUID id, String title, String emoji, int position, boolean done) {
+            this(id, title, emoji, position, done, null);
+        }
     }
 }

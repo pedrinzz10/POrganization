@@ -11,8 +11,14 @@ const API = `${environment.apiUrl}/tasks`;
 const HOJE = '2026-10-07';
 const tick = () => new Promise((resolve) => setTimeout(resolve));
 
-function tarefa(id: string, titulo: string, posicao: number, feita = false): DayTask {
-  return { id, title: titulo, emoji: null, position: posicao, done: feita };
+function tarefa(
+  id: string,
+  titulo: string,
+  posicao: number,
+  feita = false,
+  minutos: number | null = null,
+): DayTask {
+  return { id, title: titulo, emoji: null, position: posicao, done: feita, timerMinutes: minutos };
 }
 
 describe('TodayTasksComponent', () => {
@@ -22,10 +28,16 @@ describe('TodayTasksComponent', () => {
   let snackBar: { open: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    localStorage.removeItem('porganization.cronometros');
     snackBar = { open: vi.fn() };
     await TestBed.configureTestingModule({
       imports: [TodayTasksComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), { provide: MatSnackBar, useValue: snackBar }],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: MatSnackBar, useValue: snackBar },
+      ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TodayTasksComponent);
@@ -33,7 +45,11 @@ describe('TodayTasksComponent', () => {
     element = fixture.nativeElement;
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    vi.useRealTimers();
+    localStorage.removeItem('porganization.cronometros');
+    httpMock.verify();
+  });
 
   async function carregar(lista: DayTask[]) {
     await tick();
@@ -42,7 +58,8 @@ describe('TodayTasksComponent', () => {
     await fixture.whenStable();
   }
 
-  const titulos = () => Array.from(element.querySelectorAll('.tarefa__titulo')).map((e) => e.textContent!.trim());
+  const titulos = () =>
+    Array.from(element.querySelectorAll('.tarefa__titulo')).map((e) => e.textContent!.trim());
   const progresso = () => element.querySelector('.progresso span')!.textContent!.trim();
 
   // T03 T1 (CA1)
@@ -89,5 +106,66 @@ describe('TodayTasksComponent', () => {
     await carregar([]);
     expect(element.textContent).toContain('Nenhuma tarefa para hoje');
     expect(element.querySelector('a[href="/tarefas"]')).not.toBeNull();
+  });
+
+  const botao = (rotulo: string) =>
+    element.querySelector<HTMLButtonElement>(`button[aria-label="${rotulo}"]`);
+  const tempo = () => element.querySelector('.cronometro__tempo')?.textContent?.trim();
+
+  // T07 T3 (CA2)
+  it('cronômetro conta, pausa e, ao zerar, marca a tarefa como feita', async () => {
+    await carregar([tarefa('ler', 'Ler', 1, false, 1), tarefa('agua', 'Água', 2)]);
+    // Só a tarefa com cronômetro tem o botão
+    expect(botao('Iniciar cronômetro de Água')).toBeNull();
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+
+    botao('Iniciar cronômetro de Ler')!.click();
+    await fixture.whenStable();
+    expect(tempo()).toBe('01:00');
+
+    vi.advanceTimersByTime(20_000);
+    await fixture.whenStable();
+    expect(tempo()).toBe('00:40');
+
+    botao('Pausar Ler')!.click();
+    vi.advanceTimersByTime(30_000);
+    await fixture.whenStable();
+    expect(tempo()).toBe('00:40');
+
+    botao('Retomar Ler')!.click();
+    vi.advanceTimersByTime(40_000);
+    await fixture.whenStable();
+
+    const req = httpMock.expectOne(`${API}/ler/completions/${HOJE}`);
+    expect(req.request.method).toBe('PUT');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+    vi.useRealTimers();
+    await tick();
+    await fixture.whenStable();
+
+    expect(progresso()).toBe('1/2 feitas');
+    expect(tempo()).toBeUndefined();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      expect.stringContaining('Tarefa feita'),
+      'OK',
+      expect.anything(),
+    );
+  });
+
+  it('marcar na mão cancela o cronômetro', async () => {
+    await carregar([tarefa('ler', 'Ler', 1, false, 20)]);
+    botao('Iniciar cronômetro de Ler')!.click();
+    await fixture.whenStable();
+    expect(tempo()).toBe('20:00');
+
+    const marcando = fixture.componentInstance.alternar(tarefa('ler', 'Ler', 1, false, 20));
+    httpMock
+      .expectOne(`${API}/ler/completions/${HOJE}`)
+      .flush(null, { status: 204, statusText: 'No Content' });
+    await marcando;
+    await fixture.whenStable();
+
+    expect(tempo()).toBeUndefined();
+    expect(localStorage.getItem('porganization.cronometros')).toBe('{}');
   });
 });

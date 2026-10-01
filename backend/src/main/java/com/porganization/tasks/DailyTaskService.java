@@ -70,6 +70,7 @@ public class DailyTaskService {
         int position = tasks.findByUserIdOrderByPositionAscTitleAsc(userId).stream().mapToInt(DailyTask::getPosition).max().orElse(0) + 1;
         DailyTask task = new DailyTask(userId, request.title().trim(), blankToNull(request.emoji()), position, today);
         task.setReminderTime(request.reminderTime());
+        task.setTimerMinutes(request.timerMinutes());
         task = tasks.save(task);
         schedules.save(new DailyTaskSchedule(task.getId(), today, weekdays));
         return toResponse(task, new TaskSchedule(today, List.of(new TaskSchedule.Rule(today, weekdays))), today);
@@ -82,6 +83,7 @@ public class DailyTaskService {
         task.setTitle(request.title().trim());
         task.setEmoji(blankToNull(request.emoji()));
         task.setReminderTime(request.reminderTime());
+        task.setTimerMinutes(request.timerMinutes());
         LocalDate today = today(userId);
         Set<WeekDay> weekdays = weekdays(request.weekDays());
         TaskSchedule current = schedulesOf(List.of(task)).get(id);
@@ -132,7 +134,8 @@ public class DailyTaskService {
                 "select task_id from daily_task_completions where user_id = ? and day = ?", UUID.class, userId, Date.valueOf(day)));
         return active.stream()
                 .filter(t -> byTask.get(t.getId()).isDue(day))
-                .map(t -> new DayTask(t.getId(), t.getTitle(), t.getEmoji(), t.getPosition(), done.contains(t.getId())))
+                .map(t -> new DayTask(t.getId(), t.getTitle(), t.getEmoji(), t.getPosition(), done.contains(t.getId()),
+                        t.getTimerMinutes()))
                 .toList();
     }
 
@@ -219,6 +222,6 @@ public class DailyTaskService {
 
     private static TaskResponse toResponse(DailyTask t, TaskSchedule schedule, LocalDate today) {
         return new TaskResponse(t.getId(), t.getTitle(), t.getEmoji(), schedule.weekdaysOn(today), t.getPosition(), t.isArchived(),
-                t.getCreatedOn(), t.getReminderTime());
+                t.getCreatedOn(), t.getReminderTime(), t.getTimerMinutes());
     }
 }
