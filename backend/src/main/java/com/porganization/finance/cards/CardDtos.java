@@ -50,8 +50,9 @@ public final class CardDtos {
     }
 
     /** Uma compra (ou parcela) dentro da fatura. */
+    /** recurringId: lançado por um agendado no cartão (assinatura). */
     public record StatementItem(UUID id, LocalDate date, String description, BigDecimal amount, UUID categoryId,
-            UUID purchaseId, Integer installmentNumber, Integer installmentCount) {
+            UUID purchaseId, Integer installmentNumber, Integer installmentCount, UUID recurringId) {
     }
 
     /**

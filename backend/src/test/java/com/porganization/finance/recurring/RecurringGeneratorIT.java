@@ -86,6 +86,10 @@ class RecurringGeneratorIT extends FinanceFixture {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].referenceMonth").value("2026-11"))
                 .andExpect(jsonPath("$[0].total").value("39.90"));
+        // F24 T1: o item da fatura diz que veio de uma assinatura
+        mockMvc.perform(get("/api/finance/cards/" + cartao + "/statements").param("month", "2026-11").with(usuario(userId)))
+                .andExpect(jsonPath("$.items[0].description").value("Streaming"))
+                .andExpect(jsonPath("$.items[0].recurringId").isNotEmpty());
     }
 
     /** F22: o mês já gerado e ainda em aberto acompanha a edição (o pago não muda, ver RecurringEditIT). */

@@ -36,3 +36,46 @@ test('cartão mostra o limite usado e abre a fatura pela rota /cartoes/:id/fatur
   await expect(page.getByRole('heading', { level: 2 })).toContainText('novembro de 2026');
   await expect(page.getByRole('tab', { name: 'Cartões' })).toHaveAttribute('aria-selected', 'true');
 });
+
+// F24 T4 (CA1, CA2)
+test('assinatura pelo cartão: "Nova assinatura" já escolhe o cartão e a lista mostra o total por mês', async ({ page }) => {
+  await entrarComSessaoFalsa(page);
+  const agendados: Record<string, unknown>[] = [];
+  await page.route(`${API}/cards`, (route) => route.fulfill({ json: [CARTAO] }));
+  await page.route(`${API}/accounts?**`, (route) => route.fulfill({ json: [] }));
+  await page.route(`${API}/categories`, (route) =>
+    route.fulfill({ json: [{ id: 'lazer', name: 'Lazer', kind: 'EXPENSE', color: null, icon: null }] }),
+  );
+  await page.route(`${API}/cards/nubank/statements?**`, (route) =>
+    route.fulfill({ json: fatura(new URL(route.request().url()).searchParams.get('month')!) }),
+  );
+  await page.route(`${API}/recurring/preview`, (route) => route.fulfill({ json: { nextDates: ['2026-11-07'] } }));
+  await page.route(`${API}/recurring`, (route) => {
+    if (route.request().method() === 'POST') {
+      const corpo = route.request().postDataJSON();
+      const novo = { ...corpo, id: 'r1', nextDate: '2026-11-07' };
+      agendados.push(novo);
+      return route.fulfill({ status: 201, json: novo });
+    }
+    return route.fulfill({ json: agendados });
+  });
+
+  await page.goto('/financas/cartoes');
+  const cartao = page.getByRole('article', { name: 'Nubank' });
+  await cartao.getByRole('button', { name: 'Nova assinatura' }).click();
+
+  const dialogo = page.getByRole('dialog');
+  await expect(dialogo.getByRole('heading', { name: 'Nova assinatura' })).toBeVisible();
+  await expect(dialogo).toContainText('Cartão Nubank');
+  await dialogo.getByLabel('Descrição').fill('Netflix');
+  await dialogo.getByLabel('Valor').fill('39,90');
+  await dialogo.getByLabel('Categoria').click();
+  await page.getByRole('option', { name: 'Lazer' }).click();
+  await dialogo.getByRole('button', { name: 'Salvar' }).click();
+
+  const assinaturas = cartao.getByRole('region', { name: 'Assinaturas do Nubank' });
+  await expect(assinaturas).toContainText('Netflix');
+  await expect(assinaturas).toContainText('R$ 39,90/mês');
+  expect(agendados[0]).toMatchObject({ type: 'EXPENSE', cardId: 'nubank', accountId: null });
+});
+

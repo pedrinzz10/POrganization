@@ -170,6 +170,8 @@ export interface StatementItem {
   purchaseId: string | null;
   installmentNumber: number | null;
   installmentCount: number | null;
+  /** Lançado por um agendado no cartão (assinatura). */
+  recurringId: string | null;
 }
 
 /** Fatura de um mês (mês do vencimento). id null = ainda sem compras. */
@@ -239,7 +241,8 @@ export interface RulePreview {
   adjustment: Adjustment;
 }
 
-export type OccurrenceStatus = 'EXPECTED' | 'TO_CONFIRM' | 'OVERDUE' | 'CONFIRMED' | 'RESCHEDULED' | 'CANCELLED';
+export type OccurrenceStatus =
+  'EXPECTED' | 'TO_CONFIRM' | 'OVERDUE' | 'CONFIRMED' | 'RESCHEDULED' | 'CANCELLED';
 
 /** Uma ocorrência de agendado em conta. id null = cancelada. */
 export interface ScheduledOccurrence {

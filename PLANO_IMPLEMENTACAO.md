@@ -1553,6 +1553,67 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
         "cenario": "Setembro confirmado, excluir o agendado → extrato só com os R$ 1.000 recebidos; recriar desde outubro → uma ocorrência em outubro."
       }
     ]
+  },
+  {
+    "id": "F24",
+    "etapa": "4-financas",
+    "titulo": "Assinaturas no cartão aparentes",
+    "acao": "A assinatura no cartão já existia (agendado de gasto com cardId, F08/F21/F22), mas escondida no fim do 'Onde cai' de Agendados. Tela Cartões: cada cartão ganha o botão 'Nova assinatura' (abre o formulário do agendado já com o cartão, só gasto, dia de hoje como dia da cobrança) e o bloco 'Assinaturas' com as que ainda cobram (nextDate não nulo), dia e próxima data, valor e o total por mês; clicar edita. Formulário: título 'Nova/Editar assinatura' quando o destino é cartão, exemplos de streaming, 'Onde cai' em grupos Contas e Cartões de crédito (assinatura), dica para cadastrar cartão quando não há nenhum. Agendados: regra no cartão com ícone de assinatura. Fatura: StatementItem ganha recurringId e o item mostra o selo 'assinatura'.",
+    "story": "Como Pedro, quero cadastrar e ver as assinaturas que pago no cartão direto na tela do cartão.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/finance/cards/CardDtos.java",
+      "backend/src/main/java/com/porganization/finance/cards/StatementService.java",
+      "frontend/src/app/features/finance/cards/cards.page.ts",
+      "frontend/src/app/features/finance/cards/statement.page.ts",
+      "frontend/src/app/features/finance/recurring/recurring-form.dialog.ts",
+      "frontend/src/app/features/finance/recurring/recurring.page.ts"
+    ],
+    "dependencias": [
+      "F08",
+      "F21",
+      "F22"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "'Nova assinatura' no cartão abre o formulário com título 'Nova assinatura', sem a opção Renda, com o cartão escolhido e o dia de hoje; salvar manda POST /recurring com type EXPENSE e o cardId. O item gerado na fatura traz recurringId e aparece com o selo 'assinatura'."
+      },
+      {
+        "id": "CA2",
+        "descricao": "O cartão lista as assinaturas que ainda cobram (as encerradas e as de conta ficam de fora), com 'todo dia N · próxima dd/mm', o valor e o total por mês."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/RecurringGeneratorIT.java",
+        "cenario": "Agendado 'Streaming' no cartão → o item da fatura de 2026-11 tem recurringId."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/finance/recurring/recurring-form.dialog.spec.ts",
+        "cenario": "Com cardId: 'Nova assinatura', sem 'Renda', dia de hoje, POST com cardId 'nubank' e accountId null."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/finance/cards/cards.page.spec.ts",
+        "cenario": "Netflix 39,90 + Spotify 21,90 ativas, uma encerrada e um aluguel em conta → bloco com as duas e 61,80/mês; 'Nova assinatura' abre o diálogo com { cardId }."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/finance-cards.spec.ts",
+        "cenario": "Nova assinatura 'Netflix' 39,90 pelo cartão Nubank → aparece no bloco Assinaturas com R$ 39,90/mês."
+      }
+    ]
   }
 ]
 ```
@@ -2288,7 +2349,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 | 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
-| 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
+| 4 Finanças | F01 a F22, F24 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |
 | 7 Design | U01 | App no Intelly Design System: tema, tela Hoje em painel, agenda semanal, gráficos e tema escuro |
