@@ -176,4 +176,29 @@ class DailyTaskControllerIT extends IntegrationTest {
                         .content("{\"title\":\"Correr\",\"timerMinutes\":241}"))
                 .andExpect(status().isBadRequest());
     }
+
+    // S01 T1 (CA1)
+    @Test
+    void historicoContaDevidasEFeitasPorDiaSemDiasFuturos() throws Exception {
+        hoje("2026-10-05"); // segunda
+        String agua = tarefa("{\"title\":\"Beber água\"}");
+        tarefa("{\"title\":\"Academia\",\"weekDays\":[\"MON\",\"WED\"]}");
+        marcar(agua, "2026-10-05").andExpect(status().isNoContent());
+        hoje("2026-10-07"); // quarta
+        marcar(agua, "2026-10-07").andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/tasks/history").param("from", "2026-10-04").param("to", "2026-10-10").with(usuario(userId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(4)) // 04 a 07: amanhã em diante fica de fora
+                .andExpect(jsonPath("$[0].due").value(0)) // antes de criar
+                .andExpect(jsonPath("$[1].date").value("2026-10-05"))
+                .andExpect(jsonPath("$[1].due").value(2))
+                .andExpect(jsonPath("$[1].done").value(1))
+                .andExpect(jsonPath("$[2].due").value(1))
+                .andExpect(jsonPath("$[2].done").value(0))
+                .andExpect(jsonPath("$[3].due").value(2))
+                .andExpect(jsonPath("$[3].done").value(1));
+        mockMvc.perform(get("/api/tasks/history").param("from", "2025-01-01").param("to", "2026-10-07").with(usuario(userId)))
+                .andExpect(status().isBadRequest());
+    }
 }

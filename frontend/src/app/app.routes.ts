@@ -7,12 +7,14 @@ export const routes: Routes = [
   {
     path: 'login',
     title: 'Entrar · POrganization',
-    loadComponent: () => import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'cadastro',
     title: 'Criar conta · POrganization',
-    loadComponent: () => import('./features/auth/signup/signup.component').then((m) => m.SignupComponent),
+    loadComponent: () =>
+      import('./features/auth/signup/signup.component').then((m) => m.SignupComponent),
   },
   {
     path: '',
@@ -28,7 +30,8 @@ export const routes: Routes = [
       {
         path: 'compromissos',
         title: 'Compromissos · POrganization',
-        loadComponent: () => import('./features/commitments/commitments.page').then((m) => m.CommitmentsPage),
+        loadComponent: () =>
+          import('./features/commitments/commitments.page').then((m) => m.CommitmentsPage),
       },
       {
         path: 'tarefas',
@@ -44,12 +47,19 @@ export const routes: Routes = [
         path: 'financas',
         title: 'Finanças · POrganization',
         loadComponent: () => import('./features/finance/finance.page').then((m) => m.FinancePage),
-        loadChildren: () => import('./features/finance/finance.routes').then((m) => m.FINANCE_ROUTES),
+        loadChildren: () =>
+          import('./features/finance/finance.routes').then((m) => m.FINANCE_ROUTES),
+      },
+      {
+        path: 'estatisticas',
+        title: 'Estatísticas · POrganization',
+        loadComponent: () => import('./features/stats/stats.page').then((m) => m.StatsPage),
       },
       {
         path: 'configuracoes',
         title: 'Configurações · POrganization',
-        loadComponent: () => import('./features/settings/settings.page').then((m) => m.SettingsPage),
+        loadComponent: () =>
+          import('./features/settings/settings.page').then((m) => m.SettingsPage),
       },
     ],
   },

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { DailyTask, DailyTaskRequest, DayTask, TaskStats } from './task.model';
+import { DailyTask, DailyTaskRequest, DayCount, DayTask, TaskStats } from './task.model';
 
 /** API de tarefas diárias. */
 @Injectable({ providedIn: 'root' })
@@ -17,6 +17,11 @@ export class TasksService {
   /** Tarefas devidas no dia ("2026-10-07"), com feito ou não. */
   day(date: string): Observable<DayTask[]> {
     return this.http.get<DayTask[]>(`${this.api}/day`, { params: { date } });
+  }
+
+  /** Devidas x feitas por dia, de from a to (no máximo 366 dias; dias futuros não vêm). */
+  history(from: string, to: string): Observable<DayCount[]> {
+    return this.http.get<DayCount[]>(`${this.api}/history`, { params: { from, to } });
   }
 
   stats(): Observable<TaskStats[]> {

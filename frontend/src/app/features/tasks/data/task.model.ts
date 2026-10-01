@@ -36,6 +36,13 @@ export interface DayTask {
   timerMinutes: number | null;
 }
 
+/** Num dia: tarefas ativas devidas x feitas (GET /api/tasks/history). */
+export interface DayCount {
+  date: string;
+  due: number;
+  done: number;
+}
+
 export interface TaskStats {
   taskId: string;
   streak: number;

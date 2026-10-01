@@ -22,6 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Tarefas', path: '/tarefas', icon: 'task_alt' },
   { label: 'Estudos', path: '/estudos', icon: 'school' },
   { label: 'Finanças', path: '/financas', icon: 'account_balance_wallet' },
+  { label: 'Estatísticas', path: '/estatisticas', icon: 'insights' },
   { label: 'Configurações', path: '/configuracoes', icon: 'settings' },
 ];
 

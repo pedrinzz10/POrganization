@@ -1,0 +1,155 @@
+<p class="legenda">Seu progresso</p>
+<h1 class="titulo">Estatísticas</h1>
+<div class="topo">
+  <p class="periodo">
+    {{ parse(intervalo().from) | date: 'dd/MM' }} a {{ parse(intervalo().to) | date: 'dd/MM' }}
+  </p>
+  <div class="ds-seg" role="tablist" aria-label="Período">
+    @for (p of periodos; track p) {
+      <button type="button" role="tab" [attr.aria-selected]="periodo() === p" (click)="escolher(p)">
+        {{ p }} dias
+      </button>
+    }
+  </div>
+</div>
+
+@if (carregando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<section class="metricas" aria-label="Resumo do período">
+  <div class="ds-card ds-card--lavender metrica">
+    <h3>Tarefas feitas</h3>
+    @if (taxaTarefas(); as t) {
+      <span class="ds-stat">{{ t.pct }}%</span>
+      <span class="ds-unit">{{ t.feitas }} de {{ t.devidas }} no período</span>
+    } @else {
+      <span class="ds-stat">—</span>
+      <span class="ds-unit">nenhuma tarefa no período</span>
+    }
+    <span class="ds-shape ds-shape--burst" aria-hidden="true"></span>
+  </div>
+  <div class="ds-card ds-card--ink metrica">
+    <h3>Maior sequência</h3>
+    <span class="ds-stat">🔥 {{ melhor()?.streak ?? 0 }}</span>
+    <span class="ds-unit">{{ melhor() ? melhor()!.task.title : 'sem tarefas' }}</span>
+    <span class="ds-shape ds-shape--disc" aria-hidden="true"></span>
+  </div>
+  <div class="ds-card ds-card--steel metrica">
+    <h3>Tempo de estudo</h3>
+    <span class="ds-stat">{{ formatar(estudo.value()?.totalMinutes ?? 0) }}</span>
+    <span class="ds-unit">no período</span>
+    <span class="ds-shape ds-shape--tri" aria-hidden="true"></span>
+  </div>
+  <div class="ds-card metrica">
+    <h3>Revisões feitas</h3>
+    <span class="ds-stat">{{ estudo.value()?.reviewsDone ?? 0 }}</span>
+    <span class="ds-unit">no período</span>
+  </div>
+</section>
+
+<div class="blocos">
+  <section class="ds-card bloco" aria-labelledby="est-tarefas">
+    <div class="bloco__topo">
+      <h2 id="est-tarefas">Tarefas</h2>
+      <a mat-button routerLink="/tarefas">Ver tarefas</a>
+    </div>
+    @if (casas().length) {
+      <div class="calor" role="img" aria-label="Tarefas feitas por dia">
+        @for (c of casas(); track $index) {
+          <span
+            class="calor__dia"
+            [class.calor__dia--fora]="c.date === null"
+            [class.calor__dia--vazio]="c.date !== null && c.nivel === null"
+            [attr.data-nivel]="c.nivel"
+            [attr.title]="c.rotulo || null"
+          ></span>
+        }
+      </div>
+      <p class="dica">
+        Cada quadrado é um dia (colunas de segunda a domingo). Verde mais forte = mais tarefas
+        feitas; tracejado = nada a fazer.
+      </p>
+    }
+    <ul class="lista">
+      @for (l of porTarefa(); track l.task.id) {
+        <li class="linha">
+          <span class="linha__nome">
+            @if (l.task.emoji) {
+              <span aria-hidden="true">{{ l.task.emoji }}</span>
+            }
+            {{ l.task.title }}
+          </span>
+          <span class="ds-chip">🔥 {{ l.streak }}</span>
+          <span class="linha__valor">{{ taxa(l.taxa) }} em 30 dias</span>
+        </li>
+      } @empty {
+        <li class="dica">Nenhuma tarefa ativa. <a routerLink="/tarefas">Crie a primeira</a>.</li>
+      }
+    </ul>
+  </section>
+
+  <section class="ds-card bloco" aria-labelledby="est-estudos">
+    <div class="bloco__topo">
+      <h2 id="est-estudos">Estudos</h2>
+      <a mat-button routerLink="/estudos">Ver estudos</a>
+    </div>
+    @if (barras().length) {
+      <h3 class="sub">Minutos por semana</h3>
+      <div class="barras" role="img" aria-label="Minutos estudados por semana">
+        @for (s of barras(); track s.weekStart) {
+          <div class="barras__semana" [attr.title]="formatar(s.minutes)">
+            <span class="barras__valor">{{ s.minutes ? formatar(s.minutes) : '' }}</span>
+            <span class="barras__area"
+              ><span class="barras__barra" [style.height.%]="s.altura"></span
+            ></span>
+            <span class="barras__rotulo">{{ parse(s.weekStart) | date: 'dd/MM' }}</span>
+          </div>
+        }
+      </div>
+    }
+    <h3 class="sub">Por matéria</h3>
+    <ul class="lista">
+      @for (m of materias(); track m.subjectId) {
+        <li class="materia">
+          <span class="linha__nome">{{ m.name }}</span>
+          <span class="linha__valor">{{ formatar(m.minutes) }} · {{ m.lessons }} aulas</span>
+          <span class="materia__trilho">
+            <span
+              class="materia__barra"
+              [style.width.%]="m.largura"
+              [style.background]="m.color ?? null"
+            ></span>
+          </span>
+        </li>
+      } @empty {
+        <li class="dica">Nenhum estudo registrado no período.</li>
+      }
+    </ul>
+  </section>
+
+  <section class="ds-card bloco" aria-labelledby="est-financas">
+    <div class="bloco__topo">
+      <h2 id="est-financas">Finanças deste mês</h2>
+      <a mat-button routerLink="/financas">Ver painel</a>
+    </div>
+    @if (dinheiro.value(); as f) {
+      <dl class="dinheiro">
+        <div>
+          <dt>Entradas</dt>
+          <dd class="positivo">{{ f.income | brl }}</dd>
+        </div>
+        <div>
+          <dt>Saídas</dt>
+          <dd class="negativo">{{ f.expense | brl }}</dd>
+        </div>
+        <div>
+          <dt>Saldo do mês</dt>
+          <dd [class.negativo]="+f.net < 0">{{ f.net | brl }}</dd>
+        </div>
+      </dl>
+    } @else if (dinheiro.error()) {
+      <p class="dica">Não foi possível carregar as finanças.</p>
+    }
+  </section>
+</div>

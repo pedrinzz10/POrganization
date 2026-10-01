@@ -2,6 +2,7 @@ package com.porganization.tasks;
 
 import com.porganization.security.CurrentUser;
 import com.porganization.tasks.DailyTaskDtos.ArchivePatch;
+import com.porganization.tasks.DailyTaskDtos.DayCount;
 import com.porganization.tasks.DailyTaskDtos.DayTask;
 import com.porganization.tasks.DailyTaskDtos.OrderRequest;
 import com.porganization.tasks.DailyTaskDtos.TaskRequest;
@@ -53,6 +54,13 @@ public class DailyTaskController {
     @GetMapping("/day")
     public List<DayTask> day(@CurrentUser UUID userId, @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
         return service.day(userId, date != null ? date : service.today(userId));
+    }
+
+    /** Por dia do intervalo (no máximo 366 dias, futuro de fora): devidas x feitas. */
+    @GetMapping("/history")
+    public List<DayCount> history(@CurrentUser UUID userId, @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate to) {
+        return service.history(userId, from, to);
     }
 
     /** Sequência atual e % de conclusão dos últimos 30 dias, por tarefa. */

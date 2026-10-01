@@ -56,6 +56,10 @@ public final class DailyTaskDtos {
     public record TaskStatsResponse(UUID taskId, int streak, BigDecimal completionRate) {
     }
 
+    /** Num dia: quantas tarefas ativas eram devidas e quantas foram feitas. */
+    public record DayCount(LocalDate date, int due, int done) {
+    }
+
     /** Uma tarefa devida no dia, com feito ou não; timerMinutes null = sem cronômetro. */
     public record DayTask(UUID id, String title, String emoji, int position, boolean done, Integer timerMinutes) {
 
