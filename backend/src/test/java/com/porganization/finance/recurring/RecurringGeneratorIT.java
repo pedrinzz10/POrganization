@@ -1,7 +1,9 @@
 package com.porganization.finance.recurring;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -81,13 +83,13 @@ class RecurringGeneratorIT extends FinanceFixture {
 
         gerar("2026-10", 1);
 
-        // Dia 7 é depois do fechamento (5): fatura que fecha em novembro e vence em 12/11
+        // F25: no cartão o dia pedido é ignorado; lança no dia 1, antes do fechamento (5): fatura que vence 12/10
         mockMvc.perform(get("/api/finance/cards/" + cartao + "/statements").with(usuario(userId)))
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].referenceMonth").value("2026-11"))
+                .andExpect(jsonPath("$[0].referenceMonth").value("2026-10"))
                 .andExpect(jsonPath("$[0].total").value("39.90"));
         // F24 T1: o item da fatura diz que veio de uma assinatura
-        mockMvc.perform(get("/api/finance/cards/" + cartao + "/statements").param("month", "2026-11").with(usuario(userId)))
+        mockMvc.perform(get("/api/finance/cards/" + cartao + "/statements").param("month", "2026-10").with(usuario(userId)))
                 .andExpect(jsonPath("$.items[0].description").value("Streaming"))
                 .andExpect(jsonPath("$.items[0].recurringId").isNotEmpty());
     }
@@ -170,5 +172,30 @@ class RecurringGeneratorIT extends FinanceFixture {
                         {"type":"INCOME","amount":"10.00","cardId":"%s","categoryId":"%s","dayOfMonth":1,"startMonth":"2026-10"}
                         """.formatted(cartao, categoria("Salário"))))
                 .andExpect(status().isBadRequest());
+    }
+
+    // F25 T1 (CA1)
+    @Test
+    void assinaturaNoCartaoNaoPedeDiaECaiUmaVezEmCadaFatura() throws Exception {
+        String cartao = postJson("/api/finance/cards", """
+                {"name":"Nubank","creditLimit":"3000.00","closingDay":20,"dueDay":28,"paymentAccountId":"%s"}
+                """.formatted(conta));
+        // Sem regra nenhuma; e uma regra de dia útil mandada por engano também é ignorada
+        mockMvc.perform(post("/api/finance/recurring").with(usuario(userId)).contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"type":"EXPENSE","amount":"21.90","description":"Spotify","cardId":"%s","categoryId":"%s",
+                                 "ruleType":"BUSINESS_DAY","businessDay":5,"startMonth":"2026-10"}
+                                """.formatted(cartao, categoria("Lazer"))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.ruleType").value("DAY_OF_MONTH"))
+                .andExpect(jsonPath("$.dayOfMonth").value(1))
+                .andExpect(jsonPath("$.businessDay").doesNotExist());
+
+        gerar("2026-10", 1);
+        gerar("2026-11", 1);
+
+        mockMvc.perform(get("/api/finance/cards/" + cartao + "/statements").with(usuario(userId)))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].total", everyItem(is("21.90"))));
     }
 }

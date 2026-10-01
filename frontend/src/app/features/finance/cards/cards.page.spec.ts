@@ -106,7 +106,8 @@ describe('CardsPage (assinaturas)', () => {
     const bloco = element.querySelector('[aria-label="Assinaturas do Nubank"]')!;
     expect(bloco.textContent).toContain('Netflix');
     expect(bloco.textContent).toContain('Spotify');
-    expect(bloco.textContent).toContain('todo dia 7 · próxima 07/11');
+    // F25: a próxima cobrança (07/11, depois do fechamento dia 5) entra na fatura de dezembro
+    expect(bloco.textContent).toContain('próxima: fatura de dezembro de 2026');
     expect(bloco.textContent).toContain('61,80/mês');
     expect(bloco.textContent).not.toContain('Antiga'); // já terminou
     expect(bloco.textContent).not.toContain('Aluguel'); // é da conta

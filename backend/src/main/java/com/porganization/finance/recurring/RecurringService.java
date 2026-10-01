@@ -84,6 +84,9 @@ public class RecurringService {
         return recurring.findByIdAndUserId(id, userId).orElseThrow(() -> new NotFoundException("Recorrente não encontrado"));
     }
 
+    /** Dia do lançamento de uma assinatura no cartão (F25). */
+    static final int CARD_CHARGE_DAY = 1;
+
     private void apply(UUID userId, RecurringTransaction r, RecurringRequest request) {
         if (request.type() == TransactionType.TRANSFER) {
             throw new InvalidRequestException("type", "recorrente é renda ou gasto");
@@ -107,14 +110,20 @@ public class RecurringService {
             throw new InvalidRequestException("categoryId",
                     expected == CategoryKind.EXPENSE ? "gasto precisa de uma categoria de gasto" : "renda precisa de uma categoria de renda");
         }
-        validateRule(request.rule(), request.dayOfMonth(), request.businessDay());
+        // Assinatura no cartão não tem dia de pagamento: entra uma vez por mês e é paga com a fatura.
+        // O lançamento fica no dia 1 (sem ajuste de dia útil), o que dá uma cobrança por fatura.
+        boolean card = request.cardId() != null;
+        ScheduleRule rule = card ? ScheduleRule.DAY_OF_MONTH : request.rule();
+        Integer dayOfMonth = card ? Integer.valueOf(CARD_CHARGE_DAY) : request.dayOfMonth();
+        Integer businessDay = card ? null : request.businessDay();
+        Adjustment adjustment = card ? Adjustment.KEEP : request.adjustment();
+        validateRule(rule, dayOfMonth, businessDay);
         if (request.endMonth() != null && request.endMonth().isBefore(request.startMonth())) {
             throw new InvalidRequestException("endMonth", "o fim não pode ser antes do início");
         }
         String description = request.description() == null || request.description().isBlank() ? null : request.description().trim();
         r.update(request.type(), request.amount(), description, request.accountId(), request.cardId(), category.getId(),
-                request.rule(), request.dayOfMonth(), request.businessDay(), request.adjustment(),
-                request.startMonth(), request.endMonth());
+                rule, dayOfMonth, businessDay, adjustment, request.startMonth(), request.endMonth());
     }
 
     /** As próximas {@code count} datas de uma regra a partir de hoje (prévia do formulário). */
