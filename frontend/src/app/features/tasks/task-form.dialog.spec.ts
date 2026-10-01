@@ -61,6 +61,7 @@ describe('TaskFormDialog', () => {
       emoji: '🏋️',
       weekDays: ['MON', 'WED', 'FRI'],
       reminderTime: null,
+      timerMinutes: null,
     });
     req.flush({});
     await salvando;
@@ -83,6 +84,20 @@ describe('TaskFormDialog', () => {
     const salvando = fixture.componentInstance.save();
     const req = httpMock.expectOne({ method: 'POST', url: API });
     expect(req.request.body.reminderTime).toBe('15:00');
+    req.flush({});
+    await salvando;
+  });
+
+  // T07 T2 (CA1): cronômetro opcional
+  it('envia os minutos do cronômetro; fora de 1 a 240 não salva', async () => {
+    fixture.componentInstance.form.patchValue({ title: 'Ler', timerMinutes: 300 });
+    await fixture.componentInstance.save();
+    httpMock.expectNone({ method: 'POST', url: API });
+
+    fixture.componentInstance.form.patchValue({ timerMinutes: 20 });
+    const salvando = fixture.componentInstance.save();
+    const req = httpMock.expectOne({ method: 'POST', url: API });
+    expect(req.request.body.timerMinutes).toBe(20);
     req.flush({});
     await salvando;
   });
@@ -126,6 +141,7 @@ describe('TaskFormDialog editando tarefa com emoji fora da lista', () => {
               archived: false,
               createdOn: '2026-09-01',
               reminderTime: null,
+              timerMinutes: null,
             },
           },
         },

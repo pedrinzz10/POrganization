@@ -13,6 +13,7 @@ interface Tarefa {
   archived: boolean;
   createdOn: string;
   reminderTime: string | null;
+  timerMinutes: number | null;
 }
 
 /** API de tarefas de mentira, com estado: criar, marcar, sequência e excluir. */
@@ -71,6 +72,7 @@ async function apiFalsa(page: Page) {
             emoji: t.emoji,
             position: t.position,
             done: feitas.has(t.id),
+            timerMinutes: t.timerMinutes,
           })),
       });
     }
@@ -126,4 +128,34 @@ test('cria a tarefa pelo menu, marca na tela Hoje, vê a sequência subir e excl
   await expect(confirmacao).toContainText('Excluir "Ler 20 min"?');
   await confirmacao.getByRole('button', { name: 'Excluir' }).click();
   await expect(lista).toContainText('Nenhuma tarefa ainda');
+});
+
+// T07 T4 (CA1, CA2)
+test('tarefa com cronômetro: inicia na tela Hoje e, ao zerar, fica feita', async ({ page }) => {
+  await page.clock.install();
+  await entrarComSessaoFalsa(page);
+  await apiFalsa(page);
+  await page.goto('/tarefas');
+
+  await page.getByRole('button', { name: 'Nova tarefa' }).click();
+  await page.getByLabel('Tarefa', { exact: true }).fill('Meditar');
+  await page.getByLabel('Cronômetro (minutos)').fill('1');
+  await page.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByRole('list', { name: 'Tarefas ativas' })).toContainText('1 min');
+
+  await page
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('link', { name: 'Hoje' })
+    .click();
+  await page.getByRole('button', { name: 'Iniciar cronômetro de Meditar' }).click();
+  const tempo = page.getByRole('timer', { name: 'Tempo restante de Meditar' });
+  await expect(tempo).toHaveText('01:00');
+
+  await page.clock.runFor(20_000);
+  await expect(tempo).toHaveText('00:40');
+
+  await page.clock.runFor(41_000);
+  await expect(page.getByText('1/1 feitas')).toBeVisible();
+  await expect(page.getByText('Tarefa feita!')).toBeVisible();
+  await expect(tempo).toHaveCount(0);
 });

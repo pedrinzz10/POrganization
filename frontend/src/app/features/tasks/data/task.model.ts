@@ -13,6 +13,8 @@ export interface DailyTask {
   createdOn: string;
   /** Horário do lembrete (HH:mm); null = sem lembrete. */
   reminderTime: string | null;
+  /** Minutos do cronômetro que conclui a tarefa; null = sem cronômetro. */
+  timerMinutes: number | null;
 }
 
 /** weekDays ausente = todo dia; reminderTime null = sem lembrete. */
@@ -21,6 +23,7 @@ export interface DailyTaskRequest {
   emoji: string | null;
   weekDays: WeekDay[];
   reminderTime: string | null;
+  timerMinutes: number | null;
 }
 
 /** Uma tarefa devida no dia, com feito ou não. */
@@ -30,6 +33,7 @@ export interface DayTask {
   emoji: string | null;
   position: number;
   done: boolean;
+  timerMinutes: number | null;
 }
 
 export interface TaskStats {

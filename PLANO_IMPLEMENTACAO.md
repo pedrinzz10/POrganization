@@ -2069,6 +2069,67 @@ Hábitos que se repetem todo dia (ou em dias escolhidos da semana), marcados com
         "cenario": "Criar 'Ler 20 min' escolhendo o emoji 'Leitura' pelo clique."
       }
     ]
+  },
+  {
+    "id": "T07",
+    "etapa": "6-tarefas",
+    "titulo": "Cronômetro opcional para concluir a tarefa",
+    "acao": "Campo opcional 'Cronômetro (minutos)' (1 a 240) na tarefa (coluna daily_tasks.timer_minutes, V28), devolvido no cadastro e em /api/tasks/day. Na tela Hoje, a tarefa com cronômetro ganha iniciar/pausar/retomar/cancelar; o tempo continua ao trocar de tela ou recarregar (TaskTimerService + localStorage) e, ao zerar, a tarefa é marcada como feita no dia em que o cronômetro começou. Marcar na mão cancela o cronômetro.",
+    "story": "Como Pedro, quero ligar um cronômetro numa tarefa (ex.: meditar 10 min) e que ela se conclua sozinha quando o tempo acabar.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V28__daily_task_timer.sql",
+      "backend/src/main/java/com/porganization/tasks/DailyTask.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskDtos.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskService.java",
+      "frontend/src/app/features/tasks/data/task-timer.service.ts",
+      "frontend/src/app/features/tasks/task-form.dialog.ts",
+      "frontend/src/app/features/tasks/tasks.page.ts",
+      "frontend/src/app/features/today/sections/today-tasks.component.ts"
+    ],
+    "dependencias": [
+      "T03"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "A tarefa aceita timerMinutes de 1 a 240 (fora disso, 400); vazio = sem cronômetro. O valor volta no cadastro e no dia."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Na tela Hoje, o cronômetro conta, pausa e retoma; ao zerar, chama PUT /completions do dia e a tarefa aparece feita, com aviso. Marcar na mão cancela o cronômetro."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskControllerIT.java",
+        "cenario": "Criar 'Ler' com 20 min → /day traz timerMinutes 20; editar sem o campo zera; 0 e 241 → 400."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/tasks/task-form.dialog.spec.ts",
+        "cenario": "300 min não salva; 20 min vai no POST."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/today/sections/today-tasks.component.spec.ts",
+        "cenario": "1 min: 01:00 → 00:40 após 20 s; pausado não anda; ao zerar faz o PUT e mostra 1/2 feitas. Marcar na mão limpa o cronômetro."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA2",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/tasks.spec.ts",
+        "cenario": "Criar 'Meditar' com 1 min, iniciar na tela Hoje e, ao fim do tempo, ver '1/1 feitas'."
+      }
+    ]
   }
 ]
 ```
@@ -2160,7 +2221,7 @@ O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN
 | 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
 | 4 Finanças | F01 a F22 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
-| 6 Tarefas diárias | T01 a T06 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete e resumo diário |
+| 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |
 | 7 Design | U01 | App no Intelly Design System: tema, tela Hoje em painel, agenda semanal, gráficos e tema escuro |
 
 Total: 68 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.

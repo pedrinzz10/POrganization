@@ -20,6 +20,7 @@ function tarefa(id: string, posicao: number): DailyTask {
     archived: false,
     createdOn: '2026-10-01',
     reminderTime: null,
+    timerMinutes: null,
   };
 }
 
