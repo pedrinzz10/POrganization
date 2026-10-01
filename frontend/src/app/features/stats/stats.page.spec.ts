@@ -132,4 +132,22 @@ describe('StatsPage', () => {
       '7 dias',
     );
   });
+
+  it('um bloco que falha não derruba os outros', async () => {
+    httpMock
+      .expectOne((r) => r.url === `${API}/tasks/history`)
+      .flush([{ date: hoje, due: 2, done: 1 }]);
+    httpMock
+      .expectOne((r) => r.url === `${API}/study/stats`)
+      .flush({}, { status: 500, statusText: 'Erro' });
+    httpMock.expectOne(`${API}/tasks`).flush({}, { status: 500, statusText: 'Erro' });
+    httpMock.expectOne(`${API}/tasks/stats`).flush([]);
+    httpMock
+      .expectOne((r) => r.url === `${API}/finance/summary`)
+      .flush({}, { status: 500, statusText: 'Erro' });
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain('50%');
+    expect(element.textContent).toContain('Não foi possível carregar as finanças.');
+  });
 });

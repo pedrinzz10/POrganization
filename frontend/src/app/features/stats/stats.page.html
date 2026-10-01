@@ -37,13 +37,13 @@
   </div>
   <div class="ds-card ds-card--steel metrica">
     <h3>Tempo de estudo</h3>
-    <span class="ds-stat">{{ formatar(estudo.value()?.totalMinutes ?? 0) }}</span>
+    <span class="ds-stat">{{ formatar(estudoOk()?.totalMinutes ?? 0) }}</span>
     <span class="ds-unit">no período</span>
     <span class="ds-shape ds-shape--tri" aria-hidden="true"></span>
   </div>
   <div class="ds-card metrica">
     <h3>Revisões feitas</h3>
-    <span class="ds-stat">{{ estudo.value()?.reviewsDone ?? 0 }}</span>
+    <span class="ds-stat">{{ estudoOk()?.reviewsDone ?? 0 }}</span>
     <span class="ds-unit">no período</span>
   </div>
 </section>
@@ -133,7 +133,7 @@
       <h2 id="est-financas">Finanças deste mês</h2>
       <a mat-button routerLink="/financas">Ver painel</a>
     </div>
-    @if (dinheiro.value(); as f) {
+    @if (dinheiroOk(); as f) {
       <dl class="dinheiro">
         <div>
           <dt>Entradas</dt>

@@ -59,6 +59,14 @@ export class StatsPage {
   });
   protected readonly dinheiro = rxResource({ stream: () => this.finance.summary(this.mes) });
 
+  // value() lança com o resource em erro: cada bloco lê pelo seu "ok" e um que falhe não derruba a tela
+  protected readonly estudoOk = computed(() =>
+    this.estudo.hasValue() ? this.estudo.value() : undefined,
+  );
+  protected readonly dinheiroOk = computed(() =>
+    this.dinheiro.hasValue() ? this.dinheiro.value() : undefined,
+  );
+
   protected readonly formatar = formatMinutes;
   protected readonly parse = parseIsoDate;
 
@@ -76,8 +84,10 @@ export class StatsPage {
 
   /** Tarefas ativas com sequência e % de 30 dias, da maior sequência para a menor. */
   protected readonly porTarefa = computed(() => {
-    const stats = new Map((this.sequencias.value() ?? []).map((s) => [s.taskId, s]));
-    return (this.tarefas.value() ?? [])
+    const stats = new Map(
+      (this.sequencias.hasValue() ? this.sequencias.value() : []).map((s) => [s.taskId, s]),
+    );
+    return (this.tarefas.hasValue() ? this.tarefas.value() : [])
       .filter((t) => !t.archived)
       .map((t) => ({
         task: t,
@@ -106,13 +116,13 @@ export class StatsPage {
 
   /** Minutos por semana, com a altura relativa à maior semana do período. */
   protected readonly barras = computed(() => {
-    const semanas = this.estudo.value()?.weeks ?? [];
+    const semanas = this.estudoOk()?.weeks ?? [];
     const max = Math.max(1, ...semanas.map((s) => s.minutes));
     return semanas.map((s) => ({ ...s, altura: (s.minutes * 100) / max }));
   });
 
   protected readonly materias = computed(() => {
-    const lista = (this.estudo.value()?.subjects ?? []).filter((m) => m.minutes > 0);
+    const lista = (this.estudoOk()?.subjects ?? []).filter((m) => m.minutes > 0);
     const max = Math.max(1, ...lista.map((m) => m.minutes));
     return [...lista]
       .sort((a, b) => b.minutes - a.minutes)
