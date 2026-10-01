@@ -7,6 +7,7 @@ import com.porganization.studies.DailyStudyPlanner.SubjectGoal;
 import com.porganization.studies.StudyCalendarPlanner.Day;
 import com.porganization.studies.StudyCalendarPlanner.DoneSession;
 import com.porganization.studies.StudyCalendarPlanner.Kind;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -94,5 +95,38 @@ class StudyCalendarPlannerTest {
 
         // Três dias espaçados na semana de 12 a 18: ter, qui e sáb
         assertThat(aulas(dias, "Java")).containsExactly("2026-10-13", "2026-10-15", "2026-10-17");
+    }
+
+    // E13 T1 (CA1)
+    @Test
+    void aulasSoCaemNosDiasDeEstudoDaMateria() {
+        SubjectGoal soFimDeSemana = new SubjectGoal(java, "Java", null, 1, 3, 50,
+                Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY));
+        List<Day> dias = StudyCalendarPlanner.plan(HOJE, SEG, DOM, List.of(), List.of(), List.of(soFimDeSemana), Map.of(), Set.of());
+
+        // Meta 3, mas só cabem sáb e dom
+        assertThat(aulas(dias, "Java")).containsExactly("2026-10-10", "2026-10-11");
+    }
+
+    // E13 T2 (CA2)
+    @Test
+    void aulaFixadaFicaNoDiaEORestoSeEspalhaEmVolta() {
+        // Java meta 2: fixada na sexta; a outra vai para outro dia de qua..dom
+        List<Day> dias = StudyCalendarPlanner.plan(HOJE, SEG, DOM, List.of(), List.of(), List.of(meta(java, "Java", 1, 2)),
+                Map.of(), Set.of(), Map.of(java, List.of(LocalDate.parse("2026-10-09"))));
+
+        List<String> diasJava = aulas(dias, "Java");
+        assertThat(diasJava).hasSize(2).contains("2026-10-09");
+        assertThat(dias.get(4).items()).singleElement().satisfies(i -> assertThat(i.pinned()).isTrue());
+        assertThat(dias.stream().flatMap(d -> d.items().stream()).filter(i -> !i.pinned())).hasSize(1);
+    }
+
+    @Test
+    void fixadaAlemDaMetaOuNoPassadoNaoConta() {
+        // Meta 1 e já fez 1: nenhuma aula, mesmo com fixada na sexta; fixada na segunda (passado) é ignorada
+        List<Day> dias = StudyCalendarPlanner.plan(HOJE, SEG, DOM, List.of(), List.of(), List.of(meta(java, "Java", 1, 1)),
+                Map.of(java, 1L), Set.of(), Map.of(java, List.of(SEG, LocalDate.parse("2026-10-09"))));
+
+        assertThat(aulas(dias, "Java")).isEmpty();
     }
 }

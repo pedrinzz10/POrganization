@@ -1,8 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { firstValueFrom, startWith } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
+import { WeekDay } from '../../commitments/data/commitment.model';
 import { StudiesService } from '../data/studies.service';
 import { Subject, SubjectRequest, Tag } from '../data/study.model';
 
@@ -18,7 +20,24 @@ export interface SubjectFormData {
   subject?: Subject;
 }
 
-/** Criar ou editar matéria, com seletor de tags que cria tag nova no próprio campo. */
+const DIAS: { dia: WeekDay; rotulo: string; nome: string }[] = [
+  { dia: 'MON', rotulo: 'S', nome: 'Segunda' },
+  { dia: 'TUE', rotulo: 'T', nome: 'Terça' },
+  { dia: 'WED', rotulo: 'Q', nome: 'Quarta' },
+  { dia: 'THU', rotulo: 'Q', nome: 'Quinta' },
+  { dia: 'FRI', rotulo: 'S', nome: 'Sexta' },
+  { dia: 'SAT', rotulo: 'S', nome: 'Sábado' },
+  { dia: 'SUN', rotulo: 'D', nome: 'Domingo' },
+];
+
+function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
+  return Array.isArray(control.value) && control.value.length > 0 ? null : { semDia: true };
+}
+
+/**
+ * Criar ou editar matéria, com seletor de tags que cria tag nova no próprio campo e os dias em que
+ * a matéria pode ter aula (todos marcados = qualquer dia).
+ */
 @Component({
   selector: 'app-subject-form-dialog',
   imports: [
@@ -27,6 +46,7 @@ export interface SubjectFormData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatChipsModule,
     MatAutocompleteModule,
     MatIconModule,
@@ -48,6 +68,17 @@ export interface SubjectFormData {
     .cor {
       width: 64px;
     }
+    .rotulo {
+      font: var(--mat-sys-label-large);
+    }
+    .dias {
+      align-self: flex-start;
+    }
+    .dica {
+      margin: 4px 0 8px;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
     .erro {
       color: var(--mat-sys-error);
     }
@@ -65,12 +96,24 @@ export class SubjectFormDialog {
   private readonly studies = inject(StudiesService);
 
   protected readonly editing = this.data.subject;
+  protected readonly dias = DIAS;
 
   readonly form = inject(FormBuilder).nonNullable.group({
     name: [this.editing?.name ?? '', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(100)]],
     color: [this.editing?.color ?? '#3F51B5'],
     sessionsPerWeek: [this.editing?.sessionsPerWeek ?? 2, [Validators.required, Validators.min(0), Validators.max(21)]],
     lessonMinutes: [this.editing?.lessonMinutes ?? 50, [Validators.required, Validators.min(5), Validators.max(240)]],
+    studyDays: [this.editing?.studyDays?.length ? this.editing.studyDays : DIAS.map((d) => d.dia), atLeastOneDay],
+  });
+
+  private readonly valores = toSignal(this.form.valueChanges.pipe(startWith(this.form.getRawValue())), {
+    requireSync: true,
+  });
+
+  /** Meta maior que os dias escolhidos: só cabe uma aula por dia. */
+  protected readonly cabem = computed(() => {
+    const { studyDays = [], sessionsPerWeek = 0 } = this.valores();
+    return studyDays.length < 7 && sessionsPerWeek > studyDays.length ? studyDays.length : null;
   });
 
   protected readonly selecionadas = signal<Tag[]>(this.editing?.tags ?? []);
@@ -144,6 +187,8 @@ export class SubjectFormDialog {
       lessonMinutes: v.lessonMinutes,
       tagIds: this.selecionadas().map((t) => t.id),
       archived: this.editing?.archived ?? false,
+      // Todos os dias = qualquer dia (lista vazia); senão, na ordem da semana
+      studyDays: v.studyDays.length === 7 ? [] : DIAS.map((d) => d.dia).filter((d) => v.studyDays.includes(d)),
     };
     await this.run(() =>
       firstValueFrom(

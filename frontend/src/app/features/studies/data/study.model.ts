@@ -1,4 +1,5 @@
 // Tipos dos DTOs da API de estudos (backend: com.porganization.studies.dto)
+import { WeekDay } from '../../commitments/data/commitment.model';
 
 export interface Tag {
   id: string;
@@ -16,6 +17,8 @@ export interface Subject {
   lessonMinutes: number;
   archived: boolean;
   tags: Tag[];
+  /** Dias em que a matéria pode ter aula; vazio = qualquer dia. */
+  studyDays: WeekDay[];
 }
 
 export interface SubjectRequest {
@@ -25,6 +28,8 @@ export interface SubjectRequest {
   lessonMinutes?: number;
   tagIds?: string[];
   archived?: boolean;
+  /** Lista vazia = qualquer dia; ausente mantém como está. */
+  studyDays?: WeekDay[];
 }
 
 /** Corpo completo para PUT a partir de uma matéria existente, com alterações por cima. */
@@ -147,6 +152,8 @@ export interface StudyCalendarItem {
   sessionType: SessionType;
   /** Revisão vencida antes de hoje (aparece em hoje). */
   overdue: boolean;
+  /** Aula fixada pelo usuário nesse dia (arrastada na agenda). */
+  pinned: boolean;
 }
 
 export interface StudyCalendarDay {

@@ -8,13 +8,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import com.porganization.commitments.recurrence.WeekDay;
 import java.time.OffsetDateTime;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 /** Matéria de estudo, como "Java Advanced". priorityOrder 1 é a mais importante. */
 @Entity
@@ -43,6 +47,11 @@ public class Subject {
 
     @Column(name = "sessions_per_week", nullable = false)
     private int sessionsPerWeek = DEFAULT_SESSIONS_PER_WEEK;
+
+    /** Dias em que a matéria pode ter aula; null = qualquer dia. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "study_days")
+    private Set<WeekDay> studyDays;
 
     @Column(name = "lesson_minutes", nullable = false)
     private int lessonMinutes = DEFAULT_LESSON_MINUTES;
@@ -106,6 +115,16 @@ public class Subject {
 
     public int getSessionsPerWeek() {
         return sessionsPerWeek;
+    }
+
+    /** Os dias escolhidos, ou vazio para qualquer dia. */
+    public Set<WeekDay> getStudyDays() {
+        return studyDays == null ? Set.of() : EnumSet.copyOf(studyDays);
+    }
+
+    /** Vazio (ou os 7 dias) = qualquer dia. */
+    public void setStudyDays(Set<WeekDay> studyDays) {
+        this.studyDays = studyDays == null || studyDays.isEmpty() || studyDays.size() == 7 ? null : EnumSet.copyOf(studyDays);
     }
 
     public void setSessionsPerWeek(int sessionsPerWeek) {

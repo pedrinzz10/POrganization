@@ -10,7 +10,7 @@ import { SubjectsPage } from './subjects.page';
 const API = environment.apiUrl;
 
 function materia(nome: string, ordem: number, tags: { id: string; name: string }[] = []): Subject {
-  return { id: `id-${nome}`, name: nome, color: null, priorityOrder: ordem, sessionsPerWeek: 2, lessonMinutes: 50, archived: false, tags };
+  return { id: `id-${nome}`, name: nome, color: null, priorityOrder: ordem, sessionsPerWeek: 2, lessonMinutes: 50, archived: false, tags, studyDays: [] };
 }
 
 // Com consultas pendentes, whenStable() espera elas terminarem; só deixamos a fila andar

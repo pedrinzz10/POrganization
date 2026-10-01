@@ -1,10 +1,12 @@
 package com.porganization.studies;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,9 +26,18 @@ public final class DailyStudyPlanner {
             int reviewMinutes) {
     }
 
-    /** Meta semanal de uma matéria ativa. */
+    /** Meta semanal de uma matéria ativa; studyDays vazio = pode ter aula em qualquer dia. */
     public record SubjectGoal(UUID subjectId, String subjectName, String color, int priorityOrder, int sessionsPerWeek,
-            int lessonMinutes) {
+            int lessonMinutes, Set<DayOfWeek> studyDays) {
+
+        public SubjectGoal(UUID subjectId, String subjectName, String color, int priorityOrder, int sessionsPerWeek,
+                int lessonMinutes) {
+            this(subjectId, subjectName, color, priorityOrder, sessionsPerWeek, lessonMinutes, Set.of());
+        }
+
+        public boolean allows(LocalDate day) {
+            return studyDays.isEmpty() || studyDays.contains(day.getDayOfWeek());
+        }
     }
 
     public record ReviewSuggestion(UUID lessonId, UUID subjectId, String subjectName, String lessonTitle,

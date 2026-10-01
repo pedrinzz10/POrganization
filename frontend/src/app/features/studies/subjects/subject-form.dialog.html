@@ -29,6 +29,22 @@
       </mat-form-field>
     </div>
 
+    <span class="rotulo" id="dias-estudo">Dias de estudo</span>
+    <mat-button-toggle-group formControlName="studyDays" multiple aria-labelledby="dias-estudo" class="dias">
+      @for (d of dias; track d.dia) {
+        <mat-button-toggle [value]="d.dia" [aria-label]="d.nome">{{ d.rotulo }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+    @if (form.controls.studyDays.hasError('semDia')) {
+      <p class="dica erro">Escolha pelo menos um dia.</p>
+    } @else if (cabem(); as n) {
+      <p class="dica">Só cabem {{ n }} {{ n === 1 ? 'aula' : 'aulas' }} por semana nesses dias (uma por dia).</p>
+    } @else if (form.controls.studyDays.value.length === 7) {
+      <p class="dica">Qualquer dia: a agenda espalha as aulas pela semana.</p>
+    } @else {
+      <p class="dica">A agenda só coloca aulas desta matéria nesses dias.</p>
+    }
+
     <mat-form-field>
       <mat-label>Tags</mat-label>
       <mat-chip-grid #grade aria-label="Tags da matéria">
