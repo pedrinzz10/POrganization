@@ -11,7 +11,7 @@ import { BrlPipe } from '../../../shared/money-input/brl.pipe';
 import { centsToDecimal, toCents } from '../../../shared/money-input/money-input.directive';
 import { Card, Recurring, Statement } from '../data/finance.model';
 import { FinanceService } from '../data/finance.service';
-import { todayIso } from '../data/month.util';
+import { monthLabel, todayIso } from '../data/month.util';
 import { CardFormData, CardFormDialog } from './card-form.dialog';
 import { RecurringFormData, RecurringFormDialog } from '../recurring/recurring-form.dialog';
 import { CardPurchaseFormComponent } from './card-purchase-form.component';
@@ -117,7 +117,7 @@ interface CardView {
                 <li>
                   <button type="button" class="assinatura" (click)="assinatura(item.card.id, a)">
                     <span class="assinatura__nome">{{ a.description ?? 'Assinatura' }}</span>
-                    <span class="assinatura__dia">{{ quando(a) }}</span>
+                    <span class="assinatura__dia">{{ proximaFatura(item.card, a) }}</span>
                     <span class="assinatura__valor">{{ a.amount | brl }}</span>
                   </button>
                 </li>
@@ -281,17 +281,11 @@ export class CardsPage {
     return centsToDecimal(lista.reduce((soma, r) => soma + toCents(r.amount), 0n));
   }
 
-  /** "todo dia 7 · próxima 07/11". */
-  protected quando(r: Recurring): string {
-    const regra =
-      r.ruleType === 'DAY_OF_MONTH'
-        ? `todo dia ${r.dayOfMonth}`
-        : r.ruleType === 'BUSINESS_DAY'
-          ? `${r.businessDay}º dia útil`
-          : 'último dia útil';
+  /** "próxima: fatura de novembro de 2026" (a fatura em que a próxima cobrança entra). */
+  protected proximaFatura(card: Card, r: Recurring): string {
     return r.nextDate
-      ? `${regra} · próxima ${r.nextDate.slice(8, 10)}/${r.nextDate.slice(5, 7)}`
-      : regra;
+      ? `próxima: fatura de ${monthLabel(statementMonthFor(card.closingDay, card.dueDay, r.nextDate))}`
+      : '';
   }
 
   /** Nova assinatura neste cartão, ou edita a existente. */

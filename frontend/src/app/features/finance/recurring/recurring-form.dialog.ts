@@ -39,8 +39,9 @@ export interface RecurringFormData {
 /**
  * Agendado (gasto ou renda que se repete): valor, regra da data e onde cai (conta, ou cartão para
  * gasto). Editar muda também as ocorrências em aberto; as já confirmadas ficam como foram.
- * Gasto no cartão é uma assinatura: o título e os exemplos mudam, e a tela Cartões abre o
- * formulário já com o cartão escolhido.
+ * Gasto no cartão é uma assinatura: não tem dia de pagamento (entra em toda fatura e é paga com
+ * ela), então a regra da data some e o formulário manda dia 1 (a API usa esse dia de qualquer jeito).
+ * A tela Cartões abre o formulário já com o cartão escolhido.
  */
 @Component({
   selector: 'app-recurring-form-dialog',
@@ -83,45 +84,6 @@ export interface RecurringFormData {
         </mat-form-field>
 
         <mat-form-field>
-          <mat-label>Quando</mat-label>
-          <mat-select formControlName="ruleType">
-            <mat-option value="DAY_OF_MONTH">Dia fixo do mês</mat-option>
-            <mat-option value="BUSINESS_DAY">N-ésimo dia útil do mês</mat-option>
-            <mat-option value="LAST_BUSINESS_DAY">Último dia útil do mês</mat-option>
-          </mat-select>
-        </mat-form-field>
-        @switch (regra()) {
-          @case ('DAY_OF_MONTH') {
-            <div class="linha">
-              <mat-form-field>
-                <mat-label>Dia do mês</mat-label>
-                <input matInput type="number" min="1" max="31" formControlName="dayOfMonth" />
-                <mat-hint>31 cai no último dia em meses curtos</mat-hint>
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Se cair em fim de semana ou feriado</mat-label>
-                <mat-select formControlName="adjustment">
-                  <mat-option value="KEEP">Mantém o dia</mat-option>
-                  <mat-option value="ANTICIPATE">Antecipa para o dia útil anterior</mat-option>
-                  <mat-option value="POSTPONE">Adia para o próximo dia útil</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          }
-          @case ('BUSINESS_DAY') {
-            <mat-form-field>
-              <mat-label>Qual dia útil</mat-label>
-              <input matInput type="number" min="1" max="15" formControlName="businessDay" />
-              <mat-hint
-                >Ex.: 5 para o 5º dia útil (sem fins de semana e feriados nacionais)</mat-hint
-              >
-            </mat-form-field>
-          }
-        }
-        @if (proximas().length > 0) {
-          <p class="previa" aria-live="polite">Próximas datas: {{ proximas().join(' · ') }}</p>
-        }
-        <mat-form-field>
           <mat-label>Categoria</mat-label>
           <mat-select formControlName="categoryId">
             @for (c of categoriasDoTipo(); track c.id) {
@@ -133,7 +95,7 @@ export interface RecurringFormData {
           <mat-label>Onde cai</mat-label>
           <mat-select formControlName="target">
             <mat-optgroup label="Contas">
-              @for (conta of contas.value() ?? []; track conta.id) {
+              @for (conta of contas.hasValue() ? contas.value() : []; track conta.id) {
                 <mat-option [value]="'conta:' + conta.id">{{ conta.name }}</mat-option>
               }
             </mat-optgroup>
@@ -146,11 +108,52 @@ export interface RecurringFormData {
             }
           </mat-select>
           @if (assinatura()) {
-            <mat-hint>Cai todo mês na fatura do cartão, sem precisar confirmar.</mat-hint>
+            <mat-hint>Entra em toda fatura do cartão e é paga junto com ela.</mat-hint>
           } @else if (tipo() === 'EXPENSE' && cartoes.hasValue() && !cartoesAtivos().length) {
             <mat-hint>Assinatura no cartão? Cadastre o cartão em Finanças › Cartões.</mat-hint>
           }
         </mat-form-field>
+        @if (!assinatura()) {
+          <mat-form-field>
+            <mat-label>Quando</mat-label>
+            <mat-select formControlName="ruleType">
+              <mat-option value="DAY_OF_MONTH">Dia fixo do mês</mat-option>
+              <mat-option value="BUSINESS_DAY">N-ésimo dia útil do mês</mat-option>
+              <mat-option value="LAST_BUSINESS_DAY">Último dia útil do mês</mat-option>
+            </mat-select>
+          </mat-form-field>
+          @switch (regra()) {
+            @case ('DAY_OF_MONTH') {
+              <div class="linha">
+                <mat-form-field>
+                  <mat-label>Dia do mês</mat-label>
+                  <input matInput type="number" min="1" max="31" formControlName="dayOfMonth" />
+                  <mat-hint>31 cai no último dia em meses curtos</mat-hint>
+                </mat-form-field>
+                <mat-form-field>
+                  <mat-label>Se cair em fim de semana ou feriado</mat-label>
+                  <mat-select formControlName="adjustment">
+                    <mat-option value="KEEP">Mantém o dia</mat-option>
+                    <mat-option value="ANTICIPATE">Antecipa para o dia útil anterior</mat-option>
+                    <mat-option value="POSTPONE">Adia para o próximo dia útil</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            }
+            @case ('BUSINESS_DAY') {
+              <mat-form-field>
+                <mat-label>Qual dia útil</mat-label>
+                <input matInput type="number" min="1" max="15" formControlName="businessDay" />
+                <mat-hint
+                  >Ex.: 5 para o 5º dia útil (sem fins de semana e feriados nacionais)</mat-hint
+                >
+              </mat-form-field>
+            }
+          }
+          @if (proximas().length > 0) {
+            <p class="previa" aria-live="polite">Próximas datas: {{ proximas().join(' · ') }}</p>
+          }
+        }
         <div class="linha">
           <mat-form-field>
             <mat-label>Começa em</mat-label>
@@ -234,10 +237,7 @@ export class RecurringFormDialog {
     description: [this.editing?.description ?? ''],
     amount: [this.editing?.amount ?? (null as string | null), Validators.required],
     ruleType: [this.editing?.ruleType ?? ('DAY_OF_MONTH' as ScheduleRule)],
-    // Assinatura nova: o dia de hoje costuma ser o dia da cobrança
-    dayOfMonth: [
-      this.editing?.dayOfMonth ?? ((this.data.cardId ? new Date().getDate() : 10) as number | null),
-    ],
+    dayOfMonth: [this.editing?.dayOfMonth ?? ((this.data.cardId ? 1 : 10) as number | null)],
     businessDay: [this.editing?.businessDay ?? (5 as number | null)],
     adjustment: [this.editing?.adjustment ?? ('KEEP' as Adjustment)],
     categoryId: [this.editing?.categoryId ?? (null as string | null), Validators.required],
@@ -280,7 +280,9 @@ export class RecurringFormDialog {
         : 'Novo agendado',
   );
   protected readonly cartoesAtivos = computed(() =>
-    (this.cartoes.value() ?? []).filter((c) => !c.archived || c.id === this.editing?.cardId),
+    (this.cartoes.hasValue() ? this.cartoes.value() : []).filter(
+      (c) => !c.archived || c.id === this.editing?.cardId,
+    ),
   );
 
   protected readonly categoriasDoTipo = computed(() =>
@@ -302,6 +304,12 @@ export class RecurringFormDialog {
   protected readonly error = signal<string | null>(null);
 
   constructor() {
+    // Destino cartão: a regra vira "dia 1" (fica escondida) para não travar a validação
+    this.form.controls.target.valueChanges.pipe(takeUntilDestroyed()).subscribe((destino) => {
+      if (destino?.startsWith('cartao:')) {
+        this.form.patchValue({ ruleType: 'DAY_OF_MONTH', dayOfMonth: 1, adjustment: 'KEEP' });
+      }
+    });
     // Validação dinâmica: só o campo da regra escolhida é obrigatório
     this.form.controls.ruleType.valueChanges
       .pipe(startWith(this.form.controls.ruleType.value), takeUntilDestroyed())
@@ -342,6 +350,9 @@ export class RecurringFormDialog {
   }
 
   private regraAtual(): RulePreview | null {
+    if (this.assinatura()) {
+      return null; // sem dia: não há prévia de datas
+    }
     const v = this.form.getRawValue();
     const regra = v.ruleType!;
     if (
@@ -373,7 +384,7 @@ export class RecurringFormDialog {
       accountId: destino === 'conta' ? id : null,
       cardId: destino === 'cartao' ? id : null,
       categoryId: v.categoryId!,
-      ...this.regraAtual()!,
+      ...(this.assinatura() ? ASSINATURA : this.regraAtual()!),
       startMonth: v.startMonth!,
       endMonth: v.endMonth || null,
     };
@@ -403,6 +414,14 @@ export class RecurringFormDialog {
     }
   }
 }
+
+/** Regra que vai para a API numa assinatura no cartão (ela usa dia 1 de qualquer jeito). */
+const ASSINATURA: RulePreview = {
+  ruleType: 'DAY_OF_MONTH',
+  dayOfMonth: 1,
+  businessDay: null,
+  adjustment: 'KEEP',
+};
 
 /** "2026-10-07" → "07/10/2026". */
 function formatarData(iso: string): string {

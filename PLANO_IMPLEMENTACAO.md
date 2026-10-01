@@ -1614,6 +1614,56 @@ Ajuste pedido depois da etapa 4, decidido na sessão de 2026-09-30: os fixos (F0
         "cenario": "Nova assinatura 'Netflix' 39,90 pelo cartão Nubank → aparece no bloco Assinaturas com R$ 39,90/mês."
       }
     ]
+  },
+  {
+    "id": "F25",
+    "etapa": "4-financas",
+    "titulo": "Assinatura no cartão sem dia de pagamento",
+    "acao": "Assinatura no cartão é paga junto com a fatura, então não faz sentido perguntar dia de pagamento. API: agendado com cardId ignora a regra recebida e grava DAY_OF_MONTH dia 1, sem ajuste de dia útil (uma cobrança por mês = uma por fatura). Formulário: com destino cartão somem 'Quando', dia, ajuste e a prévia de datas; a dica diz que entra em toda fatura e é paga com ela; ao trocar o destino para cartão a regra escondida vira dia 1 para não travar a validação. Cartões: cada assinatura mostra a fatura em que a próxima cobrança entra ('próxima: fatura de dezembro de 2026'). Agendados: regra no cartão mostra 'toda fatura'.",
+    "story": "Como Pedro, quero que a assinatura no cartão só entre na fatura, sem eu ter que escolher dia de pagamento.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/finance/recurring/RecurringService.java",
+      "frontend/src/app/features/finance/recurring/recurring-form.dialog.ts",
+      "frontend/src/app/features/finance/recurring/recurring.page.ts",
+      "frontend/src/app/features/finance/cards/cards.page.ts"
+    ],
+    "dependencias": [
+      "F24"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "POST /recurring com cardId e qualquer regra (ou nenhuma) grava DAY_OF_MONTH dia 1 e gera uma cobrança em cada fatura, mês a mês."
+      },
+      {
+        "id": "CA2",
+        "descricao": "O formulário com destino cartão não mostra 'Quando' nem dia; manda dia 1; o cartão mostra a fatura da próxima cobrança e Agendados mostra 'toda fatura'."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/finance/recurring/RecurringGeneratorIT.java",
+        "cenario": "Spotify 21,90 no cartão com ruleType BUSINESS_DAY → resposta DAY_OF_MONTH dia 1; gerar outubro e novembro → 2 faturas com 21,90 cada."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/finance/recurring/recurring-form.dialog.spec.ts",
+        "cenario": "Aberto pelo cartão: sem 'Quando' e 'Dia do mês'; POST com ruleType DAY_OF_MONTH e dayOfMonth 1."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/finance/cards/cards.page.spec.ts",
+        "cenario": "Próxima cobrança em 07/11 com fechamento dia 5 → 'próxima: fatura de dezembro de 2026'."
+      }
+    ]
   }
 ]
 ```
@@ -2349,7 +2399,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 | 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
-| 4 Finanças | F01 a F22, F24 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
+| 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |
 | 7 Design | U01 | App no Intelly Design System: tema, tela Hoje em painel, agenda semanal, gráficos e tema escuro |

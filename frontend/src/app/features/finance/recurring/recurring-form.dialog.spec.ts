@@ -29,11 +29,22 @@ describe('RecurringFormDialog (regra de data)', () => {
     fixture = TestBed.createComponent(RecurringFormDialog);
     element = fixture.nativeElement;
     await tick();
-    httpMock.expectOne(`${API}/accounts?includeArchived=false`).flush([
-      { id: 'c1', name: 'Bradesco', type: 'CHECKING', initialBalance: '0.00', balance: '0.00', archived: false },
-    ]);
+    httpMock
+      .expectOne(`${API}/accounts?includeArchived=false`)
+      .flush([
+        {
+          id: 'c1',
+          name: 'Bradesco',
+          type: 'CHECKING',
+          initialBalance: '0.00',
+          balance: '0.00',
+          archived: false,
+        },
+      ]);
     httpMock.expectOne(`${API}/cards`).flush([]);
-    httpMock.expectOne(`${API}/categories`).flush([{ id: 'sal', name: 'Salário', kind: 'INCOME', color: null, icon: null }]);
+    httpMock
+      .expectOne(`${API}/categories`)
+      .flush([{ id: 'sal', name: 'Salário', kind: 'INCOME', color: null, icon: null }]);
     await fixture.whenStable();
   });
 
@@ -50,32 +61,58 @@ describe('RecurringFormDialog (regra de data)', () => {
 
   // F20 T1 (CA1)
   it('"N-ésimo dia útil" troca os campos, mostra as próximas datas e manda a regra no POST', async () => {
-    await responderPrevia({ ruleType: 'DAY_OF_MONTH', dayOfMonth: 10, businessDay: null, adjustment: 'KEEP' }, ['2026-10-10']);
+    await responderPrevia(
+      { ruleType: 'DAY_OF_MONTH', dayOfMonth: 10, businessDay: null, adjustment: 'KEEP' },
+      ['2026-10-10'],
+    );
     expect(element.textContent).toContain('Dia do mês');
 
     const form = fixture.componentInstance.form;
     form.patchValue({ type: 'INCOME', ruleType: 'BUSINESS_DAY', businessDay: 5 });
     await fixture.whenStable();
-    await responderPrevia({ ruleType: 'BUSINESS_DAY', dayOfMonth: null, businessDay: 5, adjustment: 'KEEP' },
-      ['2026-10-07', '2026-11-09', '2026-12-07']);
+    await responderPrevia(
+      { ruleType: 'BUSINESS_DAY', dayOfMonth: null, businessDay: 5, adjustment: 'KEEP' },
+      ['2026-10-07', '2026-11-09', '2026-12-07'],
+    );
 
     expect(element.textContent).not.toContain('Dia do mês');
     expect(element.textContent).toContain('Qual dia útil');
     expect(element.textContent).toContain('Próximas datas: 07/10/2026 · 09/11/2026 · 07/12/2026');
 
-    form.patchValue({ amount: '3200.00', description: 'Salário', categoryId: 'sal', target: 'conta:c1', startMonth: '2026-10' });
+    form.patchValue({
+      amount: '3200.00',
+      description: 'Salário',
+      categoryId: 'sal',
+      target: 'conta:c1',
+      startMonth: '2026-10',
+    });
     const salvando = fixture.componentInstance.save();
     const post = httpMock.expectOne({ method: 'POST', url: `${API}/recurring` });
-    expect(post.request.body).toMatchObject({ ruleType: 'BUSINESS_DAY', businessDay: 5, dayOfMonth: null, accountId: 'c1' });
+    expect(post.request.body).toMatchObject({
+      ruleType: 'BUSINESS_DAY',
+      businessDay: 5,
+      dayOfMonth: null,
+      accountId: 'c1',
+    });
     post.flush({});
     await salvando;
     expect(dialogRef.close).toHaveBeenCalledWith(true);
   });
 
   it('a validação segue a regra: sem o dia útil não salva; o dia do mês não é exigido', async () => {
-    await responderPrevia({ ruleType: 'DAY_OF_MONTH', dayOfMonth: 10, businessDay: null, adjustment: 'KEEP' }, []);
+    await responderPrevia(
+      { ruleType: 'DAY_OF_MONTH', dayOfMonth: 10, businessDay: null, adjustment: 'KEEP' },
+      [],
+    );
     const form = fixture.componentInstance.form;
-    form.patchValue({ ruleType: 'BUSINESS_DAY', businessDay: null, dayOfMonth: null, amount: '10.00', categoryId: 'sal', target: 'conta:c1' });
+    form.patchValue({
+      ruleType: 'BUSINESS_DAY',
+      businessDay: null,
+      dayOfMonth: null,
+      amount: '10.00',
+      categoryId: 'sal',
+      target: 'conta:c1',
+    });
     await fixture.whenStable();
 
     expect(form.controls.businessDay.invalid).toBe(true);
@@ -106,24 +143,45 @@ describe('RecurringFormDialog (assinatura no cartão)', () => {
     const element: HTMLElement = fixture.nativeElement;
     await tick();
     httpMock.expectOne(`${API}/accounts?includeArchived=false`).flush([]);
-    httpMock.expectOne(`${API}/cards`).flush([
-      { id: 'nubank', name: 'Nubank', creditLimit: '3000.00', closingDay: 5, dueDay: 12, paymentAccountId: 'c1', archived: false },
-    ]);
-    httpMock.expectOne(`${API}/categories`).flush([{ id: 'lazer', name: 'Lazer', kind: 'EXPENSE', color: null, icon: null }]);
+    httpMock
+      .expectOne(`${API}/cards`)
+      .flush([
+        {
+          id: 'nubank',
+          name: 'Nubank',
+          creditLimit: '3000.00',
+          closingDay: 5,
+          dueDay: 12,
+          paymentAccountId: 'c1',
+          archived: false,
+        },
+      ]);
+    httpMock
+      .expectOne(`${API}/categories`)
+      .flush([{ id: 'lazer', name: 'Lazer', kind: 'EXPENSE', color: null, icon: null }]);
     await fixture.whenStable();
 
     expect(element.textContent).toContain('Nova assinatura');
     expect(element.textContent).not.toContain('Renda');
-    expect(element.textContent).toContain('Cai todo mês na fatura do cartão');
     const form = fixture.componentInstance.form;
-    expect(form.controls.dayOfMonth.value).toBe(new Date().getDate());
+    // F25 T2: assinatura não tem dia de pagamento
+    expect(element.textContent).not.toContain('Quando');
+    expect(element.textContent).not.toContain('Dia do mês');
+    expect(element.textContent).toContain('Entra em toda fatura do cartão');
 
     form.patchValue({ amount: '39.90', description: 'Netflix', categoryId: 'lazer' });
     await tick(350);
     httpMock.match(`${API}/recurring/preview`).forEach((r) => r.flush({ nextDates: [] }));
     const salvando = fixture.componentInstance.save();
     const post = httpMock.expectOne({ method: 'POST', url: `${API}/recurring` });
-    expect(post.request.body).toMatchObject({ type: 'EXPENSE', cardId: 'nubank', accountId: null, description: 'Netflix' });
+    expect(post.request.body).toMatchObject({
+      type: 'EXPENSE',
+      cardId: 'nubank',
+      accountId: null,
+      description: 'Netflix',
+      ruleType: 'DAY_OF_MONTH',
+      dayOfMonth: 1,
+    });
     post.flush({});
     await salvando;
     expect(dialogRef.close).toHaveBeenCalledWith(true);

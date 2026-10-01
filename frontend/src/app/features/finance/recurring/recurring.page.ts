@@ -157,6 +157,9 @@ export class RecurringPage {
 
   /** "5º dia útil", "último dia útil" ou "dia 20" (com o ajuste), e a próxima data. */
   protected quando(fixo: Recurring): string {
+    if (fixo.cardId) {
+      return 'toda fatura';
+    }
     const regra =
       fixo.ruleType === 'BUSINESS_DAY'
         ? `${fixo.businessDay}º dia útil`
