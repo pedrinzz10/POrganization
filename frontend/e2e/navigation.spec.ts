@@ -6,6 +6,7 @@ const SECOES = [
   { nome: 'Compromissos', url: '/compromissos' },
   { nome: 'Estudos', url: '/estudos' },
   { nome: 'Finanças', url: '/financas' },
+  { nome: 'Estatísticas', url: '/estatisticas' },
   { nome: 'Configurações', url: '/configuracoes' },
 ];
 
@@ -34,7 +35,9 @@ test('cada item do menu navega para a sua seção e fica destacado', async ({ pa
 test('no computador o menu fica sempre aberto, sem botão de menu', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/hoje');
-  await expect(page.getByRole('navigation', { name: 'Menu principal' }).getByRole('link', { name: 'Estudos' })).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: 'Menu principal' }).getByRole('link', { name: 'Estudos' }),
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
 });
 
@@ -42,7 +45,9 @@ test('no computador o menu fica sempre aberto, sem botão de menu', async ({ pag
 test('no celular o menu vira gaveta aberta pelo botão', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto('/hoje');
-  const linkEstudos = page.getByRole('navigation', { name: 'Menu principal' }).getByRole('link', { name: 'Estudos' });
+  const linkEstudos = page
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('link', { name: 'Estudos' });
 
   await expect(linkEstudos).toBeHidden();
   await page.getByRole('button', { name: 'Abrir menu' }).click();

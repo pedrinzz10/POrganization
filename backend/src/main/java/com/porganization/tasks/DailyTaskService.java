@@ -4,6 +4,7 @@ import com.porganization.commitments.recurrence.WeekDay;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import com.porganization.settings.UserSettingsService;
+import com.porganization.tasks.DailyTaskDtos.DayCount;
 import com.porganization.tasks.DailyTaskDtos.DayTask;
 import com.porganization.tasks.DailyTaskDtos.TaskRequest;
 import com.porganization.tasks.DailyTaskDtos.TaskResponse;
@@ -11,6 +12,8 @@ import com.porganization.tasks.DailyTaskDtos.TaskStatsResponse;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,6 +140,45 @@ public class DailyTaskService {
                 .map(t -> new DayTask(t.getId(), t.getTitle(), t.getEmoji(), t.getPosition(), done.contains(t.getId()),
                         t.getTimerMinutes()))
                 .toList();
+    }
+
+    /** Maior intervalo do histórico por dia, em dias. */
+    static final int HISTORY_MAX_DAYS = 366;
+
+    /**
+     * Por dia de from a to (dias futuros ficam de fora): quantas tarefas ativas eram devidas e quantas
+     * foram feitas. Alimenta o mapa de calor da tela Estatísticas (S01).
+     */
+    @Transactional(readOnly = true)
+    public List<DayCount> history(UUID userId, LocalDate from, LocalDate to) {
+        if (to.isBefore(from) || ChronoUnit.DAYS.between(from, to) >= HISTORY_MAX_DAYS) {
+            throw new InvalidRequestException("to", "intervalo de 1 a " + HISTORY_MAX_DAYS + " dias");
+        }
+        LocalDate today = today(userId);
+        LocalDate end = to.isAfter(today) ? today : to;
+        List<DailyTask> active = tasks.findByUserIdAndArchivedFalseOrderByPositionAscTitleAsc(userId);
+        Map<UUID, TaskSchedule> byTask = schedulesOf(active);
+        Map<LocalDate, Set<UUID>> done = new HashMap<>();
+        jdbc.query("select task_id, day from daily_task_completions where user_id = ? and day between ? and ?",
+                rs -> {
+                    done.computeIfAbsent(rs.getObject(2, LocalDate.class), k -> new HashSet<>()).add(rs.getObject(1, UUID.class));
+                }, userId, Date.valueOf(from), Date.valueOf(end));
+        List<DayCount> days = new ArrayList<>();
+        for (LocalDate day = from; !day.isAfter(end); day = day.plusDays(1)) {
+            Set<UUID> doneOnDay = done.getOrDefault(day, Set.of());
+            int due = 0;
+            int completed = 0;
+            for (DailyTask t : active) {
+                if (byTask.get(t.getId()).isDue(day)) {
+                    due++;
+                    if (doneOnDay.contains(t.getId())) {
+                        completed++;
+                    }
+                }
+            }
+            days.add(new DayCount(day, due, completed));
+        }
+        return days;
     }
 
     /** Sequência e % dos últimos 30 dias de cada tarefa (ativas e arquivadas). */

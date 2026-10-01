@@ -2212,6 +2212,75 @@ O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN
 ]
 ```
 
+### Etapa 8: Estatísticas
+
+Uma tela que junta os números de tarefas, estudos e finanças. Os dados já existem nas outras APIs; só o histórico diário das tarefas é novo.
+
+```json
+[
+  {
+    "id": "S01",
+    "etapa": "8-estatisticas",
+    "titulo": "Tela Estatísticas",
+    "acao": "Item 'Estatísticas' no menu (/estatisticas) que junta o que estava espalhado, num período de 7, 30 ou 90 dias: cards de % das tarefas feitas, maior sequência, tempo de estudo e revisões; mapa de calor das tarefas por dia (colunas de segunda a domingo) e sequência/% de cada tarefa; minutos de estudo por semana e por matéria; entradas, saídas e saldo do mês. Endpoint novo GET /api/tasks/history?from&to (máx. 366 dias, futuro de fora) com devidas x feitas por dia, contando as tarefas ativas.",
+    "story": "Como Pedro, quero uma tela que mostre o meu progresso em tarefas, estudos e dinheiro num lugar só.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/tasks/DailyTaskService.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskController.java",
+      "backend/src/main/java/com/porganization/tasks/DailyTaskDtos.java",
+      "frontend/src/app/features/stats/stats.page.ts",
+      "frontend/src/app/features/stats/stats.page.html",
+      "frontend/src/app/features/stats/stats.page.scss",
+      "frontend/src/app/app.routes.ts",
+      "frontend/src/app/layout/shell/shell.component.ts"
+    ],
+    "dependencias": [
+      "T02",
+      "E08",
+      "F11"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "GET /api/tasks/history devolve, por dia de from até hoje (dias futuros de fora), quantas tarefas ativas eram devidas e quantas foram feitas; intervalo acima de 366 dias → 400."
+      },
+      {
+        "id": "CA2",
+        "descricao": "A tela Estatísticas mostra, no período escolhido (padrão 30 dias), a % de tarefas feitas, a maior sequência, o tempo de estudo, as revisões, o mapa de calor, os minutos por matéria (só com estudo) e o resumo do mês; trocar o período busca de novo tarefas e estudos."
+      },
+      {
+        "id": "CA3",
+        "descricao": "O item Estatísticas está no menu e abre a tela com h1 'Estatísticas'."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/tasks/DailyTaskControllerIT.java",
+        "cenario": "Água todo dia + Academia seg/qua: seg 2 devidas/1 feita, ter 1/0, qua 2/1; quinta em diante fora; 2025-01-01 a hoje → 400."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/stats/stats.page.spec.ts",
+        "cenario": "3 de 4 devidas → 75%; maior sequência 🔥 5; 95 min → 1h35; matéria sem minutos fora; saldo 600,00; trocar para 7 dias busca from = hoje-6."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/navigation.spec.ts",
+        "cenario": "Menu > Estatísticas leva a /estatisticas com h1 'Estatísticas'."
+      }
+    ]
+  }
+]
+```
+
 ## 5. Resumo da ordem
 
 | Etapa | Specs | Resultado ao final |
@@ -2223,6 +2292,7 @@ O visual do app segue o Intelly Design System (frontend/src/design-system/DESIGN
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |
 | 7 Design | U01 | App no Intelly Design System: tema, tela Hoje em painel, agenda semanal, gráficos e tema escuro |
+| 8 Estatísticas | S01 | Tela com o progresso de tarefas (mapa de calor), estudos e finanças por período |
 
 Total: 68 specs. A B13 (proteção de segredos) entrou depois do plano original e vem logo após a B01, antes de qualquer credencial existir. A E05 (FSRS) não depende de nada e pode ser feita a qualquer momento, inclusive como exercício de Java puro antes da etapa 3.
 
