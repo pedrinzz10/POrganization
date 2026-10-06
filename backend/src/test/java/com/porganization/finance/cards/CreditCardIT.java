@@ -29,6 +29,8 @@ class CreditCardIT extends FinanceFixture {
     // F05 T3 (CA3)
     @Test
     void compraNoCartaoNaoMexeNoSaldoDaContaEEntraNaFatura() throws Exception {
+        // Antes do fechamento (dia 5): a fatura de outubro ainda está aberta
+        clock.setInstant(java.time.Instant.parse("2026-10-01T15:00:00Z"));
         String conta = conta("Corrente", "1000.00");
         String cartao = cartao(conta, 5, 12);
 

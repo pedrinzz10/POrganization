@@ -3,14 +3,19 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PushService } from '../../core/push/push.service';
 import { AppearanceComponent } from './appearance.component';
+import { DataResetComponent } from './data-reset.component';
 import { GoogleCalendarComponent } from './google-calendar.component';
 import { PreferencesFormComponent } from './preferences-form.component';
 
-/** Configurações: aparência (tema), preferências de notificação, notificações neste navegador e Google Calendar. */
+/**
+ * Configurações: aparência (tema), preferências de notificação, notificações neste navegador,
+ * Google Calendar e apagar os dados de uma seção.
+ */
 @Component({
   selector: 'app-settings-page',
   imports: [
     AppearanceComponent,
+    DataResetComponent,
     GoogleCalendarComponent,
     MatButtonModule,
     MatIconModule,
@@ -58,6 +63,11 @@ import { PreferencesFormComponent } from './preferences-form.component';
     <section class="bloco" aria-labelledby="config-google">
       <h2 id="config-google" class="bloco__titulo">Google Calendar</h2>
       <app-google-calendar [result]="google()" />
+    </section>
+
+    <section class="bloco" aria-labelledby="config-apagar">
+      <h2 id="config-apagar" class="bloco__titulo">Apagar dados</h2>
+      <app-data-reset />
     </section>
   `,
   styles: `

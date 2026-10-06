@@ -341,6 +341,79 @@ Regras:
       { "id": "T1", "criterio": "CA1", "tipo": "e2e", "arquivo": "README.md", "cenario": "Dado um clone novo, quando executo os comandos da seção 'Rodando localmente' em ordem, então /api/health e http://localhost:4200 respondem." },
       { "id": "T2", "criterio": "CA2", "tipo": "unitario", "arquivo": "scripts/check-env-docs.sh", "cenario": "Dado os nomes ${VAR} em application*.yml e environment*.ts, então cada um aparece no README e em .env.example." }
     ]
+  },
+  {
+    "id": "B14",
+    "etapa": "1-base",
+    "titulo": "Apagar os dados de uma seção",
+    "acao": "DELETE /api/data/{section} (commitments, tasks, studies ou finance) apaga numa transação tudo o que o usuário tem na seção; seção desconhecida é 404. As tabelas filhas com 'on delete cascade' saem junto; em Finanças a ordem respeita as FKs 'restrict' (lançamentos, agendados, orçamentos, metas, faturas, cartões, contas, categorias, tags) e finance_setup sai para as categorias padrão voltarem no próximo acesso. Preferências, notificações e a conexão com o Google ficam; eventos já publicados no Google Calendar não são apagados. Configurações ganha o bloco 'Apagar dados' com um botão por seção; o diálogo de confirmação ganha typeToConfirm e só libera 'Apagar' depois de digitar APAGAR. Apagar tarefas também cancela os cronômetros salvos no aparelho.",
+    "story": "Como Pedro, quero zerar uma seção do app (ex.: as finanças de teste) sem mexer nas outras.",
+    "arquivos": [
+      "backend/src/main/java/com/porganization/settings/DataResetController.java",
+      "backend/src/main/java/com/porganization/settings/DataResetService.java",
+      "frontend/src/app/features/settings/data-reset.component.ts",
+      "frontend/src/app/features/settings/settings.page.ts",
+      "frontend/src/app/shared/confirm-dialog/confirm.dialog.ts"
+    ],
+    "dependencias": [
+      "B04",
+      "C01",
+      "T01",
+      "E01",
+      "F01"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "DELETE /api/data/{section} apaga só a seção pedida e só do usuário logado (204); seção desconhecida responde 404 e sem login 401."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Apagar finanças funciona com cartão, fatura, compra parcelada, tag e assinatura no cartão; depois as contas vêm vazias e as categorias padrão são criadas de novo."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Configurações mostra 'Apagar dados' com Compromissos, Tarefas, Estudos e Finanças; o botão do diálogo só libera com APAGAR digitado; cancelar não chama a API; apagar tarefas limpa os cronômetros."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/settings/DataResetIT.java",
+        "cenario": "Compromisso, tarefa e matéria do usuário e de outro; apagar cada seção zera só ela e os dados do outro ficam."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/settings/DataResetIT.java",
+        "cenario": "Conta, cartão, compra em 3x, gasto com tag e Netflix no cartão → DELETE finance → tabelas vazias, conta do outro fica, GET categories volta com as padrão."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/settings/DataResetIT.java",
+        "cenario": "DELETE /api/data/tudo → 404; sem JWT → 401."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA3",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/settings/data-reset.component.spec.ts",
+        "cenario": "Quatro botões; 'apagar' não libera, 'APAGAR' libera; DELETE /data/tasks limpa os cronômetros; Cancelar não chama a API."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA3",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/settings-data-reset.spec.ts",
+        "cenario": "Configurações → Apagar finanças → digita APAGAR → DELETE /api/data/finance e aviso 'Finanças: dados apagados.'"
+      }
+    ]
   }
 ]
 ```
@@ -2396,7 +2469,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 
 | Etapa | Specs | Resultado ao final |
 |---|---|---|
-| 1 Base | B01 a B13 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase e proteção contra vazamento de segredos |
+| 1 Base | B01 a B14 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
