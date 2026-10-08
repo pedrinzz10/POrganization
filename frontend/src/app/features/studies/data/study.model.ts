@@ -19,6 +19,22 @@ export interface Subject {
   tags: Tag[];
   /** Dias em que a matéria pode ter aula; vazio = qualquer dia. */
   studyDays: WeekDay[];
+  /** FREE: título digitado ao terminar; PLANNED: a matéria tem a lista de aulas (E14). */
+  lessonMode: LessonMode;
+  /** Aulas definidas: total e quantas já foram estudadas. */
+  plannedTotal: number;
+  plannedDone: number;
+}
+
+export type LessonMode = 'FREE' | 'PLANNED';
+
+/** Aula definida de uma matéria, na ordem do curso; lessonId preenchido quando já foi estudada. */
+export interface PlannedLesson {
+  id: string;
+  title: string;
+  position: number;
+  lessonId: string | null;
+  studiedAt: string | null;
 }
 
 export interface SubjectRequest {
@@ -30,6 +46,8 @@ export interface SubjectRequest {
   archived?: boolean;
   /** Lista vazia = qualquer dia; ausente mantém como está. */
   studyDays?: WeekDay[];
+  /** Ausente mantém como está (na criação, FREE). */
+  lessonMode?: LessonMode;
 }
 
 /** Corpo completo para PUT a partir de uma matéria existente, com alterações por cima. */

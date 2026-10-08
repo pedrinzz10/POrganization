@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
 import { StudiesService } from '../data/studies.service';
 import { Subject, toSubjectRequest } from '../data/study.model';
+import { PlannedLessonsData, PlannedLessonsDialog } from './planned-lessons.dialog';
 import { SubjectFormData, SubjectFormDialog } from './subject-form.dialog';
 
 /**
@@ -88,6 +89,17 @@ export class SubjectsPage {
     } catch (error) {
       this.snackBar.open(problemMessage(error, 'Não foi possível salvar.'), 'OK', { duration: 5000 });
     }
+  }
+
+  /** Lista de aulas da matéria; ao fechar, atualiza a contagem "Aulas 2/10". */
+  protected abrirAulas(materia: Subject): void {
+    this.dialog
+      .open<PlannedLessonsDialog, PlannedLessonsData>(PlannedLessonsDialog, {
+        data: { subject: materia },
+        width: 'min(560px, 95vw)',
+      })
+      .afterClosed()
+      .subscribe(() => this.materias.reload());
   }
 
   protected abrir(materia?: Subject): void {

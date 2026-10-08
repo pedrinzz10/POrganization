@@ -1009,6 +1009,85 @@ Regras:
         "cenario": "Mover a aula tira de hoje na hora, POST /moves {subjectId, from, to} e recarrega a semana; soltar só de hoje em diante e na mesma semana."
       }
     ]
+  },
+  {
+    "id": "E14",
+    "etapa": "3-estudos",
+    "titulo": "Matérias com aulas definidas",
+    "acao": "Matéria ganha o tipo lesson_mode: FREE (como antes, o título da aula é digitado ao terminar o timer) ou PLANNED (a matéria tem a lista de aulas na ordem do curso). V29 cria planned_lessons (título, position 1..N, lesson_id preenchido quando estudada) com RLS. API /api/subjects/{id}/planned-lessons: GET, POST {titles} inclui no fim ignorando linhas vazias (até 500 por matéria), PATCH /{id} renomeia, DELETE /{id} renumera, PUT /order grava a sequência (lista exata). SubjectResponse traz lessonMode, plannedTotal e plannedDone. Front: 'Tipo' (Livre / Com aulas definidas) no formulário da matéria; na lista, botão 'Aulas 3/12' abre o diálogo com as aulas numeradas, arrastar para reordenar, clicar no nome para renomear, excluir, estudadas marcadas e um campo para colar várias aulas, uma por linha.",
+    "story": "Como Pedro, quero cadastrar as aulas de um curso na ordem em que vou estudar, e deixar matérias livres quando não tenho um roteiro.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V29__planned_lessons.sql",
+      "backend/src/main/java/com/porganization/studies/PlannedLessonService.java",
+      "backend/src/main/java/com/porganization/studies/PlannedLessonController.java",
+      "backend/src/main/java/com/porganization/studies/SubjectService.java",
+      "frontend/src/app/features/studies/subjects/planned-lessons.dialog.ts",
+      "frontend/src/app/features/studies/subjects/subject-form.dialog.html",
+      "frontend/src/app/features/studies/subjects/subjects.page.html"
+    ],
+    "dependencias": [
+      "E02",
+      "E03"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Criar ou editar matéria com lessonMode PLANNED grava o tipo; a lista de matérias traz lessonMode, plannedTotal e plannedDone e mostra 'Aulas feitas/total' só nas PLANNED."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Incluir várias aulas põe no fim na ordem (linhas vazias ignoradas); reordenar exige a lista exata; renomear e excluir funcionam e a sequência fica 1..N sem buracos."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Matéria de outro usuário responde 404; lista só com linhas vazias e lessonMode inválido respondem 400."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/PlannedLessonIT.java",
+        "cenario": "Java PLANNED com 3 aulas (uma linha vazia) e Inglês FREE → GET /subjects com 3/0 e 0; PUT muda Inglês para PLANNED."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/PlannedLessonIT.java",
+        "cenario": "A, B, C → ordem C, A, B; lista incompleta 400; renomeia; exclui e renumera; nova entra na posição 3."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/PlannedLessonIT.java",
+        "cenario": "Outro usuário 404 no GET e no POST; titles só com espaço 400; lessonMode OUTRO 400."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/subjects/planned-lessons.dialog.spec.ts",
+        "cenario": "Lista com a estudada marcada; colar linhas manda os títulos limpos; arrastar manda a ordem e volta se falhar; excluir renumera."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/subjects/subjects.page.spec.ts",
+        "cenario": "Java PLANNED 3/12 mostra 'Aulas 3/12'; Inglês FREE não mostra o botão."
+      },
+      {
+        "id": "T6",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/study-planned-lessons.spec.ts",
+        "cenario": "Matérias → Aulas de Java → cola 3 aulas → aparecem em ordem com '0 de 3 estudadas' e o botão vira 'Aulas 0/3'."
+      }
+    ]
   }
 ]
 ```
@@ -2513,7 +2592,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 |---|---|---|
 | 1 Base | B01 a B15 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
-| 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
+| 3 Estudos | E01 a E14 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |

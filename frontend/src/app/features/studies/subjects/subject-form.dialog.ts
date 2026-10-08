@@ -13,7 +13,7 @@ import { firstValueFrom, startWith } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
 import { WeekDay } from '../../commitments/data/commitment.model';
 import { StudiesService } from '../data/studies.service';
-import { Subject, SubjectRequest, Tag } from '../data/study.model';
+import { LessonMode, Subject, SubjectRequest, Tag } from '../data/study.model';
 
 export interface SubjectFormData {
   /** Matéria a editar; sem ela, cria uma nova. */
@@ -35,8 +35,9 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
 }
 
 /**
- * Criar ou editar matéria, com seletor de tags que cria tag nova no próprio campo e os dias em que
- * a matéria pode ter aula (todos marcados = qualquer dia).
+ * Criar ou editar matéria, com seletor de tags que cria tag nova no próprio campo, os dias em que
+ * a matéria pode ter aula (todos marcados = qualquer dia) e o tipo: livre ou com aulas definidas.
+ * A lista de aulas é cadastrada depois, pelo botão "Aulas" da matéria.
  */
 @Component({
   selector: 'app-subject-form-dialog',
@@ -104,6 +105,7 @@ export class SubjectFormDialog {
     sessionsPerWeek: [this.editing?.sessionsPerWeek ?? 2, [Validators.required, Validators.min(0), Validators.max(21)]],
     lessonMinutes: [this.editing?.lessonMinutes ?? 50, [Validators.required, Validators.min(5), Validators.max(240)]],
     studyDays: [this.editing?.studyDays?.length ? this.editing.studyDays : DIAS.map((d) => d.dia), atLeastOneDay],
+    lessonMode: [this.editing?.lessonMode ?? ('FREE' as LessonMode)],
   });
 
   private readonly valores = toSignal(this.form.valueChanges.pipe(startWith(this.form.getRawValue())), {
@@ -189,6 +191,7 @@ export class SubjectFormDialog {
       archived: this.editing?.archived ?? false,
       // Todos os dias = qualquer dia (lista vazia); senão, na ordem da semana
       studyDays: v.studyDays.length === 7 ? [] : DIAS.map((d) => d.dia).filter((d) => v.studyDays.includes(d)),
+      lessonMode: v.lessonMode,
     };
     await this.run(() =>
       firstValueFrom(

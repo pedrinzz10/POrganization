@@ -10,7 +10,7 @@ import { SubjectsPage } from './subjects.page';
 const API = environment.apiUrl;
 
 function materia(nome: string, ordem: number, tags: { id: string; name: string }[] = []): Subject {
-  return { id: `id-${nome}`, name: nome, color: null, priorityOrder: ordem, sessionsPerWeek: 2, lessonMinutes: 50, archived: false, tags, studyDays: [] };
+  return { id: `id-${nome}`, name: nome, color: null, priorityOrder: ordem, sessionsPerWeek: 2, lessonMinutes: 50, archived: false, tags, studyDays: [], lessonMode: 'FREE', plannedTotal: 0, plannedDone: 0 };
 }
 
 // Com consultas pendentes, whenStable() espera elas terminarem; só deixamos a fila andar
@@ -116,5 +116,13 @@ describe('SubjectsPage', () => {
     await tick();
     await fixture.whenStable();
     expect(element.textContent).toContain('3x por semana');
+  });
+
+  // E14 T5 (CA1)
+  it('matéria com aulas definidas mostra o botão com o progresso', async () => {
+    await carregar([{ ...materia('Java', 1), lessonMode: 'PLANNED', plannedTotal: 12, plannedDone: 3 }, materia('Inglês', 2)]);
+    const botoes = Array.from(element.querySelectorAll('.materia__aulas'));
+    expect(botoes.length).toBe(1);
+    expect(botoes[0].textContent).toContain('Aulas 3/12');
   });
 });
