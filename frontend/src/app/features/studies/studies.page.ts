@@ -4,13 +4,14 @@ import { StudyAgendaPage } from './agenda/study-agenda.page';
 import { StudyHistoryPage } from './history/study-history.page';
 import { SubjectsPage } from './subjects/subjects.page';
 import { StudyTodayPage } from './today/study-today.page';
+import { SectionTitleComponent } from '../settings/section-title.component';
 
 /** Seção Estudos: plano do dia com o timer, agenda (dia, semana, mês), matérias e histórico. */
 @Component({
   selector: 'app-studies-page',
-  imports: [MatTabsModule, StudyAgendaPage, StudyTodayPage, SubjectsPage, StudyHistoryPage],
+  imports: [SectionTitleComponent, MatTabsModule, StudyAgendaPage, StudyTodayPage, SubjectsPage, StudyHistoryPage],
   template: `
-    <h1 class="titulo">Estudos</h1>
+    <app-section-title secao="studies">Estudos</app-section-title>
     <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
       <mat-tab label="Hoje">
         <div class="painel"><app-study-today-page /></div>
@@ -31,10 +32,6 @@ import { StudyTodayPage } from './today/study-today.page';
     </mat-tab-group>
   `,
   styles: `
-    .titulo {
-      font: var(--mat-sys-headline-medium);
-      margin: 8px 0 16px;
-    }
     .painel {
       padding: 16px 0;
     }

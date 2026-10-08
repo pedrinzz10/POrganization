@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IsActiveMatchOptions, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { SectionTitleComponent } from '../settings/section-title.component';
 
 /** Uma aba por tela de finanças; cada aba é uma rota filha (/financas/contas, ...). */
 export const FINANCE_TABS = [
@@ -16,9 +17,9 @@ export const FINANCE_TABS = [
 /** Seção Finanças: título, abas de navegação e a tela da aba escolhida. */
 @Component({
   selector: 'app-finance-page',
-  imports: [MatTabsModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [SectionTitleComponent, MatTabsModule, RouterLink, RouterLinkActive, RouterOutlet],
   template: `
-    <h1 class="titulo">Finanças</h1>
+    <app-section-title secao="finance">Finanças</app-section-title>
     <nav mat-tab-nav-bar [tabPanel]="painel" mat-stretch-tabs="false" aria-label="Telas de finanças">
       @for (aba of abas; track aba.path) {
         <a
@@ -37,10 +38,6 @@ export const FINANCE_TABS = [
     </mat-tab-nav-panel>
   `,
   styles: `
-    .titulo {
-      font: var(--mat-sys-headline-medium);
-      margin: 8px 0 16px;
-    }
     .painel {
       padding: 16px 0;
     }

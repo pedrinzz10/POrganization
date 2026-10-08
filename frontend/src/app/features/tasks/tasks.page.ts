@@ -19,6 +19,7 @@ import { WeekDay } from '../commitments/data/commitment.model';
 import { DailyTask, TaskStats } from './data/task.model';
 import { TasksService } from './data/tasks.service';
 import { TaskFormData, TaskFormDialog } from './task-form.dialog';
+import { SectionTitleComponent } from '../settings/section-title.component';
 
 const NOMES: Record<WeekDay, string> = {
   MON: 'seg',
@@ -38,6 +39,7 @@ const ORDEM: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 @Component({
   selector: 'app-tasks-page',
   imports: [
+    SectionTitleComponent,
     CdkDropList,
     CdkDrag,
     CdkDragHandle,
@@ -46,7 +48,7 @@ const ORDEM: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     MatProgressBarModule,
   ],
   template: `
-    <h1 class="titulo">Tarefas</h1>
+    <app-section-title secao="tasks">Tarefas</app-section-title>
     <div class="topo">
       <p class="dica">Hábitos do dia a dia. Marque na tela Hoje; aqui você organiza e acompanha.</p>
       <button mat-flat-button type="button" (click)="editar()">
@@ -134,10 +136,6 @@ const ORDEM: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     }
   `,
   styles: `
-    .titulo {
-      font: var(--mat-sys-headline-medium);
-      margin: 8px 0 16px;
-    }
     .topo {
       display: flex;
       align-items: center;

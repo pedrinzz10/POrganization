@@ -414,6 +414,48 @@ Regras:
         "cenario": "Configurações → Apagar finanças → digita APAGAR → DELETE /api/data/finance e aviso 'Finanças: dados apagados.'"
       }
     ]
+  },
+  {
+    "id": "B15",
+    "etapa": "1-base",
+    "titulo": "Botão Apagar dados no título de cada seção",
+    "acao": "O botão da B14 ficava só no fim de Configurações. Compromissos, Tarefas, Estudos e Finanças trocam o h1 por app-section-title, que mostra o título e o botão 'Apagar dados' ao lado (mesmo diálogo com APAGAR). Depois de apagar, a tela é aberta de novo para todas as partes buscarem os dados. A lógica sai do componente de Configurações para o DataResetService, usado pelos dois.",
+    "story": "Como Pedro, quero apagar os dados de uma seção direto nela, sem procurar em Configurações.",
+    "arquivos": [
+      "frontend/src/app/features/settings/data-reset.service.ts",
+      "frontend/src/app/features/settings/section-title.component.ts",
+      "frontend/src/app/features/settings/data-reset.component.ts",
+      "frontend/src/app/features/commitments/commitments.page.html",
+      "frontend/src/app/features/tasks/tasks.page.ts",
+      "frontend/src/app/features/studies/studies.page.ts",
+      "frontend/src/app/features/finance/finance.page.ts"
+    ],
+    "dependencias": [
+      "B14"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "As quatro seções mostram 'Apagar dados' ao lado do título; confirmar com APAGAR chama DELETE /api/data/{secao}, mostra o aviso e recarrega a tela; cancelar não recarrega."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/settings/section-title.component.spec.ts",
+        "cenario": "Título e botão; apagou → navega de novo; cancelou → não navega."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/settings-data-reset.spec.ts",
+        "cenario": "Botão visível nas quatro seções; em Finanças, APAGAR → DELETE /api/data/finance e continua em /financas."
+      }
+    ]
   }
 ]
 ```
@@ -2469,7 +2511,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 
 | Etapa | Specs | Resultado ao final |
 |---|---|---|
-| 1 Base | B01 a B14 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
+| 1 Base | B01 a B15 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E13 | Matérias com tags e prioridade, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
