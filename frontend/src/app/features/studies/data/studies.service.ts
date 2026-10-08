@@ -117,9 +117,24 @@ export class StudiesService {
     return this.http.post<StudyCalendarDay[]>(`${this.api}/study/calendar/moves`, { subjectId, from, to });
   }
 
-  /** Solta as aulas fixadas da matéria na semana do dia informado (volta ao automático). */
-  unpinLessons(subjectId: string, week: string): Observable<void> {
-    return this.http.delete<void>(`${this.api}/study/calendar/pins`, { params: { subjectId, week } });
+  // ---------- plano da semana (E15): "week" é qualquer dia da semana ----------
+
+  /** Sorteia os dias das aulas da semana; devolve a semana. */
+  generateWeek(week: string): Observable<StudyCalendarDay[]> {
+    return this.http.post<StudyCalendarDay[]>(`${this.api}/study/week/generate`, null, { params: { week } });
+  }
+
+  addWeekLesson(subjectId: string, day: string): Observable<StudyCalendarDay[]> {
+    return this.http.post<StudyCalendarDay[]>(`${this.api}/study/week/slots`, { subjectId, day });
+  }
+
+  removeWeekLesson(subjectId: string, day: string): Observable<StudyCalendarDay[]> {
+    return this.http.delete<StudyCalendarDay[]>(`${this.api}/study/week/slots`, { params: { subjectId, day } });
+  }
+
+  /** Volta a semana à previsão automática. */
+  clearWeek(week: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/study/week`, { params: { week } });
   }
 
   /** Agenda de estudos dia a dia, de from a to (inclusivos, no máximo 62 dias). */

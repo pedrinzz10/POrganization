@@ -142,6 +142,52 @@
 }
 
 // ---------- Semana ----------
+.plano {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.plano__selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.plano__dica {
+  flex: 1;
+  min-width: 200px;
+  color: var(--fg-secondary);
+}
+
+.plano__acoes {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.menu__cor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+.menu__vazio {
+  display: block;
+  padding: 12px 16px;
+  color: var(--fg-secondary);
+}
+
 .semana {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -199,6 +245,7 @@
 }
 
 .card--compacto {
+  position: relative;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
@@ -208,6 +255,54 @@
 .card--compacto .card__titulo {
   font-size: 13px;
   line-height: 18px;
+}
+
+.card__tirar {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.card--compacto .card__titulo {
+  padding-right: 18px;
+}
+
+.semana__incluir {
+  margin-top: auto;
+  padding: var(--space-1) var(--space-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-secondary);
+  font: 600 12px/16px var(--font-sans);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--fg-primary);
+  }
 }
 
 .semana__vazio {

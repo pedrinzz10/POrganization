@@ -1,15 +1,14 @@
 package com.porganization.studies;
 
 import com.porganization.commitments.recurrence.WeekDay;
-import com.porganization.common.ConflictException;
 import com.porganization.common.InvalidRequestException;
-import com.porganization.common.NotFoundException;
 import com.porganization.settings.UserSettingsService;
 import com.porganization.studies.DailyStudyPlanner.DueReview;
 import com.porganization.studies.DailyStudyPlanner.SubjectGoal;
 import com.porganization.studies.StudyCalendarPlanner.Day;
 import com.porganization.studies.StudyCalendarPlanner.DoneSession;
-import com.porganization.studies.StudyCalendarPlanner.Kind;
+import com.porganization.studies.StudyCalendarPlanner.PendingLesson;
+import com.porganization.studies.StudyCalendarPlanner.WeekPlans;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -21,6 +20,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,14 +33,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Busca sessões, revisões, metas e aulas fixadas do intervalo e entrega ao StudyCalendarPlanner, no
- * fuso do usuário. Também move uma aula de dia (arrastar na agenda) e devolve a semana ao automático.
+ * Busca sessões, revisões, metas, aulas fixadas, planos da semana e aulas definidas do intervalo e
+ * entrega ao StudyCalendarPlanner, no fuso do usuário. Mudar o plano fica no StudyWeekPlanService.
  */
 @Service
 public class StudyCalendarService {
 
     /** A grade do mês tem 42 dias; um pouco de folga para quem pedir intervalos maiores. */
     static final int MAX_DAYS = 62;
+
+    /** O que a distribuição precisa saber da semana de hoje. */
+    public record WeekContext(LocalDate today, List<SubjectGoal> goals, Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday) {
+    }
 
     private final ReviewItemRepository reviewItems;
     private final LessonRepository lessons;
@@ -61,6 +65,10 @@ public class StudyCalendarService {
         this.clock = clock;
     }
 
+    public LocalDate today(UUID userId) {
+        return LocalDate.now(clock.withZone(userSettings.zoneOf(userId)));
+    }
+
     @Transactional(readOnly = true)
     public List<Day> calendar(UUID userId, LocalDate from, LocalDate to) {
         if (to.isBefore(from)) {
@@ -71,18 +79,16 @@ public class StudyCalendarService {
         }
         ZoneId zone = userSettings.zoneOf(userId);
         LocalDate today = LocalDate.now(clock.withZone(zone));
+        // Consulta no futuro: calcula desde hoje, para as aulas definidas seguirem a sequência da semana de hoje
+        LocalDate start = from.isAfter(today) ? today : from;
 
         List<Subject> all = subjects.findByUserIdOrderByPriorityOrderAsc(userId);
         Map<UUID, Subject> subjectById = all.stream().collect(Collectors.toMap(Subject::getId, Function.identity()));
-        List<SubjectGoal> goals = all.stream()
-                .filter(s -> !s.isArchived())
-                .map(s -> new SubjectGoal(s.getId(), s.getName(), s.getColor(), s.getPriorityOrder(), s.getSessionsPerWeek(),
-                        s.getLessonMinutes(), s.getStudyDays().stream().map(WeekDay::toDayOfWeek).collect(Collectors.toSet())))
-                .toList();
+        List<SubjectGoal> goals = goals(all);
 
         // Sessões concluídas do intervalo e da semana de hoje (a meta desconta o que já foi feito)
-        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate sessionsFrom = from.isBefore(monday) ? from : monday;
+        LocalDate monday = mondayOf(today);
+        LocalDate sessionsFrom = start.isBefore(monday) ? start : monday;
         LocalDate sessionsTo = to.isAfter(today) ? to : today;
         List<StudySession> finished = sessions.findByUserIdAndStatusAndStartedAtBetween(userId, SessionStatus.FINISHED,
                 startOf(sessionsFrom, zone), startOf(sessionsTo.plusDays(1), zone));
@@ -112,74 +118,92 @@ public class StudyCalendarService {
                         lessonById.get(i.getLessonId()).getTitle(), i.getDueDate(), i.getReviewMinutes()))
                 .toList();
 
-        Map<UUID, Long> lessonsThisWeek = done.stream()
-                .filter(s -> s.type() == SessionType.LESSON && !s.date().isBefore(monday) && !s.date().isAfter(today))
-                .collect(Collectors.groupingBy(DoneSession::subjectId, Collectors.counting()));
-        Set<UUID> lessonToday = done.stream()
-                .filter(s -> s.type() == SessionType.LESSON && s.date().equals(today))
-                .map(DoneSession::subjectId)
-                .collect(Collectors.toSet());
+        Map<UUID, Long> lessonsThisWeek = lessonsThisWeek(done, today);
+        Set<UUID> lessonToday = lessonToday(done, today);
 
-        // Fixadas da semana de "from" até a de "to" (a distribuição olha a semana inteira)
+        // Fixadas e planos da semana de "start" até a de "to" (a distribuição olha a semana inteira)
+        LocalDate firstMonday = mondayOf(start);
+        LocalDate lastSunday = mondayOf(to).plusDays(6);
         Map<UUID, List<LocalDate>> pins = new HashMap<>();
         jdbc.query("select subject_id, day from study_lesson_pins where user_id = ? and day between ? and ?",
                 rs -> {
                     pins.computeIfAbsent(rs.getObject(1, UUID.class), k -> new ArrayList<>()).add(rs.getObject(2, LocalDate.class));
-                }, userId, Date.valueOf(mondayOf(from)), Date.valueOf(mondayOf(to).plusDays(6)));
+                }, userId, Date.valueOf(firstMonday), Date.valueOf(lastSunday));
 
-        return StudyCalendarPlanner.plan(today, from, to, done, reviews, goals, lessonsThisWeek, lessonToday, pins);
+        List<Day> days = StudyCalendarPlanner.plan(today, start, to, done, reviews, goals, lessonsThisWeek, lessonToday, pins,
+                weekPlans(userId, firstMonday, lastSunday), pendingLessons(userId));
+        return days.stream().filter(d -> !d.date().isBefore(from)).toList();
     }
 
-    /**
-     * Move a aula da matéria de um dia para outro na mesma semana. As outras aulas dela na semana
-     * ficam fixadas onde estão (senão a redistribuição poderia devolver uma aula ao dia de origem).
-     * Devolve a semana atualizada.
-     */
-    @Transactional
-    public List<Day> move(UUID userId, UUID subjectId, LocalDate from, LocalDate to) {
-        LocalDate today = LocalDate.now(clock.withZone(userSettings.zoneOf(userId)));
-        if (from.isBefore(today) || to.isBefore(today)) {
-            throw new InvalidRequestException("to", "só dá para mover aulas de hoje em diante");
-        }
-        LocalDate monday = mondayOf(from);
-        if (!mondayOf(to).equals(monday)) {
-            throw new InvalidRequestException("to", "mova a aula dentro da mesma semana (a meta é semanal)");
-        }
-        Subject subject = subjects.findByIdAndUserId(subjectId, userId)
-                .filter(s -> !s.isArchived())
-                .orElseThrow(() -> new NotFoundException("Matéria não encontrada"));
-        LocalDate sunday = monday.plusDays(6);
-        List<LocalDate> lessonDays = calendar(userId, monday, sunday).stream()
-                .filter(d -> d.items().stream().anyMatch(i -> i.kind() == Kind.LESSON && i.subjectId().equals(subject.getId())))
-                .map(Day::date)
+    /** Hoje, metas ativas e aulas já feitas na semana de hoje (para gerar a semana). */
+    @Transactional(readOnly = true)
+    public WeekContext weekContext(UUID userId) {
+        ZoneId zone = userSettings.zoneOf(userId);
+        LocalDate today = LocalDate.now(clock.withZone(zone));
+        List<Subject> all = subjects.findByUserIdOrderByPriorityOrderAsc(userId);
+        Map<UUID, Subject> subjectById = all.stream().collect(Collectors.toMap(Subject::getId, Function.identity()));
+        List<DoneSession> done = sessions.findByUserIdAndStatusAndStartedAtBetween(userId, SessionStatus.FINISHED,
+                        startOf(mondayOf(today), zone), startOf(today.plusDays(1), zone)).stream()
+                .filter(s -> subjectById.containsKey(s.getSubjectId()))
+                .map(s -> new DoneSession(LocalDate.ofInstant(s.getStartedAt(), zone), s.getSubjectId(), null, null, s.getType(),
+                        null, 0))
                 .toList();
-        if (!lessonDays.contains(from)) {
-            throw new ConflictException("Essa aula não está mais nesse dia. Atualize a agenda.");
-        }
-        if (!from.equals(to) && lessonDays.contains(to)) {
-            throw new ConflictException("Já tem aula de " + subject.getName() + " nesse dia.");
-        }
-        jdbc.update("delete from study_lesson_pins where user_id = ? and subject_id = ? and day between ? and ?",
-                userId, subjectId, Date.valueOf(monday), Date.valueOf(sunday));
-        for (LocalDate day : lessonDays) {
-            LocalDate target = day.equals(from) ? to : day;
-            if (!target.isBefore(today)) {
-                jdbc.update("insert into study_lesson_pins (user_id, subject_id, day) values (?, ?, ?)",
-                        userId, subjectId, Date.valueOf(target));
-            }
-        }
-        return calendar(userId, monday, sunday);
+        return new WeekContext(today, goals(all), lessonsThisWeek(done, today), lessonToday(done, today));
     }
 
-    /** Devolve as aulas da matéria naquela semana à distribuição automática. */
-    @Transactional
-    public void unpin(UUID userId, UUID subjectId, LocalDate anyDayOfWeek) {
-        LocalDate monday = mondayOf(anyDayOfWeek);
-        jdbc.update("delete from study_lesson_pins where user_id = ? and subject_id = ? and day between ? and ?",
-                userId, subjectId, Date.valueOf(monday), Date.valueOf(monday.plusDays(6)));
+    private static List<SubjectGoal> goals(List<Subject> all) {
+        return all.stream()
+                .filter(s -> !s.isArchived())
+                .map(s -> new SubjectGoal(s.getId(), s.getName(), s.getColor(), s.getPriorityOrder(), s.getSessionsPerWeek(),
+                        s.getLessonMinutes(), s.getStudyDays().stream().map(WeekDay::toDayOfWeek).collect(Collectors.toSet())))
+                .toList();
     }
 
-    private static LocalDate mondayOf(LocalDate day) {
+    private static Map<UUID, Long> lessonsThisWeek(List<DoneSession> done, LocalDate today) {
+        LocalDate monday = mondayOf(today);
+        return done.stream()
+                .filter(s -> s.type() == SessionType.LESSON && !s.date().isBefore(monday) && !s.date().isAfter(today))
+                .collect(Collectors.groupingBy(DoneSession::subjectId, Collectors.counting()));
+    }
+
+    private static Set<UUID> lessonToday(List<DoneSession> done, LocalDate today) {
+        return done.stream()
+                .filter(s -> s.type() == SessionType.LESSON && s.date().equals(today))
+                .map(DoneSession::subjectId)
+                .collect(Collectors.toSet());
+    }
+
+    private WeekPlans weekPlans(UUID userId, LocalDate firstMonday, LocalDate lastSunday) {
+        Set<LocalDate> weeks = new HashSet<>(jdbc.queryForList(
+                "select week from study_week_plans where user_id = ? and week between ? and ?", LocalDate.class,
+                userId, Date.valueOf(firstMonday), Date.valueOf(lastSunday)));
+        if (weeks.isEmpty()) {
+            return WeekPlans.NONE;
+        }
+        Map<LocalDate, List<UUID>> slots = new LinkedHashMap<>();
+        jdbc.query("select day, subject_id from study_week_slots where user_id = ? and day between ? and ? order by day, created_at, id",
+                rs -> {
+                    slots.computeIfAbsent(rs.getObject(1, LocalDate.class), k -> new ArrayList<>()).add(rs.getObject(2, UUID.class));
+                }, userId, Date.valueOf(firstMonday), Date.valueOf(lastSunday));
+        return new WeekPlans(weeks, slots);
+    }
+
+    /** Aulas definidas ainda não estudadas das matérias PLANNED, na ordem do curso. */
+    private Map<UUID, List<PendingLesson>> pendingLessons(UUID userId) {
+        Map<UUID, List<PendingLesson>> pending = new HashMap<>();
+        jdbc.query("""
+                select p.subject_id, p.id, p.title
+                from planned_lessons p join subjects s on s.id = p.subject_id
+                where p.user_id = ? and p.lesson_id is null and s.lesson_mode = 'PLANNED'
+                order by p.subject_id, p.position
+                """, rs -> {
+            pending.computeIfAbsent(rs.getObject(1, UUID.class), k -> new ArrayList<>())
+                    .add(new PendingLesson(rs.getObject(2, UUID.class), rs.getString(3)));
+        }, userId);
+        return pending;
+    }
+
+    static LocalDate mondayOf(LocalDate day) {
         return day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 

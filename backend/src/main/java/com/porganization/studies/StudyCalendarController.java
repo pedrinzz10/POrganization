@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,14 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudyCalendarController {
 
     private final StudyCalendarService service;
+    private final StudyWeekPlanService weekPlans;
 
-    public StudyCalendarController(StudyCalendarService service) {
+    public StudyCalendarController(StudyCalendarService service, StudyWeekPlanService weekPlans) {
         this.service = service;
+        this.weekPlans = weekPlans;
     }
 
     /**
      * Agenda de estudos dia a dia entre from e to (inclusivos): o que foi estudado até hoje, as
-     * revisões agendadas e as aulas da meta semanal espalhadas pelos dias que faltam.
+     * revisões agendadas e as aulas da semana (do plano, ou a previsão automática da meta semanal).
      */
     @GetMapping
     public List<Day> calendar(@CurrentUser UUID userId, @RequestParam LocalDate from, @RequestParam LocalDate to) {
@@ -41,13 +41,6 @@ public class StudyCalendarController {
     /** Arrastar na agenda: a aula da matéria vai de "from" para "to" (mesma semana, de hoje em diante). */
     @PostMapping("/moves")
     public List<Day> move(@CurrentUser UUID userId, @Valid @RequestBody MoveRequest request) {
-        return service.move(userId, request.subjectId(), request.from(), request.to());
-    }
-
-    /** "Voltar ao automático": solta as aulas fixadas da matéria na semana do dia informado. */
-    @DeleteMapping("/pins")
-    public ResponseEntity<Void> unpin(@CurrentUser UUID userId, @RequestParam UUID subjectId, @RequestParam LocalDate week) {
-        service.unpin(userId, subjectId, week);
-        return ResponseEntity.noContent().build();
+        return weekPlans.move(userId, request.subjectId(), request.from(), request.to());
     }
 }

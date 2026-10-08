@@ -27,6 +27,9 @@ import java.util.UUID;
  * repete no mesmo dia, nem hoje se já teve aula hoje, e só cai nos dias de estudo da matéria.</li>
  * <li>Aulas fixadas (o usuário arrastou na agenda) ficam no dia escolhido e contam na meta; o
  * resto é que se espalha.</li>
+ * <li>Semana com plano (E15): as aulas são as do plano, no dia escolhido; nada é espalhado.</li>
+ * <li>Matéria com aulas definidas (E14): cada aula da agenda, em ordem de data, recebe a próxima
+ * aula pendente da lista.</li>
  * </ul>
  * É uma previsão: conforme as sessões acontecem, a distribuição do resto da semana muda.
  */
@@ -49,12 +52,34 @@ public final class StudyCalendarPlanner {
             int minutes) {
     }
 
-    /** pinned: aula fixada pelo usuário num dia (não muda com a redistribuição). */
+    /**
+     * pinned: aula fixada pelo usuário num dia (não muda com a redistribuição).
+     * plannedLessonId: na aula sugerida de matéria com aulas definidas, qual aula da lista é (title é o nome dela).
+     */
     public record Item(Kind kind, UUID subjectId, String subjectName, String color, String title, int minutes,
-            SessionType sessionType, boolean overdue, boolean pinned) {
+            SessionType sessionType, boolean overdue, boolean pinned, UUID plannedLessonId) {
+
+        public Item(Kind kind, UUID subjectId, String subjectName, String color, String title, int minutes,
+                SessionType sessionType, boolean overdue, boolean pinned) {
+            this(kind, subjectId, subjectName, color, title, minutes, sessionType, overdue, pinned, null);
+        }
     }
 
-    public record Day(LocalDate date, List<Item> items) {
+    /** planned: a semana do dia tem plano montado pelo usuário (E15). */
+    public record Day(LocalDate date, List<Item> items, boolean planned) {
+
+        public Day(LocalDate date, List<Item> items) {
+            this(date, items, false);
+        }
+    }
+
+    /** Semanas com plano (pela segunda-feira) e as matérias de cada dia, na ordem em que entraram. */
+    public record WeekPlans(Set<LocalDate> weeks, Map<LocalDate, List<UUID>> slots) {
+        public static final WeekPlans NONE = new WeekPlans(Set.of(), Map.of());
+    }
+
+    /** Aula definida ainda não estudada, na ordem do curso. */
+    public record PendingLesson(UUID id, String title) {
     }
 
     /**
@@ -70,6 +95,16 @@ public final class StudyCalendarPlanner {
     /** @param pins dias em que o usuário fixou aula, por matéria */
     public static List<Day> plan(LocalDate today, LocalDate from, LocalDate to, List<DoneSession> done, List<DueReview> reviews,
             List<SubjectGoal> goals, Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins) {
+        return plan(today, from, to, done, reviews, goals, lessonsThisWeek, lessonToday, pins, WeekPlans.NONE, Map.of());
+    }
+
+    /**
+     * @param plans semanas com plano do usuário e as aulas de cada dia
+     * @param pending aulas definidas pendentes por matéria, na ordem do curso
+     */
+    public static List<Day> plan(LocalDate today, LocalDate from, LocalDate to, List<DoneSession> done, List<DueReview> reviews,
+            List<SubjectGoal> goals, Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins,
+            WeekPlans plans, Map<UUID, List<PendingLesson>> pending) {
         Map<LocalDate, List<Item>> byDay = new LinkedHashMap<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
             byDay.put(d, new ArrayList<>());
@@ -94,13 +129,38 @@ public final class StudyCalendarPlanner {
                     }
                 });
 
-        distributeLessons(today, from, to, goals, lessonsThisWeek, lessonToday, pins, byDay);
+        distributeLessons(today, from, to, goals, lessonsThisWeek, lessonToday, pins, plans, byDay);
+        namePlannedLessons(pending, byDay);
 
-        return byDay.entrySet().stream().map(e -> new Day(e.getKey(), e.getValue())).toList();
+        return byDay.entrySet().stream()
+                .map(e -> new Day(e.getKey(), e.getValue(), plans.weeks().contains(mondayOf(e.getKey()))))
+                .toList();
+    }
+
+    /** Em ordem de data, a n-ésima aula sugerida da matéria é a n-ésima aula pendente da lista. */
+    private static void namePlannedLessons(Map<UUID, List<PendingLesson>> pending, Map<LocalDate, List<Item>> byDay) {
+        Map<UUID, Integer> next = new HashMap<>();
+        byDay.values().forEach(items -> items.replaceAll(item -> {
+            List<PendingLesson> lessons = pending.get(item.subjectId());
+            if (item.kind() != Kind.LESSON || lessons == null) {
+                return item;
+            }
+            int index = next.merge(item.subjectId(), 1, Integer::sum) - 1;
+            if (index >= lessons.size()) {
+                return item;
+            }
+            PendingLesson lesson = lessons.get(index);
+            return new Item(item.kind(), item.subjectId(), item.subjectName(), item.color(), lesson.title(), item.minutes(),
+                    item.sessionType(), item.overdue(), item.pinned(), lesson.id());
+        }));
+    }
+
+    static LocalDate mondayOf(LocalDate day) {
+        return day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
     private static void distributeLessons(LocalDate today, LocalDate from, LocalDate to, List<SubjectGoal> goals,
-            Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins,
+            Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins, WeekPlans plans,
             Map<LocalDate, List<Item>> byDay) {
         LocalDate start = from.isAfter(today) ? from : today;
         if (start.isAfter(to)) {
@@ -118,6 +178,20 @@ public final class StudyCalendarPlanner {
                 days.add(d);
             }
             Map<LocalDate, Integer> load = new HashMap<>();
+            if (plans.weeks().contains(monday)) {
+                // Semana com plano: só o que o usuário montou (a de hoje sai se a matéria já teve aula hoje)
+                Map<UUID, SubjectGoal> goalById = new HashMap<>();
+                goals.forEach(g -> goalById.put(g.subjectId(), g));
+                for (LocalDate day : days) {
+                    for (UUID subjectId : plans.slots().getOrDefault(day, List.of())) {
+                        SubjectGoal g = goalById.get(subjectId);
+                        if (g != null && !(currentWeek && day.equals(today) && lessonToday.contains(subjectId))) {
+                            place(g, day, false, load, byDay);
+                        }
+                    }
+                }
+                continue;
+            }
             Map<UUID, Long> needed = new HashMap<>();
             Map<UUID, Set<LocalDate>> pinned = new HashMap<>();
             // 1º as fixadas (de hoje em diante, até a meta): ocupam o dia antes da distribuição automática
