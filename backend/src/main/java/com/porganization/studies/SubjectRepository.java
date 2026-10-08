@@ -13,6 +13,9 @@ public interface SubjectRepository extends Repository<Subject, UUID> {
 
     Subject saveAndFlush(Subject subject);
 
+    /** Grava as mudanças pendentes antes das consultas por SQL (pré-requisitos e contagens). */
+    void flush();
+
     void delete(Subject subject);
 
     Optional<Subject> findByIdAndUserId(UUID id, UUID userId);

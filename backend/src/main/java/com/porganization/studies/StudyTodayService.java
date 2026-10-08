@@ -37,10 +37,12 @@ public class StudyTodayService {
     private final Clock clock;
     private final StudyCalendarService calendar;
     private final PlannedLessonService plannedLessons;
+    private final SubjectPrerequisiteService prerequisites;
 
     public StudyTodayService(ReviewItemRepository reviewItems, LessonRepository lessons, SubjectRepository subjects,
             StudySessionRepository sessions, UserSettingsService userSettings, Clock clock, StudyCalendarService calendar,
-            PlannedLessonService plannedLessons) {
+            PlannedLessonService plannedLessons, SubjectPrerequisiteService prerequisites) {
+        this.prerequisites = prerequisites;
         this.calendar = calendar;
         this.plannedLessons = plannedLessons;
         this.reviewItems = reviewItems;
@@ -90,7 +92,10 @@ public class StudyTodayService {
                 .filter(s -> s.getType() == SessionType.LESSON && s.getStartedAt().isBefore(weekEnd))
                 .collect(Collectors.groupingBy(StudySession::getSubjectId, Collectors.counting()));
 
-        Plan plan = DailyStudyPlanner.plan(today, dueReviews, goals, lessonsThisWeek);
+        // Concluídas e bloqueadas por pré-requisito (E17) não viram sugestão automática
+        Set<UUID> onHold = prerequisites.onHold(userId);
+        Plan plan = DailyStudyPlanner.plan(today, dueReviews,
+                goals.stream().filter(g -> !onHold.contains(g.subjectId())).toList(), lessonsThisWeek);
         List<LessonSuggestion> suggestions = plan.lessons();
 
         // Semana com plano (E15): as aulas de hoje são as do plano

@@ -15,6 +15,7 @@ import java.util.UUID;
  * Criação e edição de matéria; campos nulos usam o padrão (criação) ou mantêm o valor (edição).
  * studyDays: dias em que a matéria pode ter aula; lista vazia = qualquer dia.
  * lessonMode: FREE ou PLANNED (aulas definidas, E14); nulo mantém (na criação, FREE).
+ * prerequisiteIds: matérias de que esta depende (E17); completed: marcada como concluída. Nulos mantêm.
  */
 public record SubjectRequest(
         @NotBlank @Size(max = 100) String name,
@@ -24,15 +25,17 @@ public record SubjectRequest(
         List<UUID> tagIds,
         Boolean archived,
         Set<WeekDay> studyDays,
-        LessonMode lessonMode) {
+        LessonMode lessonMode,
+        List<UUID> prerequisiteIds,
+        Boolean completed) {
 
     public SubjectRequest(String name, String color, Integer sessionsPerWeek, Integer lessonMinutes, List<UUID> tagIds,
             Boolean archived) {
-        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, null, null);
+        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, null, null, null, null);
     }
 
     public SubjectRequest(String name, String color, Integer sessionsPerWeek, Integer lessonMinutes, List<UUID> tagIds,
             Boolean archived, Set<WeekDay> studyDays) {
-        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, studyDays, null);
+        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, studyDays, null, null, null);
     }
 }

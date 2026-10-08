@@ -65,6 +65,10 @@ public class Subject {
     @Column(name = "lesson_mode", nullable = false)
     private LessonMode lessonMode = LessonMode.FREE;
 
+    /** Marcada como concluída à mão (E17); a com aulas definidas também termina quando todas são estudadas. */
+    @Column(name = "completed_at")
+    private OffsetDateTime completedAt;
+
     @ManyToMany
     @JoinTable(name = "subject_tags", joinColumns = @JoinColumn(name = "subject_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
@@ -151,6 +155,14 @@ public class Subject {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public OffsetDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(OffsetDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 
     public LessonMode getLessonMode() {

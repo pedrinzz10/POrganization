@@ -91,6 +91,13 @@ export class SubjectsPage {
     }
   }
 
+  /** "Física I (45/108)" ou "Inglês I" para cada matéria que ainda bloqueia esta (E17). */
+  protected bloqueio(materia: Subject): string {
+    return materia.blockedBy
+      .map((b) => (b.total > 0 ? `${b.name} (${b.done}/${b.total})` : b.name))
+      .join(', ');
+  }
+
   /** Lista de aulas da matéria; ao fechar, atualiza a contagem "Aulas 2/10". */
   protected abrirAulas(materia: Subject): void {
     this.dialog

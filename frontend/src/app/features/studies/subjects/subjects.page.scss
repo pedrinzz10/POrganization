@@ -52,6 +52,24 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
+.materia__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.materia__estado--ok {
+  color: var(--status-positive, #2e7d32);
+}
+
 .materia__aulas {
   white-space: nowrap;
 }
