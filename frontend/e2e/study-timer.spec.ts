@@ -31,6 +31,7 @@ test('recarregar a página com sessão ativa reabre o timer no tempo certo', asy
   const restante = min * 60 + seg;
   // 50 min sugeridos menos os 2 já estudados, com folga para o tempo do teste
   expect(restante).toBeGreaterThanOrEqual(47 * 60 + 50);
-  expect(restante).toBeLessThanOrEqual(48 * 60);
+  // +1 s: o segundo em curso pode ainda não ter virado na tela
+  expect(restante).toBeLessThanOrEqual(48 * 60 + 1);
   await expect(page.getByText('Java')).toBeVisible();
 });

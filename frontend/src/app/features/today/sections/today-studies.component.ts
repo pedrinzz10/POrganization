@@ -41,11 +41,13 @@ const DIA = 86_400_000;
         @for (l of plan().lessons; track l.subjectId) {
           <li class="estudo">
             <div class="estudo__texto">
-              <span class="estudo__titulo">{{ l.subjectName }}</span>
+              <span class="estudo__titulo">
+                {{ l.subjectName }}{{ l.plannedLessonTitle ? ': ' + l.plannedLessonTitle : '' }}
+              </span>
               <span class="estudo__selo">Aula</span>
               <span class="estudo__detalhe">{{ l.suggestedMinutes }} min · {{ l.doneThisWeek }} de {{ l.sessionsPerWeek }} nesta semana</span>
             </div>
-            <button mat-stroked-button type="button" [disabled]="iniciando()" (click)="estudar(l.subjectId)">Estudar</button>
+            <button mat-stroked-button type="button" [disabled]="iniciando()" (click)="estudar(l.subjectId, l.plannedLessonId)">Estudar</button>
           </li>
         } @empty {
           @if (revisoes().length === 0) {
@@ -129,8 +131,10 @@ export class TodayStudiesComponent {
     return this.iniciar(() => firstValueFrom(this.studies.start(subjectId, 'REVIEW', lessonId)));
   }
 
-  protected estudar(subjectId: string): Promise<void> {
-    return this.iniciar(() => firstValueFrom(this.studies.start(subjectId, 'LESSON')));
+  protected estudar(subjectId: string, plannedLessonId?: string | null): Promise<void> {
+    return this.iniciar(() =>
+      firstValueFrom(this.studies.start(subjectId, 'LESSON', undefined, plannedLessonId)),
+    );
   }
 
   private async iniciar(start: () => Promise<unknown>): Promise<void> {

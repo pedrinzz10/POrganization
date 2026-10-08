@@ -1,6 +1,9 @@
 <section class="timer" [class.finished]="terminouTempo()" [class.pausado]="!rodando()" aria-label="Sessão de estudo">
   <p class="timer__materia">
     {{ revisao() ? 'Revisão' : 'Aula' }} · <strong>{{ atual().subjectName }}</strong>
+    @if (atual().plannedLessonTitle; as aulaDaLista) {
+      · {{ aulaDaLista }}
+    }
   </p>
   <p class="timer__tempo" role="timer" aria-live="off">{{ tempo() }}</p>
   <mat-progress-bar mode="determinate" [value]="progresso()" />

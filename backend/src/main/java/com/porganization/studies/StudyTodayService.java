@@ -2,8 +2,12 @@ package com.porganization.studies;
 
 import com.porganization.settings.UserSettingsService;
 import com.porganization.studies.DailyStudyPlanner.DueReview;
+import com.porganization.studies.DailyStudyPlanner.LessonSuggestion;
 import com.porganization.studies.DailyStudyPlanner.Plan;
 import com.porganization.studies.DailyStudyPlanner.SubjectGoal;
+import com.porganization.studies.PlannedLessonService.PlannedLesson;
+import com.porganization.studies.StudyCalendarPlanner.Day;
+import com.porganization.studies.StudyCalendarPlanner.Kind;
 import com.porganization.studies.dto.StudyTodayResponse;
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -11,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,9 +35,14 @@ public class StudyTodayService {
     private final StudySessionRepository sessions;
     private final UserSettingsService userSettings;
     private final Clock clock;
+    private final StudyCalendarService calendar;
+    private final PlannedLessonService plannedLessons;
 
     public StudyTodayService(ReviewItemRepository reviewItems, LessonRepository lessons, SubjectRepository subjects,
-            StudySessionRepository sessions, UserSettingsService userSettings, Clock clock) {
+            StudySessionRepository sessions, UserSettingsService userSettings, Clock clock, StudyCalendarService calendar,
+            PlannedLessonService plannedLessons) {
+        this.calendar = calendar;
+        this.plannedLessons = plannedLessons;
         this.reviewItems = reviewItems;
         this.lessons = lessons;
         this.subjects = subjects;
@@ -80,6 +90,30 @@ public class StudyTodayService {
                 .filter(s -> s.getType() == SessionType.LESSON && s.getStartedAt().isBefore(weekEnd))
                 .collect(Collectors.groupingBy(StudySession::getSubjectId, Collectors.counting()));
 
-        return DailyStudyPlanner.plan(today, dueReviews, goals, lessonsThisWeek);
+        Plan plan = DailyStudyPlanner.plan(today, dueReviews, goals, lessonsThisWeek);
+        List<LessonSuggestion> suggestions = plan.lessons();
+
+        // Semana com plano (E15): as aulas de hoje são as do plano
+        Day day = calendar.calendar(userId, today, today).getFirst();
+        if (day.planned()) {
+            Map<UUID, SubjectGoal> goalById = goals.stream().collect(Collectors.toMap(SubjectGoal::subjectId, Function.identity()));
+            suggestions = day.items().stream()
+                    .filter(i -> i.kind() == Kind.LESSON && goalById.containsKey(i.subjectId()))
+                    .map(i -> goalById.get(i.subjectId()))
+                    .distinct()
+                    .sorted(Comparator.comparingInt(SubjectGoal::priorityOrder))
+                    .map(g -> new LessonSuggestion(g.subjectId(), g.subjectName(), g.color(), g.priorityOrder(), g.lessonMinutes(),
+                            lessonsThisWeek.getOrDefault(g.subjectId(), 0L), g.sessionsPerWeek()))
+                    .toList();
+        }
+
+        // Matéria com aulas definidas: a próxima aula da lista
+        Map<UUID, PlannedLesson> next = plannedLessons.firstPendingBySubject(userId);
+        suggestions = suggestions.stream()
+                .map(l -> next.containsKey(l.subjectId())
+                        ? l.withPlannedLesson(next.get(l.subjectId()).id(), next.get(l.subjectId()).title())
+                        : l)
+                .toList();
+        return new Plan(plan.reviews(), suggestions);
     }
 }

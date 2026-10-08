@@ -3,6 +3,7 @@ package com.porganization.studies;
 import com.porganization.common.ConflictException;
 import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
+import com.porganization.studies.PlannedLessonService.PlannedLesson;
 import com.porganization.studies.dto.FinishLessonRequest;
 import com.porganization.studies.dto.SessionResponse;
 import com.porganization.studies.dto.StartSessionRequest;
@@ -23,15 +24,17 @@ public class StudySessionService {
 
     private final StudySessionRepository sessions;
     private final SubjectRepository subjects;
+    private final PlannedLessonService plannedLessons;
     private final LessonRepository lessons;
     private final ReviewScheduler reviewScheduler;
     private final UserSettingsService userSettings;
     private final Clock clock;
 
     public StudySessionService(StudySessionRepository sessions, SubjectRepository subjects, LessonRepository lessons,
-            ReviewScheduler reviewScheduler, UserSettingsService userSettings, Clock clock) {
+            ReviewScheduler reviewScheduler, UserSettingsService userSettings, Clock clock, PlannedLessonService plannedLessons) {
         this.sessions = sessions;
         this.subjects = subjects;
+        this.plannedLessons = plannedLessons;
         this.lessons = lessons;
         this.reviewScheduler = reviewScheduler;
         this.userSettings = userSettings;
@@ -47,6 +50,9 @@ public class StudySessionService {
             throw new ConflictException("Já existe uma sessão de estudo em andamento. Termine ou abandone antes de começar outra.");
         }
         StudySession session = StudySession.start(userId, subject.getId(), request.type(), clock.instant());
+        if (request.type() == SessionType.LESSON && subject.getLessonMode() == LessonMode.PLANNED) {
+            session.setPlannedLessonId(plannedLessonFor(userId, subject, request.plannedLessonId()));
+        }
         if (request.type() == SessionType.REVIEW) {
             if (request.lessonId() == null) {
                 throw new InvalidRequestException("lessonId", "informe a aula que será revisada");
@@ -91,7 +97,13 @@ public class StudySessionService {
     @Transactional
     public SessionResponse finish(UUID userId, UUID id, FinishLessonRequest request) {
         StudySession session = find(userId, id);
-        if (session.getType() == SessionType.LESSON && (request.title() == null || request.title().isBlank())) {
+        String title = request.title();
+        if (session.getType() == SessionType.LESSON && (title == null || title.isBlank()) && session.getPlannedLessonId() != null) {
+            // Aula da lista: sem título, vale o nome dela
+            title = plannedLessons.find(userId, session.getSubjectId(), session.getPlannedLessonId())
+                    .map(PlannedLesson::title).orElse(null);
+        }
+        if (session.getType() == SessionType.LESSON && (title == null || title.isBlank())) {
             throw new InvalidRequestException("title", "dê um título para a aula");
         }
         if (session.getType() == SessionType.REVIEW && request.grade() == null) {
@@ -101,9 +113,13 @@ public class StudySessionService {
         LocalDate today = LocalDate.ofInstant(now, userSettings.zoneOf(userId));
         apply(session, now, StudySession::finish);
         if (session.getType() == SessionType.LESSON) {
-            Lesson lesson = lessons.save(new Lesson(userId, session.getSubjectId(), request.title().trim(),
+            // flush: a ligação com a aula definida é feita por SQL e precisa da aula já gravada
+            Lesson lesson = lessons.saveAndFlush(new Lesson(userId, session.getSubjectId(), title.trim(),
                     blankToNull(request.notes()), now, session.effectiveMinutes()));
             session.setLessonId(lesson.getId());
+            if (session.getPlannedLessonId() != null) {
+                plannedLessons.markStudied(session.getPlannedLessonId(), lesson.getId());
+            }
             reviewScheduler.onLessonFinished(lesson, today);
         } else {
             reviewScheduler.onReviewFinished(userId, session.getLessonId(), request.grade(), today);
@@ -134,9 +150,27 @@ public class StudySessionService {
     }
 
     private SessionResponse toResponse(StudySession s, Subject subject) {
+        String plannedTitle = s.getPlannedLessonId() == null ? null
+                : plannedLessons.find(s.getUserId(), s.getSubjectId(), s.getPlannedLessonId()).map(PlannedLesson::title).orElse(null);
         return new SessionResponse(s.getId(), s.getSubjectId(), subject.getName(), s.getLessonId(), s.getType(),
                 s.getStatus(), s.getStartedAt(), s.getEndedAt(), s.getPausedSeconds(), s.getPausedAt(),
-                s.elapsedSeconds(clock.instant()), plannedMinutes(s, subject));
+                s.elapsedSeconds(clock.instant()), plannedMinutes(s, subject), s.getPlannedLessonId(), plannedTitle);
+    }
+
+    /**
+     * A aula da lista que a sessão vai estudar: a escolhida (precisa ser da matéria e não estudada)
+     * ou a próxima pendente. Lista vazia ou toda estudada: null (o título é digitado, como na livre).
+     */
+    private UUID plannedLessonFor(UUID userId, Subject subject, UUID chosen) {
+        if (chosen == null) {
+            return plannedLessons.firstPending(userId, subject.getId()).map(PlannedLesson::id).orElse(null);
+        }
+        PlannedLesson lesson = plannedLessons.find(userId, subject.getId(), chosen)
+                .orElseThrow(() -> new NotFoundException("Aula não encontrada"));
+        if (lesson.lessonId() != null) {
+            throw new ConflictException("Essa aula já foi estudada.");
+        }
+        return lesson.id();
     }
 
     /** Tempo sugerido no timer: a duração da aula da matéria; para revisão, o tempo agendado da revisão. */

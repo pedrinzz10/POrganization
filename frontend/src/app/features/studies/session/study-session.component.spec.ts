@@ -151,4 +151,22 @@ describe('StudySessionComponent', () => {
     await settle();
     expect(encerradas).toHaveLength(1);
   });
+
+  // E16 T4 (CA1)
+  it('aula da lista já vem com o título preenchido', async () => {
+    await mostrar(sessao({ plannedLessonId: 'p2', plannedLessonTitle: 'Laços' }));
+    expect(element.querySelector('.timer__materia')!.textContent).toContain('Laços');
+
+    botao('Concluir')!.click();
+    await fixture.whenStable();
+    const titulo = element.querySelector<HTMLInputElement>('input[formControlName="title"]')!;
+    expect(titulo.value).toBe('Laços');
+    botao('Salvar aula')!.click();
+    await fixture.whenStable();
+
+    const req = httpMock.expectOne(`${BASE}/s1/finish`);
+    expect(req.request.body).toEqual({ title: 'Laços', notes: '' });
+    req.flush(sessao({ status: 'FINISHED' }));
+    await settle();
+  });
 });

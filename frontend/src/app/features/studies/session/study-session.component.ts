@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, linkedSignal, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, output, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -68,6 +68,13 @@ export class StudySessionComponent {
   });
 
   constructor() {
+    // Aula da lista (E16): o título já vem preenchido com o nome dela, e dá para mudar
+    effect(() => {
+      const titulo = this.atual().plannedLessonTitle;
+      if (titulo && !this.aula.controls.title.value) {
+        untracked(() => this.aula.controls.title.setValue(titulo));
+      }
+    });
     // Avisa uma vez quando o tempo sugerido acaba (bipe); o destaque visual vem do template
     let avisou = false;
     effect(() => {

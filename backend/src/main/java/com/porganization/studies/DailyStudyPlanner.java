@@ -44,8 +44,19 @@ public final class DailyStudyPlanner {
             LocalDate dueDate, long daysOverdue, int reviewMinutes) {
     }
 
+    /** plannedLessonId e plannedLessonTitle: a próxima aula da lista, na matéria com aulas definidas (E16). */
     public record LessonSuggestion(UUID subjectId, String subjectName, String color, int priorityOrder,
-            int suggestedMinutes, long doneThisWeek, int sessionsPerWeek) {
+            int suggestedMinutes, long doneThisWeek, int sessionsPerWeek, UUID plannedLessonId, String plannedLessonTitle) {
+
+        public LessonSuggestion(UUID subjectId, String subjectName, String color, int priorityOrder, int suggestedMinutes,
+                long doneThisWeek, int sessionsPerWeek) {
+            this(subjectId, subjectName, color, priorityOrder, suggestedMinutes, doneThisWeek, sessionsPerWeek, null, null);
+        }
+
+        public LessonSuggestion withPlannedLesson(UUID id, String title) {
+            return new LessonSuggestion(subjectId, subjectName, color, priorityOrder, suggestedMinutes, doneThisWeek,
+                    sessionsPerWeek, id, title);
+        }
     }
 
     public record Plan(List<ReviewSuggestion> reviews, List<LessonSuggestion> lessons) {

@@ -1174,6 +1174,79 @@ Regras:
         "cenario": "Agenda mostra 'Java: Variáveis' hoje; Gerar semana → 'Plano da semana'; tirar a aula de hoje some do dia."
       }
     ]
+  },
+  {
+    "id": "E16",
+    "etapa": "3-estudos",
+    "titulo": "Estudar a aula do plano",
+    "acao": "V31 adiciona study_sessions.planned_lesson_id. Iniciar uma aula (LESSON) em matéria com aulas definidas guarda qual aula da lista é: a escolhida (plannedLessonId, precisa ser da matéria e não estudada: senão 404 ou 409) ou a próxima pendente. A sessão devolve plannedLessonId e plannedLessonTitle; ao terminar sem título vale o nome da aula da lista, e planned_lessons.lesson_id passa a apontar para a aula criada (a lista marca estudada e a próxima vira a sugerida). GET /api/study/today: na semana com plano (E15), as aulas de hoje são as do plano; nas matérias com aulas definidas, cada sugestão traz a próxima aula da lista. Front: 'Java: Laços' em Estudos > Hoje e na tela Hoje, Estudar manda o plannedLessonId, o timer mostra o nome da aula e o título já vem preenchido ao concluir. Também dá 1 s de folga no e2e do timer, que falhava no limite do segundo.",
+    "story": "Como Pedro, quero começar a aula do plano já sabendo qual é e sem digitar o nome dela.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V31__session_planned_lesson.sql",
+      "backend/src/main/java/com/porganization/studies/StudySessionService.java",
+      "backend/src/main/java/com/porganization/studies/StudyTodayService.java",
+      "backend/src/main/java/com/porganization/studies/PlannedLessonService.java",
+      "frontend/src/app/features/studies/today/study-today.page.ts",
+      "frontend/src/app/features/studies/session/study-session.component.ts",
+      "frontend/src/app/features/today/sections/today-studies.component.ts"
+    ],
+    "dependencias": [
+      "E09",
+      "E14",
+      "E15"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Hoje sugere a próxima aula da lista; iniciar sem escolher pega ela; terminar sem título usa o nome dela, marca como estudada (plannedDone sobe) e a próxima passa a ser a sugerida; no front o nome aparece na sugestão, no timer e no título."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Escolher outra aula da lista estuda essa; aula já estudada responde 409 e aula que não é da matéria 404."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Com plano na semana, Hoje mostra só as aulas do plano de hoje."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/PlannedLessonSessionIT.java",
+        "cenario": "Java com 3 aulas: today traz Variáveis; sessão sem escolha pega Variáveis; finish sem título → lista com a 1ª estudada, plannedDone 1, histórico 'Variáveis', today passa a Laços."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/PlannedLessonSessionIT.java",
+        "cenario": "Estuda a 3ª; começar a 3ª de novo 409; id inexistente 404."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/PlannedLessonSessionIT.java",
+        "cenario": "Plano com só Inglês hoje → today traz só Inglês, sem aula da lista."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA1",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/session/study-session.component.spec.ts",
+        "cenario": "Sessão com plannedLessonTitle Laços: aparece no timer, o título vem preenchido e vai no finish."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/study-planned-session.spec.ts",
+        "cenario": "'Java: Laços' em Estudos > Hoje → Estudar manda plannedLessonId p2 → timer com Laços → Concluir com o título preenchido."
+      }
+    ]
   }
 ]
 ```
@@ -2678,7 +2751,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 |---|---|---|
 | 1 Base | B01 a B15 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
-| 3 Estudos | E01 a E15 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS, agenda de estudos por dia, semana e mês e plano da semana gerado e ajustável |
+| 3 Estudos | E01 a E16 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS, agenda de estudos por dia, semana e mês e plano da semana gerado e ajustável, com a aula da vez pronta para estudar |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |

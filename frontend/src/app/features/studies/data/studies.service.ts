@@ -87,8 +87,19 @@ export class StudiesService {
       .pipe(map((response) => (response.status === 204 ? null : response.body)));
   }
 
-  start(subjectId: string, type: SessionType, lessonId?: string): Observable<StudySession> {
-    return this.http.post<StudySession>(`${this.api}/study/sessions`, { subjectId, type, lessonId });
+  /** plannedLessonId: na aula de matéria com aulas definidas, qual aula da lista (sem ele, a próxima). */
+  start(
+    subjectId: string,
+    type: SessionType,
+    lessonId?: string,
+    plannedLessonId?: string | null,
+  ): Observable<StudySession> {
+    return this.http.post<StudySession>(`${this.api}/study/sessions`, {
+      subjectId,
+      type,
+      lessonId,
+      plannedLessonId: plannedLessonId ?? undefined,
+    });
   }
 
   pause(id: string): Observable<StudySession> {
