@@ -456,6 +456,47 @@ Regras:
         "cenario": "Botão visível nas quatro seções; em Finanças, APAGAR → DELETE /api/data/finance e continua em /financas."
       }
     ]
+  },
+  {
+    "id": "B16",
+    "etapa": "1-base",
+    "titulo": "Atualizar o app quando sai versão nova",
+    "acao": "O service worker (das notificações) guarda o app no aparelho e a versão nova só entrava na segunda abertura, sem aviso: depois de um deploy, as telas novas não apareciam. AppUpdateService (carregado à parte, fora do pacote inicial) procura versão nova ao abrir, ao voltar para a aba e a cada 15 minutos (SwUpdate.checkForUpdate); quando a versão termina de baixar (VERSION_READY), recarrega sozinho se a aba está em segundo plano, ou mostra 'Nova versão do app disponível.' com o botão 'Atualizar'. Estado irrecuperável do service worker recarrega a página. Sem service worker (desenvolvimento) não faz nada.",
+    "story": "Como Pedro, quero ver as novidades do app assim que são publicadas, sem precisar fechar tudo e abrir de novo.",
+    "arquivos": [
+      "frontend/src/app/core/update/app-update.service.ts",
+      "frontend/src/app/app.config.ts"
+    ],
+    "dependencias": [
+      "I03"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Procura versão nova ao abrir, ao voltar para a aba e a cada 15 minutos."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Versão pronta com o app em uso mostra o aviso e só recarrega no 'Atualizar'; com a aba em segundo plano, recarrega sozinho."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "unitario",
+        "arquivo": "frontend/src/app/core/update/app-update.service.spec.ts",
+        "cenario": "checkForUpdate na abertura, no visibilitychange e depois de 15 min; sem service worker, nada."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "frontend/src/app/core/update/app-update.service.spec.ts",
+        "cenario": "VERSION_READY com a aba visível → aviso e recarrega só no Atualizar; com a aba oculta → recarrega sozinho."
+      }
+    ]
   }
 ]
 ```
@@ -2749,7 +2790,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 
 | Etapa | Specs | Resultado ao final |
 |---|---|---|
-| 1 Base | B01 a B15 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
+| 1 Base | B01 a B16 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
 | 3 Estudos | E01 a E16 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS, agenda de estudos por dia, semana e mês e plano da semana gerado e ajustável, com a aula da vez pronta para estudar |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |

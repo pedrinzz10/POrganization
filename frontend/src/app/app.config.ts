@@ -2,6 +2,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import {
   ApplicationConfig,
   inject,
+  Injector,
   isDevMode,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
@@ -25,6 +26,14 @@ export const appConfig: ApplicationConfig = {
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
+    }),
+    // Versão nova do app: avisa (ou recarrega em segundo plano) em vez de esperar a próxima abertura.
+    // Carregado à parte para o aviso (snackbar) não pesar na abertura do app.
+    provideAppInitializer(() => {
+      const injector = inject(Injector);
+      void import('./core/update/app-update.service').then((m) =>
+        injector.get(m.AppUpdateService).iniciar(),
+      );
     }),
     // <mat-icon> usa a fonte Material Symbols carregada no index.html
     provideAppInitializer(() => {
