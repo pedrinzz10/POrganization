@@ -1,6 +1,7 @@
 package com.porganization.studies.dto;
 
 import com.porganization.commitments.recurrence.WeekDay;
+import com.porganization.studies.LessonMode;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -13,6 +14,7 @@ import java.util.UUID;
 /**
  * Criação e edição de matéria; campos nulos usam o padrão (criação) ou mantêm o valor (edição).
  * studyDays: dias em que a matéria pode ter aula; lista vazia = qualquer dia.
+ * lessonMode: FREE ou PLANNED (aulas definidas, E14); nulo mantém (na criação, FREE).
  */
 public record SubjectRequest(
         @NotBlank @Size(max = 100) String name,
@@ -21,10 +23,16 @@ public record SubjectRequest(
         @Min(5) @Max(240) Integer lessonMinutes,
         List<UUID> tagIds,
         Boolean archived,
-        Set<WeekDay> studyDays) {
+        Set<WeekDay> studyDays,
+        LessonMode lessonMode) {
 
     public SubjectRequest(String name, String color, Integer sessionsPerWeek, Integer lessonMinutes, List<UUID> tagIds,
             Boolean archived) {
-        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, null);
+        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, null, null);
+    }
+
+    public SubjectRequest(String name, String color, Integer sessionsPerWeek, Integer lessonMinutes, List<UUID> tagIds,
+            Boolean archived, Set<WeekDay> studyDays) {
+        this(name, color, sessionsPerWeek, lessonMinutes, tagIds, archived, studyDays, null);
     }
 }

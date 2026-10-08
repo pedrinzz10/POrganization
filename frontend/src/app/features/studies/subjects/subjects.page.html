@@ -43,6 +43,18 @@
         </button>
       </span>
       <span class="materia__aula">{{ materia.lessonMinutes }} min</span>
+      @if (materia.lessonMode === 'PLANNED') {
+        <button
+          mat-stroked-button
+          type="button"
+          class="materia__aulas"
+          [attr.aria-label]="'Aulas de ' + materia.name + ': ' + materia.plannedDone + ' de ' + materia.plannedTotal + ' estudadas'"
+          (click)="abrirAulas(materia)"
+        >
+          <mat-icon aria-hidden="true">format_list_numbered</mat-icon>
+          Aulas {{ materia.plannedDone }}/{{ materia.plannedTotal }}
+        </button>
+      }
     </li>
   } @empty {
     @if (!carregando() && !erro()) {

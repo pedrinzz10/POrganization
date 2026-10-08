@@ -5,6 +5,7 @@ import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import com.porganization.studies.dto.SubjectRequest;
 import com.porganization.studies.dto.SubjectResponse;
+import com.porganization.studies.dto.SubjectResponse.PlannedCount;
 import com.porganization.studies.dto.TagResponse;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -23,10 +24,12 @@ public class SubjectService {
 
     private final SubjectRepository subjects;
     private final TagRepository tags;
+    private final PlannedLessonService plannedLessons;
 
-    public SubjectService(SubjectRepository subjects, TagRepository tags) {
+    public SubjectService(SubjectRepository subjects, TagRepository tags, PlannedLessonService plannedLessons) {
         this.subjects = subjects;
         this.tags = tags;
+        this.plannedLessons = plannedLessons;
     }
 
     // ---------- matérias ----------
@@ -37,13 +40,13 @@ public class SubjectService {
                 .filter(s -> includeArchived || !s.isArchived())
                 .filter(s -> tagName == null || tagName.isBlank()
                         || s.getTags().stream().anyMatch(t -> t.getName().equalsIgnoreCase(tagName.trim())))
-                .map(SubjectResponse::from)
+                .map(withCounts(userId))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public SubjectResponse get(UUID userId, UUID id) {
-        return SubjectResponse.from(find(userId, id));
+        return withCounts(userId).apply(find(userId, id));
     }
 
     /** Matéria nova entra no fim da ordem de prioridade. */
@@ -59,7 +62,7 @@ public class SubjectService {
         Subject subject = find(userId, id);
         subject.setName(request.name().trim());
         apply(userId, subject, request);
-        return SubjectResponse.from(subject);
+        return withCounts(userId).apply(subject);
     }
 
     @Transactional
@@ -93,7 +96,13 @@ public class SubjectService {
                 archived.setPriorityOrder(order++);
             }
         }
-        return ids.stream().map(active::get).map(SubjectResponse::from).toList();
+        return ids.stream().map(active::get).map(withCounts(userId)).toList();
+    }
+
+    /** Monta o DTO com a contagem das aulas definidas (uma consulta para todas as matérias). */
+    private Function<Subject, SubjectResponse> withCounts(UUID userId) {
+        Map<UUID, PlannedCount> counts = plannedLessons.counts(userId);
+        return s -> SubjectResponse.from(s, counts.getOrDefault(s.getId(), PlannedCount.NONE));
     }
 
     private Subject find(UUID userId, UUID id) {
@@ -110,6 +119,9 @@ public class SubjectService {
         }
         if (request.archived() != null) {
             subject.setArchived(request.archived());
+        }
+        if (request.lessonMode() != null) {
+            subject.setLessonMode(request.lessonMode());
         }
         if (request.studyDays() != null) {
             subject.setStudyDays(request.studyDays());

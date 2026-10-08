@@ -29,6 +29,19 @@
       </mat-form-field>
     </div>
 
+    <span class="rotulo" id="tipo-materia">Tipo</span>
+    <mat-button-toggle-group formControlName="lessonMode" aria-labelledby="tipo-materia" class="dias">
+      <mat-button-toggle value="FREE">Livre</mat-button-toggle>
+      <mat-button-toggle value="PLANNED">Com aulas definidas</mat-button-toggle>
+    </mat-button-toggle-group>
+    <p class="dica">
+      @if (form.controls.lessonMode.value === 'PLANNED') {
+        Você cadastra as aulas na ordem do curso (botão "Aulas" na lista) e estuda uma por vez.
+      } @else {
+        Você digita o assunto da aula quando terminar de estudar.
+      }
+    </p>
+
     <span class="rotulo" id="dias-estudo">Dias de estudo</span>
     <mat-button-toggle-group formControlName="studyDays" multiple aria-labelledby="dias-estudo" class="dias">
       @for (d of dias; track d.dia) {

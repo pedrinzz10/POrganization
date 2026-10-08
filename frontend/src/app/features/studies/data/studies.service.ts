@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   FinishSessionRequest,
+  PlannedLesson,
   SessionType,
   StudyCalendarDay,
   StudySession,
@@ -40,6 +41,29 @@ export class StudiesService {
   /** Grava a prioridade na ordem dos ids (a primeira vira 1). */
   reorder(ids: string[]): Observable<Subject[]> {
     return this.http.put<Subject[]>(`${this.api}/subjects/order`, { ids });
+  }
+
+  // ---------- aulas definidas (E14) ----------
+
+  listPlannedLessons(subjectId: string): Observable<PlannedLesson[]> {
+    return this.http.get<PlannedLesson[]>(`${this.api}/subjects/${subjectId}/planned-lessons`);
+  }
+
+  /** Inclui no fim, na ordem dos títulos; devolve a lista inteira. */
+  addPlannedLessons(subjectId: string, titles: string[]): Observable<PlannedLesson[]> {
+    return this.http.post<PlannedLesson[]>(`${this.api}/subjects/${subjectId}/planned-lessons`, { titles });
+  }
+
+  renamePlannedLesson(subjectId: string, id: string, title: string): Observable<PlannedLesson> {
+    return this.http.patch<PlannedLesson>(`${this.api}/subjects/${subjectId}/planned-lessons/${id}`, { title });
+  }
+
+  deletePlannedLesson(subjectId: string, id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/subjects/${subjectId}/planned-lessons/${id}`);
+  }
+
+  reorderPlannedLessons(subjectId: string, ids: string[]): Observable<PlannedLesson[]> {
+    return this.http.put<PlannedLesson[]>(`${this.api}/subjects/${subjectId}/planned-lessons/order`, { ids });
   }
 
   listTags(): Observable<Tag[]> {
