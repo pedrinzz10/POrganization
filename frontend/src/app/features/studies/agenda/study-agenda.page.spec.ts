@@ -13,6 +13,7 @@ import { StudyCalendarDay } from '../data/study.model';
 import { StudyAgendaPage } from './study-agenda.page';
 
 const API = `${environment.apiUrl}/study/calendar`;
+const SEMANA_API = `${environment.apiUrl}/study/week`;
 const tick = () => new Promise((resolve) => setTimeout(resolve));
 
 describe('StudyAgendaPage', () => {
@@ -38,13 +39,14 @@ describe('StudyAgendaPage', () => {
     from: string,
     to: string,
     preencher: (d: string) => StudyCalendarDay['items'] = () => [],
+    planned = false,
   ) {
     const req = httpMock.expectOne(
       (r) => r.url === API && r.params.get('from') === from && r.params.get('to') === to,
     );
     const dias: StudyCalendarDay[] = [];
     for (let d = from; d <= to; d = addDays(d, 1)) {
-      dias.push({ date: d, items: preencher(d) });
+      dias.push({ date: d, items: preencher(d), planned });
     }
     req.flush(dias);
   }
@@ -179,5 +181,86 @@ describe('StudyAgendaPage', () => {
       expect(podeSoltar({ data: { from: hoje } }, { data: ontem })).toBe(false);
     }
     httpMock.match(() => true).forEach((r) => r.flush([]));
+  });
+
+  const aulaJava = {
+    kind: 'LESSON' as const,
+    subjectId: 'j',
+    subjectName: 'Java',
+    color: null,
+    title: 'Laços',
+    minutes: 50,
+    sessionType: 'LESSON' as const,
+    overdue: false,
+    pinned: false,
+    plannedLessonId: 'p2',
+  };
+
+  // E15 T6 (CA1)
+  it('semana automática: mostra a previsão e "Gerar semana" sorteia e recarrega', async () => {
+    const semana = weekRange(hoje);
+    responder(semana.from, semana.to, (d) => (d === hoje ? [aulaJava] : []));
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain('Previsão automática');
+    expect(element.textContent).not.toContain('Plano da semana');
+    // Matéria com aulas definidas: a aula mostra qual é
+    expect(element.querySelector('.semana__dia--hoje')!.textContent).toContain('Java: Laços');
+
+    void fixture.componentInstance.gerarSemana();
+    await tick();
+    const req = httpMock.expectOne((r) => r.url === `${SEMANA_API}/generate` && r.method === 'POST');
+    expect(req.request.params.get('week')).toBe(semana.from);
+    req.flush([]);
+    await fixture.whenStable();
+    await tick();
+    responder(semana.from, semana.to, (d) => (d === hoje ? [aulaJava] : []), true);
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain('Plano da semana');
+    expect(botao('Voltar ao automático')).toBeTruthy();
+  });
+
+  // E15 T6 (CA2)
+  it('tirar (×) chama a API com a matéria e o dia; "Voltar ao automático" limpa a semana', async () => {
+    const semana = weekRange(hoje);
+    responder(semana.from, semana.to, (d) => (d === hoje ? [aulaJava] : []), true);
+    await fixture.whenStable();
+
+    expect(element.querySelector('.card__tirar')).toBeTruthy();
+    void fixture.componentInstance.tirarAula(aulaJava, hoje);
+    await tick();
+    const tirar = httpMock.expectOne((r) => r.url === `${SEMANA_API}/slots` && r.method === 'DELETE');
+    expect(tirar.request.params.get('subjectId')).toBe('j');
+    expect(tirar.request.params.get('day')).toBe(hoje);
+    tirar.flush([]);
+    await fixture.whenStable();
+    await tick();
+    responder(semana.from, semana.to, () => [], true);
+    await fixture.whenStable();
+
+    void fixture.componentInstance.limparPlano();
+    await tick();
+    const limpar = httpMock.expectOne((r) => r.url === SEMANA_API && r.method === 'DELETE');
+    expect(limpar.request.params.get('week')).toBe(semana.from);
+    limpar.flush(null);
+    await fixture.whenStable();
+    await tick();
+    responder(semana.from, semana.to);
+  });
+
+  // E15 T6 (CA2)
+  it('incluir aula manda a matéria e o dia', async () => {
+    const semana = weekRange(hoje);
+    responder(semana.from, semana.to);
+    await fixture.whenStable();
+
+    const incluindo = fixture.componentInstance.incluirAula('i', 'Inglês', hoje);
+    const req = httpMock.expectOne((r) => r.url === `${SEMANA_API}/slots` && r.method === 'POST');
+    expect(req.request.body).toEqual({ subjectId: 'i', day: hoje });
+    req.flush([]);
+    await incluindo;
+    await tick();
+    responder(semana.from, semana.to);
   });
 });

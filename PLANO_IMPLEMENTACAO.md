@@ -1088,6 +1088,92 @@ Regras:
         "cenario": "Matérias → Aulas de Java → cola 3 aulas → aparecem em ordem com '0 de 3 estudadas' e o botão vira 'Aulas 0/3'."
       }
     ]
+  },
+  {
+    "id": "E15",
+    "etapa": "3-estudos",
+    "titulo": "Plano da semana: gerar e ajustar",
+    "acao": "V30 cria study_week_plans (user_id, week = segunda-feira) e study_week_slots (matéria e dia, uma por matéria por dia), com RLS. Semana com plano mostra só as aulas do plano (Day.planned = true); sem plano, a previsão automática de antes. POST /api/study/week/generate?week= sorteia: cada matéria, por prioridade, recebe a meta semanal menos as aulas feitas na semana, em dias sorteados entre os dias de estudo dela de hoje até domingo, uma por dia, sempre entre os dias menos carregados (StudyWeekGenerator, lógica pura). POST /api/study/week/slots inclui, DELETE /api/study/week/slots tira, POST /api/study/calendar/moves passa a mover no plano; antes de mexer numa semana automática, a previsão dela vira o plano. DELETE /api/study/week?week= volta ao automático (apaga plano, aulas e fixadas da semana); o DELETE /calendar/pins sai. Nas matérias com aulas definidas (E14), as aulas da agenda, em ordem de data e desde a semana de hoje, recebem as aulas pendentes da lista (title e plannedLessonId). Front, na Semana: selo 'Plano da semana' ou dica da previsão automática, 'Gerar semana' (confirma se já há plano), 'Voltar ao automático', '+ Aula' por dia com menu de matérias, × para tirar; no Dia, o menu da aula ganha 'Tirar deste dia'; a aula mostra 'Java: Laços'. Apagar dados de Estudos inclui study_week_plans.",
+    "story": "Como Pedro, quero montar a semana de estudos escolhendo os dias de cada aula, ou gerar uma semana sorteada e só ajustar.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V30__study_week_plans.sql",
+      "backend/src/main/java/com/porganization/studies/StudyWeekGenerator.java",
+      "backend/src/main/java/com/porganization/studies/StudyWeekPlanService.java",
+      "backend/src/main/java/com/porganization/studies/StudyWeekPlanController.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarPlanner.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarService.java",
+      "frontend/src/app/features/studies/agenda/study-agenda.page.ts"
+    ],
+    "dependencias": [
+      "E13",
+      "E14"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Gerar semana respeita meta menos o feito, dias de estudo, de hoje em diante, uma aula por matéria por dia e não amontoa; sorteios diferentes podem dar semanas diferentes; semana passada responde 400."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Incluir, tirar e mover numa semana automática guardam a previsão como plano e aplicam a mudança; repetido responde 409, passado 400, matéria de outro usuário 404; voltar ao automático devolve a previsão original."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Em matéria com aulas definidas, cada aula da agenda mostra a próxima aula pendente da lista, na ordem das datas; matéria livre fica sem nome."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA2",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyCalendarPlannerTest.java",
+        "cenario": "Semana com plano usa só as aulas do plano a partir de hoje e marca planned; aulas recebem Laços e Classes em ordem, e acabam sem nome."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA1",
+        "tipo": "unitario",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyWeekGeneratorTest.java",
+        "cenario": "20 sorteios: Java 2 de hoje em diante, Inglês só sex a dom, Cálculo 5 sem repetir, no máximo 3 por dia; 30 sementes dão mais de uma semana; semana futura usa a meta inteira."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyWeekPlanIT.java",
+        "cenario": "POST generate na semana de hoje → 7 dias planned, Java 2 e Inglês 1, GET igual; semana passada 400."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA2",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyWeekPlanIT.java",
+        "cenario": "Incluir Inglês num dia livre mantém a prevista; repetido 409; passado 400; tirar a prevista; tirar de novo 409; DELETE week volta à previsão."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/StudyWeekPlanIT.java",
+        "cenario": "Java com Variáveis, Laços, Classes → as 2 aulas da semana vêm com Variáveis e Laços e plannedLessonId; Inglês sem título."
+      },
+      {
+        "id": "T6",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/agenda/study-agenda.page.spec.ts",
+        "cenario": "Previsão automática → Gerar semana chama generate e recarrega com 'Plano da semana'; × chama DELETE slots; Voltar ao automático chama DELETE week; incluir manda matéria e dia."
+      },
+      {
+        "id": "T7",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/study-week-plan.spec.ts",
+        "cenario": "Agenda mostra 'Java: Variáveis' hoje; Gerar semana → 'Plano da semana'; tirar a aula de hoje some do dia."
+      }
+    ]
   }
 ]
 ```
@@ -2592,7 +2678,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 |---|---|---|
 | 1 Base | B01 a B15 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
-| 3 Estudos | E01 a E14 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS e agenda de estudos por dia, semana e mês |
+| 3 Estudos | E01 a E15 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS, agenda de estudos por dia, semana e mês e plano da semana gerado e ajustável |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |

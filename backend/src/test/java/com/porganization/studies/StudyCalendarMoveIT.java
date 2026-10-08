@@ -94,9 +94,8 @@ class StudyCalendarMoveIT extends IntegrationTest {
                 .filter(d -> !d.equals(destino) && !d.equals(outra)).findFirst().orElseThrow();
         mover(semAula, "2026-10-04".equals(semAula) ? "2026-10-03" : "2026-10-04").andExpect(status().isConflict());
 
-        // Voltar ao automático devolve a distribuição original
-        mockMvc.perform(delete("/api/study/calendar/pins").param("subjectId", ingles.toString()).param("week", "2026-10-01")
-                        .with(usuario(userId)))
+        // Limpar o plano da semana (E15) devolve a distribuição original
+        mockMvc.perform(delete("/api/study/week").param("week", "2026-10-01").with(usuario(userId)))
                 .andExpect(status().isNoContent());
         assertThat(diasComAula()).containsExactlyElementsOf(antes);
     }

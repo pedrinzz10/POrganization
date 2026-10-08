@@ -7,6 +7,8 @@ import com.porganization.studies.DailyStudyPlanner.SubjectGoal;
 import com.porganization.studies.StudyCalendarPlanner.Day;
 import com.porganization.studies.StudyCalendarPlanner.DoneSession;
 import com.porganization.studies.StudyCalendarPlanner.Kind;
+import com.porganization.studies.StudyCalendarPlanner.PendingLesson;
+import com.porganization.studies.StudyCalendarPlanner.WeekPlans;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -128,5 +130,45 @@ class StudyCalendarPlannerTest {
                 Map.of(java, 1L), Set.of(), Map.of(java, List.of(SEG, LocalDate.parse("2026-10-09"))));
 
         assertThat(aulas(dias, "Java")).isEmpty();
+    }
+
+    // E15 T1 (CA2)
+    @Test
+    void semanaComPlanoUsaSoAsAulasDoPlanoEMarcaOsDias() {
+        // Plano: Java na quinta e no domingo, Inglês na quinta; segunda (passado) fica de fora
+        WeekPlans plano = new WeekPlans(Set.of(SEG), Map.of(
+                SEG, List.of(java),
+                LocalDate.parse("2026-10-08"), List.of(java, ingles),
+                DOM, List.of(java)));
+        List<Day> dias = StudyCalendarPlanner.plan(HOJE, SEG, DOM, List.of(), List.of(),
+                List.of(meta(java, "Java", 1, 5), meta(ingles, "Inglês", 2, 5)), Map.of(), Set.of(), Map.of(), plano, Map.of());
+
+        assertThat(aulas(dias, "Java")).containsExactly("2026-10-08", "2026-10-11");
+        assertThat(aulas(dias, "Inglês")).containsExactly("2026-10-08");
+        assertThat(dias).allSatisfy(d -> assertThat(d.planned()).isTrue());
+        // Sem plano a semana segue automática
+        assertThat(StudyCalendarPlanner.plan(HOJE, SEG, DOM, List.of(), List.of(), List.of(meta(java, "Java", 1, 2)), Map.of(),
+                Set.of(), Map.of())).allSatisfy(d -> assertThat(d.planned()).isFalse());
+    }
+
+    // E15 T1 (CA3)
+    @Test
+    void aulasDaAgendaRecebemAsAulasDefinidasNaOrdem() {
+        UUID a1 = UUID.randomUUID();
+        UUID a2 = UUID.randomUUID();
+        WeekPlans plano = new WeekPlans(Set.of(SEG), Map.of(
+                LocalDate.parse("2026-10-08"), List.of(java),
+                LocalDate.parse("2026-10-10"), List.of(java),
+                DOM, List.of(java, ingles)));
+        List<Day> dias = StudyCalendarPlanner.plan(HOJE, SEG, DOM, List.of(), List.of(),
+                List.of(meta(java, "Java", 1, 3), meta(ingles, "Inglês", 2, 1)), Map.of(), Set.of(), Map.of(), plano,
+                Map.of(java, List.of(new PendingLesson(a1, "Laços"), new PendingLesson(a2, "Classes"))));
+
+        var quinta = dias.get(3).items().getFirst();
+        assertThat(quinta.title()).isEqualTo("Laços");
+        assertThat(quinta.plannedLessonId()).isEqualTo(a1);
+        assertThat(dias.get(5).items().getFirst().title()).isEqualTo("Classes");
+        // Acabaram as aulas definidas: sem nome; matéria livre também
+        assertThat(dias.get(6).items()).extracting(i -> i.title()).containsExactly(null, null);
     }
 }

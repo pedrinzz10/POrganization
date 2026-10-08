@@ -22,8 +22,8 @@ public class DataResetService {
             "commitments", List.of("commitments"),
             // dias da semana e marcações saem em cascata
             "tasks", List.of("daily_tasks"),
-            // aulas, sessões, revisões, tags da matéria e aulas fixadas saem em cascata
-            "studies", List.of("subjects", "tags"),
+            // aulas, sessões, revisões, tags da matéria, aulas definidas, fixadas e do plano saem em cascata
+            "studies", List.of("subjects", "tags", "study_week_plans"),
             // finance_setup sai para as categorias padrão voltarem no próximo acesso
             "finance", List.of("transactions", "recurring_transactions", "budgets", "savings_goals",
                     "card_statements", "credit_cards", "accounts", "categories", "finance_tags", "finance_setup"));

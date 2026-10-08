@@ -3,12 +3,14 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
+import { ConfirmData, ConfirmDialog } from '../../../shared/confirm-dialog/confirm.dialog';
 import { IsoDate } from '../../commitments/data/commitment.model';
 import {
   addDays,
@@ -41,9 +43,12 @@ const VISOES: { id: Visao; rotulo: string }[] = [
 /**
  * Agenda de estudos, no mesmo formato da agenda de compromissos (Dia, Semana, Mês): até hoje o
  * que foi estudado; de hoje em diante as revisões agendadas e as aulas da meta semanal espalhadas
- * pelos dias (a previsão muda conforme as sessões acontecem). Na Semana, a aula sugerida pode ser
- * arrastada para outro dia da mesma semana (fica fixada); no Dia, o menu "Mover para" faz o mesmo
- * sem mouse e "Voltar ao automático" solta as fixadas da matéria na semana.
+ * pelos dias (a previsão muda conforme as sessões acontecem). Na matéria com aulas definidas, a
+ * aula mostra qual é (a próxima da lista).
+ *
+ * Plano da semana (E15): "Gerar semana" sorteia os dias; na Semana dá para arrastar a aula para
+ * outro dia, incluir (+ Aula) e tirar (×). Mexer numa semana automática transforma a previsão em
+ * plano; "Voltar ao automático" desfaz. No Dia, o menu da aula faz o mesmo sem mouse.
  */
 @Component({
   selector: 'app-study-agenda-page',
@@ -94,7 +99,7 @@ const VISOES: { id: Visao; rotulo: string }[] = [
     </div>
 
     <ul class="legenda" aria-label="Legenda">
-      <li><span class="amostra amostra--aula"></span>Aula sugerida</li>
+      <li><span class="amostra amostra--aula"></span>Aula</li>
       <li><span class="amostra amostra--revisao"></span>Revisão</li>
       <li><span class="amostra amostra--atrasada"></span>Revisão atrasada</li>
       <li><span class="amostra amostra--feito"></span>Estudado</li>
@@ -150,11 +155,9 @@ const VISOES: { id: Visao; rotulo: string }[] = [
                           Mover para {{ destino + 'T12:00' | date: "EEEE, dd/MM" }}
                         </button>
                       }
-                      @if (item.pinned) {
-                        <button mat-menu-item type="button" (click)="voltarAoAutomatico(item, d.date)">
-                          Voltar ao automático
-                        </button>
-                      }
+                      <button mat-menu-item type="button" (click)="tirarAula(item, d.date)">
+                        Tirar deste dia
+                      </button>
                     </mat-menu>
                   }
                 </li>
@@ -167,7 +170,44 @@ const VISOES: { id: Visao; rotulo: string }[] = [
           </section>
         }
         @case ('semana') {
-          <p class="dica">Arraste uma aula para outro dia da semana para fixá-la ali.</p>
+          <div class="plano">
+            @if (planejada()) {
+              <span class="ds-chip plano__selo">
+                <mat-icon aria-hidden="true">event_note</mat-icon>
+                Plano da semana
+              </span>
+              <span class="plano__dica">Arraste para outro dia, inclua (+ Aula) ou tire (×).</span>
+            } @else {
+              <span class="plano__dica">
+                Previsão automática pela meta de cada matéria. Gere a semana ou ajuste para montar seu plano.
+              </span>
+            }
+            @if (editavel()) {
+              <span class="plano__acoes">
+                @if (planejada()) {
+                  <button mat-button type="button" [disabled]="ocupado()" (click)="limparPlano()">
+                    Voltar ao automático
+                  </button>
+                }
+                <button mat-flat-button type="button" [disabled]="ocupado()" (click)="gerarSemana()">
+                  <mat-icon aria-hidden="true">shuffle</mat-icon>
+                  Gerar semana
+                </button>
+              </span>
+            }
+          </div>
+          <mat-menu #incluirMenu="matMenu">
+            <ng-template matMenuContent let-date="date">
+              @for (m of materias(); track m.id) {
+                <button mat-menu-item type="button" (click)="incluirAula(m.id, m.name, date)">
+                  <span class="menu__cor" [style.background]="m.color ?? null" aria-hidden="true"></span>
+                  {{ m.name }}
+                </button>
+              } @empty {
+                <span class="menu__vazio">{{ materiasCarregando() ? 'Carregando…' : 'Nenhuma matéria.' }}</span>
+              }
+            </ng-template>
+          </mat-menu>
           <div class="semana" cdkDropListGroup>
             @for (d of agenda.value(); track d.date) {
               <section
@@ -203,9 +243,31 @@ const VISOES: { id: Visao; rotulo: string }[] = [
                         {{ titulo_(item) }}
                       </span>
                       <span class="card__detalhe">{{ detalheCurto(item) }}</span>
+                      @if (movivel(item, d.date)) {
+                        <button
+                          type="button"
+                          class="card__tirar"
+                          [attr.aria-label]="'Tirar a aula de ' + item.subjectName + ' de ' + (d.date + 'T12:00' | date: 'dd/MM')"
+                          (click)="tirarAula(item, d.date)"
+                        >
+                          <mat-icon aria-hidden="true">close</mat-icon>
+                        </button>
+                      }
                     </div>
                   } @empty {
                     <span class="semana__vazio">—</span>
+                  }
+                  @if (d.date >= hoje) {
+                    <button
+                      type="button"
+                      class="semana__incluir"
+                      [matMenuTriggerFor]="incluirMenu"
+                      [matMenuTriggerData]="{ date: d.date }"
+                      [attr.aria-label]="'Incluir aula em ' + (d.date + 'T12:00' | date: 'dd/MM')"
+                      (menuOpened)="querMaterias.set(true)"
+                    >
+                      + Aula
+                    </button>
                   }
                 </div>
               </section>
@@ -245,6 +307,7 @@ const VISOES: { id: Visao; rotulo: string }[] = [
 export class StudyAgendaPage {
   private readonly studies = inject(StudiesService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly visoes = VISOES;
   protected readonly semanaCurta = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
@@ -271,6 +334,25 @@ export class StudyAgendaPage {
     params: () => this.intervalo(),
     stream: ({ params }) => this.studies.calendar(params.from, params.to),
   });
+
+  /** A semana na tela tem plano montado pelo usuário. */
+  protected readonly planejada = computed(
+    () => this.agenda.hasValue() && this.agenda.value().some((d) => d.planned),
+  );
+  /** Semana com algum dia de hoje em diante: dá para gerar e ajustar. */
+  protected readonly editavel = computed(() => this.intervalo().to >= this.hoje);
+  protected readonly ocupado = signal(false);
+
+  /** Matérias para o "+ Aula": só busca quando o menu abre pela primeira vez. */
+  protected readonly querMaterias = signal(false);
+  private readonly materiasRes = rxResource({
+    params: () => (this.querMaterias() ? true : undefined),
+    stream: () => this.studies.listSubjects(),
+  });
+  protected readonly materias = computed(() =>
+    this.materiasRes.hasValue() ? this.materiasRes.value() : [],
+  );
+  protected readonly materiasCarregando = computed(() => this.materiasRes.isLoading());
 
   protected readonly erro = computed(() =>
     this.agenda.error()
@@ -352,18 +434,76 @@ export class StudyAgendaPage {
     );
     try {
       await firstValueFrom(this.studies.moveLesson(item.subjectId, from, to));
-      this.snackBar.open(`Aula de ${item.subjectName} fixada no novo dia.`, 'OK', { duration: 3000 });
+      this.snackBar.open(`Aula de ${item.subjectName} mudou de dia.`, 'OK', { duration: 3000 });
     } catch (error) {
       this.snackBar.open(problemMessage(error, 'Não foi possível mover a aula.'), 'OK', { duration: 5000 });
     }
     this.agenda.reload();
   }
 
-  async voltarAoAutomatico(item: StudyCalendarItem, date: IsoDate): Promise<void> {
+  /** "Gerar semana": sorteia de novo; numa semana já planejada, confirma antes de trocar. */
+  async gerarSemana(): Promise<void> {
+    if (this.planejada()) {
+      const confirmou = await firstValueFrom(
+        this.dialog
+          .open<ConfirmDialog, ConfirmData, boolean>(ConfirmDialog, {
+            data: {
+              title: 'Gerar a semana de novo?',
+              message: 'As aulas de hoje até domingo são sorteadas de novo; os ajustes que você fez saem.',
+              confirmLabel: 'Gerar',
+            },
+          })
+          .afterClosed(),
+      );
+      if (!confirmou) {
+        return;
+      }
+    }
+    await this.acaoNoPlano(
+      () => this.studies.generateWeek(this.intervalo().from),
+      'Semana gerada.',
+      'Não foi possível gerar a semana.',
+    );
+  }
+
+  async limparPlano(): Promise<void> {
+    await this.acaoNoPlano(
+      () => this.studies.clearWeek(this.intervalo().from),
+      'A semana voltou para a previsão automática.',
+      'Não foi possível voltar ao automático.',
+    );
+  }
+
+  async incluirAula(subjectId: string, nome: string, date: IsoDate): Promise<void> {
+    await this.acaoNoPlano(
+      () => this.studies.addWeekLesson(subjectId, date),
+      `Aula de ${nome} incluída.`,
+      'Não foi possível incluir a aula.',
+    );
+  }
+
+  async tirarAula(item: StudyCalendarItem, date: IsoDate): Promise<void> {
+    await this.acaoNoPlano(
+      () => this.studies.removeWeekLesson(item.subjectId, date),
+      `Aula de ${item.subjectName} tirada do dia.`,
+      'Não foi possível tirar a aula.',
+    );
+  }
+
+  /** Chama a API, avisa e recarrega o que está na tela (a resposta é só a semana). */
+  private async acaoNoPlano(
+    acao: () => Observable<unknown>,
+    ok: string,
+    falha: string,
+  ): Promise<void> {
+    this.ocupado.set(true);
     try {
-      await firstValueFrom(this.studies.unpinLessons(item.subjectId, date));
+      await firstValueFrom(acao());
+      this.snackBar.open(ok, 'OK', { duration: 3000 });
     } catch (error) {
-      this.snackBar.open(problemMessage(error, 'Não foi possível voltar ao automático.'), 'OK', { duration: 5000 });
+      this.snackBar.open(problemMessage(error, falha), 'OK', { duration: 5000 });
+    } finally {
+      this.ocupado.set(false);
     }
     this.agenda.reload();
   }
@@ -391,7 +531,7 @@ export class StudyAgendaPage {
   protected titulo_(item: StudyCalendarItem): string {
     switch (item.kind) {
       case 'LESSON':
-        return `Aula de ${item.subjectName}`;
+        return item.title ? `${item.subjectName}: ${item.title}` : `Aula de ${item.subjectName}`;
       case 'REVIEW':
         return `Revisão: ${item.title}`;
       case 'DONE':
@@ -402,7 +542,7 @@ export class StudyAgendaPage {
   protected detalhe(item: StudyCalendarItem): string {
     switch (item.kind) {
       case 'LESSON':
-        return 'Sugerida para a meta da semana';
+        return item.title ? 'Próxima aula da lista' : 'Aula da meta da semana';
       case 'REVIEW':
         return `${item.subjectName}${item.overdue ? ' · atrasada' : ''}`;
       case 'DONE':

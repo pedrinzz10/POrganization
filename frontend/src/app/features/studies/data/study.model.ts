@@ -164,7 +164,7 @@ export interface StudyCalendarItem {
   subjectId: string;
   subjectName: string;
   color: string | null;
-  /** Título da aula (DONE e REVIEW); null na aula sugerida. */
+  /** Título da aula (DONE e REVIEW); na aula sugerida, o nome da aula definida (E14) ou null. */
   title: string | null;
   minutes: number;
   sessionType: SessionType;
@@ -172,9 +172,13 @@ export interface StudyCalendarItem {
   overdue: boolean;
   /** Aula fixada pelo usuário nesse dia (arrastada na agenda). */
   pinned: boolean;
+  /** Na aula sugerida de matéria com aulas definidas: qual aula da lista é. */
+  plannedLessonId?: string | null;
 }
 
 export interface StudyCalendarDay {
   date: string;
   items: StudyCalendarItem[];
+  /** A semana do dia tem plano montado pelo usuário (E15); senão é a previsão automática. */
+  planned?: boolean;
 }
