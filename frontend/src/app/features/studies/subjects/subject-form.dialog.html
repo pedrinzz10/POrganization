@@ -59,6 +59,23 @@
     }
 
     <mat-form-field>
+      <mat-label>Depende de</mat-label>
+      <mat-select formControlName="prerequisiteIds" multiple>
+        @for (m of outras(); track m.id) {
+          <mat-option [value]="m.id">{{ m.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Só entra no plano depois que essas estiverem completas.</mat-hint>
+    </mat-form-field>
+
+    @if (form.controls.lessonMode.value === 'FREE') {
+      <mat-slide-toggle formControlName="completed" class="concluida">Matéria concluída</mat-slide-toggle>
+      <p class="dica">Concluída sai das sugestões e libera as matérias que dependem dela.</p>
+    } @else if (editing?.completed) {
+      <p class="dica">Concluída: todas as aulas da lista foram estudadas.</p>
+    }
+
+    <mat-form-field>
       <mat-label>Tags</mat-label>
       <mat-chip-grid #grade aria-label="Tags da matéria">
         @for (tag of selecionadas(); track tag.id) {

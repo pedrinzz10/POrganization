@@ -5,8 +5,11 @@ import com.porganization.common.InvalidRequestException;
 import com.porganization.common.NotFoundException;
 import com.porganization.studies.dto.SubjectRequest;
 import com.porganization.studies.dto.SubjectResponse;
+import com.porganization.studies.SubjectPrerequisiteService.Status;
 import com.porganization.studies.dto.SubjectResponse.PlannedCount;
 import com.porganization.studies.dto.TagResponse;
+import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,11 +28,16 @@ public class SubjectService {
     private final SubjectRepository subjects;
     private final TagRepository tags;
     private final PlannedLessonService plannedLessons;
+    private final SubjectPrerequisiteService prerequisites;
+    private final Clock clock;
 
-    public SubjectService(SubjectRepository subjects, TagRepository tags, PlannedLessonService plannedLessons) {
+    public SubjectService(SubjectRepository subjects, TagRepository tags, PlannedLessonService plannedLessons,
+            SubjectPrerequisiteService prerequisites, Clock clock) {
         this.subjects = subjects;
         this.tags = tags;
         this.plannedLessons = plannedLessons;
+        this.prerequisites = prerequisites;
+        this.clock = clock;
     }
 
     // ---------- matérias ----------
@@ -54,7 +62,9 @@ public class SubjectService {
     public SubjectResponse create(UUID userId, SubjectRequest request) {
         Subject subject = new Subject(userId, request.name().trim(), subjects.maxPriorityOrder(userId) + 1);
         apply(userId, subject, request);
-        return SubjectResponse.from(subjects.save(subject));
+        subjects.save(subject);
+        applyPrerequisites(userId, subject, request);
+        return withCounts(userId).apply(subject);
     }
 
     @Transactional
@@ -62,6 +72,7 @@ public class SubjectService {
         Subject subject = find(userId, id);
         subject.setName(request.name().trim());
         apply(userId, subject, request);
+        applyPrerequisites(userId, subject, request);
         return withCounts(userId).apply(subject);
     }
 
@@ -99,10 +110,19 @@ public class SubjectService {
         return ids.stream().map(active::get).map(withCounts(userId)).toList();
     }
 
-    /** Monta o DTO com a contagem das aulas definidas (uma consulta para todas as matérias). */
+    /** Monta o DTO com a contagem das aulas definidas e os pré-requisitos (uma consulta para todas). */
     private Function<Subject, SubjectResponse> withCounts(UUID userId) {
+        subjects.flush();
         Map<UUID, PlannedCount> counts = plannedLessons.counts(userId);
-        return s -> SubjectResponse.from(s, counts.getOrDefault(s.getId(), PlannedCount.NONE));
+        Map<UUID, Status> statuses = prerequisites.statuses(userId);
+        return s -> SubjectResponse.from(s, counts.getOrDefault(s.getId(), PlannedCount.NONE), statuses.get(s.getId()));
+    }
+
+    private void applyPrerequisites(UUID userId, Subject subject, SubjectRequest request) {
+        if (request.prerequisiteIds() != null) {
+            subjects.flush();
+            prerequisites.replace(userId, subject.getId(), request.prerequisiteIds());
+        }
     }
 
     private Subject find(UUID userId, UUID id) {
@@ -122,6 +142,11 @@ public class SubjectService {
         }
         if (request.lessonMode() != null) {
             subject.setLessonMode(request.lessonMode());
+        }
+        if (request.completed() != null) {
+            subject.setCompletedAt(request.completed()
+                    ? (subject.getCompletedAt() != null ? subject.getCompletedAt() : OffsetDateTime.now(clock))
+                    : null);
         }
         if (request.studyDays() != null) {
             subject.setStudyDays(request.studyDays());

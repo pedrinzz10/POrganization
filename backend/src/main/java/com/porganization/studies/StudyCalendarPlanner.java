@@ -98,13 +98,21 @@ public final class StudyCalendarPlanner {
         return plan(today, from, to, done, reviews, goals, lessonsThisWeek, lessonToday, pins, WeekPlans.NONE, Map.of());
     }
 
-    /**
-     * @param plans semanas com plano do usuário e as aulas de cada dia
-     * @param pending aulas definidas pendentes por matéria, na ordem do curso
-     */
     public static List<Day> plan(LocalDate today, LocalDate from, LocalDate to, List<DoneSession> done, List<DueReview> reviews,
             List<SubjectGoal> goals, Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins,
             WeekPlans plans, Map<UUID, List<PendingLesson>> pending) {
+        return plan(today, from, to, done, reviews, goals, lessonsThisWeek, lessonToday, pins, plans, pending, Set.of());
+    }
+
+    /**
+     * @param plans semanas com plano do usuário e as aulas de cada dia
+     * @param pending aulas definidas pendentes por matéria, na ordem do curso
+     * @param onHold matérias concluídas ou bloqueadas por pré-requisito (E17): fora da previsão automática,
+     *        mas aparecem se o usuário pôs no plano
+     */
+    public static List<Day> plan(LocalDate today, LocalDate from, LocalDate to, List<DoneSession> done, List<DueReview> reviews,
+            List<SubjectGoal> goals, Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins,
+            WeekPlans plans, Map<UUID, List<PendingLesson>> pending, Set<UUID> onHold) {
         Map<LocalDate, List<Item>> byDay = new LinkedHashMap<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
             byDay.put(d, new ArrayList<>());
@@ -129,7 +137,7 @@ public final class StudyCalendarPlanner {
                     }
                 });
 
-        distributeLessons(today, from, to, goals, lessonsThisWeek, lessonToday, pins, plans, byDay);
+        distributeLessons(today, from, to, goals, lessonsThisWeek, lessonToday, pins, plans, onHold, byDay);
         namePlannedLessons(pending, byDay);
 
         return byDay.entrySet().stream()
@@ -161,12 +169,15 @@ public final class StudyCalendarPlanner {
 
     private static void distributeLessons(LocalDate today, LocalDate from, LocalDate to, List<SubjectGoal> goals,
             Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday, Map<UUID, List<LocalDate>> pins, WeekPlans plans,
-            Map<LocalDate, List<Item>> byDay) {
+            Set<UUID> onHold, Map<LocalDate, List<Item>> byDay) {
         LocalDate start = from.isAfter(today) ? from : today;
         if (start.isAfter(to)) {
             return;
         }
-        List<SubjectGoal> byPriority = goals.stream().sorted(Comparator.comparingInt(SubjectGoal::priorityOrder)).toList();
+        List<SubjectGoal> byPriority = goals.stream()
+                .filter(g -> !onHold.contains(g.subjectId()))
+                .sorted(Comparator.comparingInt(SubjectGoal::priorityOrder))
+                .toList();
         LocalDate thisMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         // Semana a semana: a distribuição olha a semana inteira, mesmo que a consulta corte no meio
         for (LocalDate monday = start.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)); !monday.isAfter(to);

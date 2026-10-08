@@ -24,6 +24,20 @@ export interface Subject {
   /** Aulas definidas: total e quantas já foram estudadas. */
   plannedTotal: number;
   plannedDone: number;
+  /** Pré-requisitos (E17): matérias de que esta depende. */
+  prerequisiteIds: string[];
+  /** Completa: todas as aulas da lista estudadas ou marcada como concluída. */
+  completed: boolean;
+  /** Matérias de que depende que ainda não terminaram (vazio = liberada). */
+  blockedBy: SubjectBlocker[];
+}
+
+/** Matéria que ainda bloqueia outra, com o progresso das aulas definidas (total 0 na livre). */
+export interface SubjectBlocker {
+  id: string;
+  name: string;
+  done: number;
+  total: number;
 }
 
 export type LessonMode = 'FREE' | 'PLANNED';
@@ -48,6 +62,10 @@ export interface SubjectRequest {
   studyDays?: WeekDay[];
   /** Ausente mantém como está (na criação, FREE). */
   lessonMode?: LessonMode;
+  /** Ausente mantém; lista vazia tira as dependências. */
+  prerequisiteIds?: string[];
+  /** Marcar ou desmarcar como concluída; ausente mantém. */
+  completed?: boolean;
 }
 
 /** Corpo completo para PUT a partir de uma matéria existente, com alterações por cima. */

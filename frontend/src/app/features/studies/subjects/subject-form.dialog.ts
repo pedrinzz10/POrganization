@@ -9,6 +9,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { firstValueFrom, startWith } from 'rxjs';
 import { problemMessage } from '../../../core/http/problem';
 import { WeekDay } from '../../commitments/data/commitment.model';
@@ -51,6 +53,8 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
     MatChipsModule,
     MatAutocompleteModule,
     MatIconModule,
+    MatSelectModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './subject-form.dialog.html',
   styles: `
@@ -89,6 +93,9 @@ function atLeastOneDay(control: AbstractControl): ValidationErrors | null {
     .perigo {
       color: var(--mat-sys-error);
     }
+    .concluida {
+      margin-top: 8px;
+    }
   `,
 })
 export class SubjectFormDialog {
@@ -106,7 +113,12 @@ export class SubjectFormDialog {
     lessonMinutes: [this.editing?.lessonMinutes ?? 50, [Validators.required, Validators.min(5), Validators.max(240)]],
     studyDays: [this.editing?.studyDays?.length ? this.editing.studyDays : DIAS.map((d) => d.dia), atLeastOneDay],
     lessonMode: [this.editing?.lessonMode ?? ('FREE' as LessonMode)],
+    prerequisiteIds: [this.editing?.prerequisiteIds ?? ([] as string[])],
+    completed: [this.editing?.completed ?? false],
   });
+
+  /** Outras matérias, para o "Depende de" (E17). */
+  protected readonly outras = signal<Subject[]>([]);
 
   private readonly valores = toSignal(this.form.valueChanges.pipe(startWith(this.form.getRawValue())), {
     requireSync: true,
@@ -137,6 +149,10 @@ export class SubjectFormDialog {
     firstValueFrom(this.studies.listTags()).then(
       (tags) => this.todas.set(tags),
       () => this.todas.set([]),
+    );
+    firstValueFrom(this.studies.listSubjects()).then(
+      (materias) => this.outras.set(materias.filter((m) => m.id !== this.editing?.id)),
+      () => this.outras.set([]),
     );
   }
 
@@ -192,6 +208,9 @@ export class SubjectFormDialog {
       // Todos os dias = qualquer dia (lista vazia); senão, na ordem da semana
       studyDays: v.studyDays.length === 7 ? [] : DIAS.map((d) => d.dia).filter((d) => v.studyDays.includes(d)),
       lessonMode: v.lessonMode,
+      prerequisiteIds: v.prerequisiteIds,
+      // Só a livre é marcada à mão; a com aulas definidas termina quando todas são estudadas
+      completed: v.lessonMode === 'FREE' ? v.completed : false,
     };
     await this.run(() =>
       firstValueFrom(

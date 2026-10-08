@@ -1288,6 +1288,91 @@ Regras:
         "cenario": "'Java: Laços' em Estudos > Hoje → Estudar manda plannedLessonId p2 → timer com Laços → Concluir com o título preenchido."
       }
     ]
+  },
+  {
+    "id": "E17",
+    "etapa": "3-estudos",
+    "titulo": "Pré-requisitos entre matérias",
+    "acao": "V32 cria subject_prerequisites (matéria → matérias de que depende, sem depender dela mesma) e subjects.completed_at. Uma matéria está completa quando todas as aulas definidas foram estudadas, ou quando foi marcada como concluída (a livre só termina assim). Fica bloqueada enquanto alguma de que depende, não arquivada, não estiver completa. Concluídas e bloqueadas ficam em espera: fora da previsão automática, do Gerar semana e das sugestões automáticas de Hoje; incluir à mão no plano e estudar continuam valendo (exceção). SubjectRequest ganha prerequisiteIds (lista vazia tira; precisam ser do usuário e não podem fechar ciclo: 400) e completed; SubjectResponse traz prerequisiteIds, completed e blockedBy (nome e progresso). Front: 'Depende de' (seleção múltipla) e 'Matéria concluída' (só na livre) no formulário; na lista, cadeado 'Depois de Física I (45/108)' ou 'Concluída'.",
+    "story": "Como Pedro, quero que Física II só entre no meu plano depois que eu terminar Física I, e Matemática depois de Matemática Básica.",
+    "arquivos": [
+      "backend/src/main/resources/db/migration/V32__subject_prerequisites.sql",
+      "backend/src/main/java/com/porganization/studies/SubjectPrerequisiteService.java",
+      "backend/src/main/java/com/porganization/studies/SubjectService.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarPlanner.java",
+      "backend/src/main/java/com/porganization/studies/StudyCalendarService.java",
+      "backend/src/main/java/com/porganization/studies/StudyTodayService.java",
+      "frontend/src/app/features/studies/subjects/subject-form.dialog.html",
+      "frontend/src/app/features/studies/subjects/subjects.page.html"
+    ],
+    "dependencias": [
+      "E14",
+      "E15",
+      "E16"
+    ],
+    "status": "em_revisao",
+    "criterios_de_aceite": [
+      {
+        "id": "CA1",
+        "descricao": "Matéria que depende de outra incompleta vem com blockedBy (nome e progresso) e fica fora da previsão automática, do Gerar semana e das sugestões de Hoje; incluir à mão no plano funciona."
+      },
+      {
+        "id": "CA2",
+        "descricao": "Ao estudar a última aula da matéria de que depende, a dependente é liberada e a terminada vem como completed (sai das sugestões); arquivar a de que depende também libera."
+      },
+      {
+        "id": "CA3",
+        "descricao": "Matéria livre é completa quando marcada como concluída e volta a bloquear se desmarcada; a com aulas definidas não é marcada à mão pelo formulário."
+      },
+      {
+        "id": "CA4",
+        "descricao": "Depender dela mesma, fechar ciclo ou matéria inexistente responde 400; lista vazia tira as dependências."
+      }
+    ],
+    "testes_dos_criterios": [
+      {
+        "id": "T1",
+        "criterio": "CA1",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/SubjectPrerequisiteIT.java",
+        "cenario": "Física II depende de Física I (0/2): blockedBy, fora da semana, de Hoje e do gerado; incluída à mão aparece; estudar as 2 aulas libera e Física I fica completed e sai de Hoje."
+      },
+      {
+        "id": "T2",
+        "criterio": "CA3",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/SubjectPrerequisiteIT.java",
+        "cenario": "Inglês I livre: completed true libera Inglês II e tira Inglês I da semana; false bloqueia de novo; arquivar libera."
+      },
+      {
+        "id": "T3",
+        "criterio": "CA4",
+        "tipo": "integracao",
+        "arquivo": "backend/src/test/java/com/porganization/studies/SubjectPrerequisiteIT.java",
+        "cenario": "Matemática Básica dependendo dela mesma, de Física I (ciclo) ou de id inexistente: 400; Física I com lista vazia fica sem dependências."
+      },
+      {
+        "id": "T4",
+        "criterio": "CA3",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/subjects/subject-form.dialog.spec.ts",
+        "cenario": "'Depende de' lista as outras matérias; PUT com prerequisiteIds e completed; com aulas definidas não mostra 'Matéria concluída' e manda completed false."
+      },
+      {
+        "id": "T5",
+        "criterio": "CA2",
+        "tipo": "componente",
+        "arquivo": "frontend/src/app/features/studies/subjects/subjects.page.spec.ts",
+        "cenario": "Concluída mostra 'Concluída'; bloqueada mostra 'Depois de Matemática (45/108), Inglês'."
+      },
+      {
+        "id": "T6",
+        "criterio": "CA1",
+        "tipo": "e2e",
+        "arquivo": "frontend/e2e/study-prerequisites.spec.ts",
+        "cenario": "Editar Física II, escolher Física I em 'Depende de', salvar → PUT com prerequisiteIds e cadeado 'Depois de Física I (45/108)'."
+      }
+    ]
   }
 ]
 ```
@@ -2792,7 +2877,7 @@ Uma tela que junta os números de tarefas, estudos e finanças. Os dados já exi
 |---|---|---|
 | 1 Base | B01 a B16 | Login funcionando, navegação, CI, deploy no Render/Vercel/Supabase, proteção contra vazamento de segredos e apagar os dados de uma seção |
 | 2 Compromissos | C01 a C10 | Criação rápida, recorrência, visões Hoje/Semana/Mês/Ano, tela Hoje com compromissos |
-| 3 Estudos | E01 a E16 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS, agenda de estudos por dia, semana e mês e plano da semana gerado e ajustável, com a aula da vez pronta para estudar |
+| 3 Estudos | E01 a E17 | Matérias com tags e prioridade, aulas definidas na ordem do curso, timer, revisões em mini aula agendadas pelo FSRS, agenda de estudos por dia, semana e mês e plano da semana gerado e ajustável, com a aula da vez pronta para estudar e pré-requisitos entre matérias |
 | 4 Finanças | F01 a F22, F24 e F25 | Contas, transações, cartão com parcelas e faturas, fixos, orçamentos, metas e dashboard |
 | 5 Integrações | I01 a I08 | Lembretes por push e e-mail, resumo diário e Google Calendar nos dois sentidos |
 | 6 Tarefas diárias | T01 a T07 | Hábitos recorrentes com checklist na tela Hoje, sequência, % do mês, lembrete, cronômetro e resumo diário |

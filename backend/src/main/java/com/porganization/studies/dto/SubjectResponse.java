@@ -3,6 +3,8 @@ package com.porganization.studies.dto;
 import com.porganization.commitments.recurrence.WeekDay;
 import com.porganization.studies.LessonMode;
 import com.porganization.studies.Subject;
+import com.porganization.studies.SubjectPrerequisiteService.Blocker;
+import com.porganization.studies.SubjectPrerequisiteService.Status;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +24,11 @@ public record SubjectResponse(
         LessonMode lessonMode,
         /** Aulas definidas (E14): total e quantas já foram estudadas; 0 e 0 na matéria livre. */
         int plannedTotal,
-        int plannedDone) {
+        int plannedDone,
+        /** Pré-requisitos (E17): de quais depende, se está completa e o que ainda bloqueia. */
+        List<UUID> prerequisiteIds,
+        boolean completed,
+        List<Blocker> blockedBy) {
 
     /** Contagem das aulas definidas de uma matéria. */
     public record PlannedCount(int total, int done) {
@@ -30,14 +36,15 @@ public record SubjectResponse(
     }
 
     public static SubjectResponse from(Subject s) {
-        return from(s, PlannedCount.NONE);
+        return from(s, PlannedCount.NONE, null);
     }
 
-    public static SubjectResponse from(Subject s, PlannedCount planned) {
+    public static SubjectResponse from(Subject s, PlannedCount planned, Status status) {
         List<TagResponse> tags = s.getTags().stream().map(TagResponse::from)
                 .sorted(Comparator.comparing(TagResponse::name, String.CASE_INSENSITIVE_ORDER)).toList();
         return new SubjectResponse(s.getId(), s.getName(), s.getColor(), s.getPriorityOrder(), s.getSessionsPerWeek(),
                 s.getLessonMinutes(), s.isArchived(), tags, s.getStudyDays(), s.getLessonMode(), planned.total(),
-                planned.done());
+                planned.done(), status == null ? List.of() : status.prerequisiteIds(), status != null && status.completed(),
+                status == null ? List.of() : status.blockedBy());
     }
 }

@@ -10,7 +10,7 @@ import { SubjectsPage } from './subjects.page';
 const API = environment.apiUrl;
 
 function materia(nome: string, ordem: number, tags: { id: string; name: string }[] = []): Subject {
-  return { id: `id-${nome}`, name: nome, color: null, priorityOrder: ordem, sessionsPerWeek: 2, lessonMinutes: 50, archived: false, tags, studyDays: [], lessonMode: 'FREE', plannedTotal: 0, plannedDone: 0 };
+  return { id: `id-${nome}`, name: nome, color: null, priorityOrder: ordem, sessionsPerWeek: 2, lessonMinutes: 50, archived: false, tags, studyDays: [], lessonMode: 'FREE', plannedTotal: 0, plannedDone: 0, prerequisiteIds: [], completed: false, blockedBy: [] };
 }
 
 // Com consultas pendentes, whenStable() espera elas terminarem; só deixamos a fila andar
@@ -124,5 +124,18 @@ describe('SubjectsPage', () => {
     const botoes = Array.from(element.querySelectorAll('.materia__aulas'));
     expect(botoes.length).toBe(1);
     expect(botoes[0].textContent).toContain('Aulas 3/12');
+  });
+
+  // E17 T5 (CA2)
+  it('matéria bloqueada mostra de quem depende e a concluída aparece marcada', async () => {
+    await carregar([
+      { ...materia('Física I', 1), completed: true },
+      {
+        ...materia('Física II', 2),
+        blockedBy: [{ id: 'm', name: 'Matemática', done: 45, total: 108 }, { id: 'i', name: 'Inglês', done: 0, total: 0 }],
+      },
+    ]);
+    const estados = Array.from(element.querySelectorAll('.materia__estado')).map((e) => e.textContent!.trim());
+    expect(estados).toEqual(['check_circle Concluída', 'lock Depois de Matemática (45/108), Inglês']);
   });
 });

@@ -28,6 +28,9 @@ test('matéria com aulas definidas: cola a lista do curso e vê o progresso', as
     lessonMode: 'PLANNED',
     plannedTotal: aulas.length,
     plannedDone: aulas.filter((a) => a.lessonId).length,
+    prerequisiteIds: [],
+    completed: false,
+    blockedBy: [],
   });
   await page.route(`${API}/study/**`, (route) =>
     route.fulfill({ json: { date: '2026-10-08', reviews: [], lessons: [] } }),

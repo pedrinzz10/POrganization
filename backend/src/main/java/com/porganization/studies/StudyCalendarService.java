@@ -42,7 +42,7 @@ public class StudyCalendarService {
     /** A grade do mês tem 42 dias; um pouco de folga para quem pedir intervalos maiores. */
     static final int MAX_DAYS = 62;
 
-    /** O que a distribuição precisa saber da semana de hoje. */
+    /** O que a distribuição precisa saber da semana de hoje; goals só com as matérias liberadas e não concluídas. */
     public record WeekContext(LocalDate today, List<SubjectGoal> goals, Map<UUID, Long> lessonsThisWeek, Set<UUID> lessonToday) {
     }
 
@@ -53,9 +53,12 @@ public class StudyCalendarService {
     private final UserSettingsService userSettings;
     private final JdbcTemplate jdbc;
     private final Clock clock;
+    private final SubjectPrerequisiteService prerequisites;
 
     public StudyCalendarService(ReviewItemRepository reviewItems, LessonRepository lessons, SubjectRepository subjects,
-            StudySessionRepository sessions, UserSettingsService userSettings, JdbcTemplate jdbc, Clock clock) {
+            StudySessionRepository sessions, UserSettingsService userSettings, JdbcTemplate jdbc, Clock clock,
+            SubjectPrerequisiteService prerequisites) {
+        this.prerequisites = prerequisites;
         this.reviewItems = reviewItems;
         this.lessons = lessons;
         this.subjects = subjects;
@@ -131,7 +134,7 @@ public class StudyCalendarService {
                 }, userId, Date.valueOf(firstMonday), Date.valueOf(lastSunday));
 
         List<Day> days = StudyCalendarPlanner.plan(today, start, to, done, reviews, goals, lessonsThisWeek, lessonToday, pins,
-                weekPlans(userId, firstMonday, lastSunday), pendingLessons(userId));
+                weekPlans(userId, firstMonday, lastSunday), pendingLessons(userId), prerequisites.onHold(userId));
         return days.stream().filter(d -> !d.date().isBefore(from)).toList();
     }
 
@@ -148,7 +151,10 @@ public class StudyCalendarService {
                 .map(s -> new DoneSession(LocalDate.ofInstant(s.getStartedAt(), zone), s.getSubjectId(), null, null, s.getType(),
                         null, 0))
                 .toList();
-        return new WeekContext(today, goals(all), lessonsThisWeek(done, today), lessonToday(done, today));
+        // Gerar semana (E15) só distribui as matérias liberadas e não concluídas (E17)
+        Set<UUID> onHold = prerequisites.onHold(userId);
+        List<SubjectGoal> eligible = goals(all).stream().filter(g -> !onHold.contains(g.subjectId())).toList();
+        return new WeekContext(today, eligible, lessonsThisWeek(done, today), lessonToday(done, today));
     }
 
     private static List<SubjectGoal> goals(List<Subject> all) {

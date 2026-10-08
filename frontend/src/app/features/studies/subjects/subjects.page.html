@@ -43,6 +43,17 @@
         </button>
       </span>
       <span class="materia__aula">{{ materia.lessonMinutes }} min</span>
+      @if (materia.completed) {
+        <span class="materia__estado materia__estado--ok">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          Concluída
+        </span>
+      } @else if (materia.blockedBy.length > 0) {
+        <span class="materia__estado" [attr.title]="'Só entra no plano depois de ' + bloqueio(materia)">
+          <mat-icon aria-hidden="true">lock</mat-icon>
+          Depois de {{ bloqueio(materia) }}
+        </span>
+      }
       @if (materia.lessonMode === 'PLANNED') {
         <button
           mat-stroked-button
