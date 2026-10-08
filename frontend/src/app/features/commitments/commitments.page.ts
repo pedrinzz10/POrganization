@@ -30,6 +30,7 @@ import { DayViewComponent } from './views/day-view.component';
 import { MonthViewComponent } from './views/month-view.component';
 import { WeekViewComponent } from './views/week-view.component';
 import { YearViewComponent } from './views/year-view.component';
+import { SectionTitleComponent } from '../settings/section-title.component';
 
 type Aba = 'dia' | 'semana' | 'mes' | 'ano';
 const ABAS: Aba[] = ['dia', 'semana', 'mes', 'ano'];
@@ -37,6 +38,7 @@ const ABAS: Aba[] = ['dia', 'semana', 'mes', 'ano'];
 @Component({
   selector: 'app-commitments-page',
   imports: [
+    SectionTitleComponent,
     DatePipe,
     NgTemplateOutlet,
     MatTabsModule,
