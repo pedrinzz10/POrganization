@@ -81,6 +81,9 @@ export interface StudySession {
   pausedAt: string | null;
   elapsedSeconds: number;
   plannedMinutes: number;
+  /** Aula da lista (E16) que esta sessão de aula estuda; o título vem pronto para terminar. */
+  plannedLessonId?: string | null;
+  plannedLessonTitle?: string | null;
 }
 
 /** Corpo do finish: título e notas para aula; nota para revisão. */
@@ -108,6 +111,9 @@ export interface LessonSuggestion {
   suggestedMinutes: number;
   doneThisWeek: number;
   sessionsPerWeek: number;
+  /** Matéria com aulas definidas: a próxima aula da lista (E16). */
+  plannedLessonId?: string | null;
+  plannedLessonTitle?: string | null;
 }
 
 /** GET /api/study/today: revisões vencidas primeiro, depois as aulas sugeridas. */

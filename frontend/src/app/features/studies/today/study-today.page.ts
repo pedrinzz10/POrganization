@@ -43,8 +43,9 @@ export class StudyTodayPage {
     return this.iniciar(review.subjectId, 'REVIEW', review.lessonId);
   }
 
+  /** Na matéria com aulas definidas, estuda a aula sugerida da lista. */
   protected estudar(lesson: LessonSuggestion): Promise<void> {
-    return this.iniciar(lesson.subjectId, 'LESSON');
+    return this.iniciar(lesson.subjectId, 'LESSON', undefined, lesson.plannedLessonId);
   }
 
   protected encerrou(sessao: StudySession): void {
@@ -53,10 +54,17 @@ export class StudyTodayPage {
     this.plano.reload();
   }
 
-  private async iniciar(subjectId: string, type: 'LESSON' | 'REVIEW', lessonId?: string): Promise<void> {
+  private async iniciar(
+    subjectId: string,
+    type: 'LESSON' | 'REVIEW',
+    lessonId?: string,
+    plannedLessonId?: string | null,
+  ): Promise<void> {
     this.iniciando.set(true);
     try {
-      this.sessao.set(await firstValueFrom(this.studies.start(subjectId, type, lessonId)));
+      this.sessao.set(
+        await firstValueFrom(this.studies.start(subjectId, type, lessonId, plannedLessonId)),
+      );
     } catch (error) {
       this.snackBar.open(problemMessage(error, 'Não foi possível iniciar.'), 'OK', { duration: 5000 });
     } finally {

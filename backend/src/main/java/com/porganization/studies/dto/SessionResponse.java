@@ -21,5 +21,8 @@ public record SessionResponse(
         int pausedSeconds,
         Instant pausedAt,
         long elapsedSeconds,
-        int plannedMinutes) {
+        int plannedMinutes,
+        /** Aula definida (E16) desta sessão de aula: o título vem pronto para terminar. */
+        UUID plannedLessonId,
+        String plannedLessonTitle) {
 }

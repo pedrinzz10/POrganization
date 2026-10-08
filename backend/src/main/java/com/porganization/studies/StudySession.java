@@ -37,6 +37,10 @@ public class StudySession {
     @Column(name = "lesson_id")
     private UUID lessonId;
 
+    /** Aula definida (E14) que esta sessão de aula estuda, se a matéria tem lista. */
+    @Column(name = "planned_lesson_id")
+    private UUID plannedLessonId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, updatable = false)
     private SessionType type;
@@ -148,6 +152,14 @@ public class StudySession {
 
     public UUID getSubjectId() {
         return subjectId;
+    }
+
+    public UUID getPlannedLessonId() {
+        return plannedLessonId;
+    }
+
+    public void setPlannedLessonId(UUID plannedLessonId) {
+        this.plannedLessonId = plannedLessonId;
     }
 
     public UUID getLessonId() {

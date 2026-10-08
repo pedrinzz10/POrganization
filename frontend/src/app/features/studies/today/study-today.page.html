@@ -44,7 +44,7 @@
           <li class="item">
             <span class="item__cor" [style.background]="l.color ?? 'var(--mat-sys-outline-variant)'"></span>
             <div class="item__texto">
-              <span class="item__titulo">{{ l.subjectName }}</span>
+              <span class="item__titulo">{{ l.subjectName }}{{ l.plannedLessonTitle ? ': ' + l.plannedLessonTitle : '' }}</span>
               <span class="item__detalhe">{{ l.suggestedMinutes }} min · {{ l.doneThisWeek }} de {{ l.sessionsPerWeek }} nesta semana</span>
             </div>
             <button mat-stroked-button type="button" [disabled]="iniciando()" (click)="estudar(l)">

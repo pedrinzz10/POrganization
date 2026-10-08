@@ -11,6 +11,8 @@ public interface LessonRepository extends Repository<Lesson, UUID> {
 
     Lesson save(Lesson lesson);
 
+    Lesson saveAndFlush(Lesson lesson);
+
     Optional<Lesson> findByIdAndUserId(UUID id, UUID userId);
 
     List<Lesson> findByUserIdAndIdIn(UUID userId, Collection<UUID> ids);

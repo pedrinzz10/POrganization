@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -104,6 +105,39 @@ public class PlannedLessonService {
                     counts.put(rs.getObject(1, UUID.class), new PlannedCount(rs.getInt(2), rs.getInt(3)));
                 }, userId);
         return counts;
+    }
+
+    /** A próxima aula não estudada da matéria, na ordem do curso. */
+    @Transactional(readOnly = true)
+    public Optional<PlannedLesson> firstPending(UUID userId, UUID subjectId) {
+        return query(userId, subjectId).stream().filter(l -> l.lessonId() == null).findFirst();
+    }
+
+    /** A próxima aula não estudada de cada matéria com aulas definidas. */
+    @Transactional(readOnly = true)
+    public Map<UUID, PlannedLesson> firstPendingBySubject(UUID userId) {
+        Map<UUID, PlannedLesson> next = new HashMap<>();
+        jdbc.query("""
+                select distinct on (p.subject_id) p.subject_id, p.id, p.title, p.position
+                from planned_lessons p join subjects s on s.id = p.subject_id
+                where p.user_id = ? and p.lesson_id is null and s.lesson_mode = 'PLANNED'
+                order by p.subject_id, p.position
+                """, rs -> {
+            next.put(rs.getObject(1, UUID.class),
+                    new PlannedLesson(rs.getObject(2, UUID.class), rs.getString(3), rs.getInt(4), null, null));
+        }, userId);
+        return next;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PlannedLesson> find(UUID userId, UUID subjectId, UUID id) {
+        return query(userId, subjectId).stream().filter(l -> l.id().equals(id)).findFirst();
+    }
+
+    /** Liga a aula definida à aula estudada (só se ainda estava pendente). */
+    @Transactional
+    public void markStudied(UUID id, UUID lessonId) {
+        jdbc.update("update planned_lessons set lesson_id = ? where id = ? and lesson_id is null", lessonId, id);
     }
 
     private void renumber(List<UUID> ids) {
